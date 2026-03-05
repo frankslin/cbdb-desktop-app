@@ -6,6 +6,7 @@ using Cbdb.App.Core;
 using Cbdb.App.Data;
 using Cbdb.App.Desktop.Browser;
 using Cbdb.App.Desktop.Localization;
+using Cbdb.App.Desktop.Modules;
 using Microsoft.Win32;
 
 namespace Cbdb.App.Desktop;
@@ -13,10 +14,11 @@ namespace Cbdb.App.Desktop;
 public partial class MainWindow : Window {
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
     private readonly ILocalizationService _localizationService = new AppLocalizationService();
+    private string _sqlitePath = string.Empty;
 
     public MainWindow() {
         InitializeComponent();
-        TxtSqlitePath.Text = GuessDefaultSqlitePath();
+        _sqlitePath = GuessDefaultSqlitePath();
 
         _localizationService.LanguageChanged += (_, _) => ApplyLocalization();
         ApplyLocalization();
@@ -25,9 +27,6 @@ public partial class MainWindow : Window {
     private void ApplyLocalization() {
         Title = T("window.title");
         TxtHeaderMain.Text = T("header.main");
-
-        BtnBrowse.Content = T("button.browse");
-        BtnCheck.Content = T("button.check_db");
 
         BtnModuleBrowser.Content = T("module.browser");
         BtnModuleEntry.Content = T("module.entry");
@@ -87,33 +86,6 @@ public partial class MainWindow : Window {
         TxtStatus.Text = T("status.language_set");
     }
 
-    private void BtnBrowse_Click(object sender, RoutedEventArgs e) {
-        var dialog = new OpenFileDialog {
-            Filter = "SQLite Database (*.sqlite3;*.db;*.sqlite)|*.sqlite3;*.db;*.sqlite|All Files (*.*)|*.*",
-            CheckFileExists = true,
-            Multiselect = false,
-            Title = T("dialog.select_sqlite")
-        };
-
-        if (dialog.ShowDialog(this) == true) {
-            TxtSqlitePath.Text = dialog.FileName;
-        }
-    }
-
-    private async void BtnCheck_Click(object sender, RoutedEventArgs e) {
-        try {
-            BtnCheck.IsEnabled = false;
-            TxtStatus.Text = T("status.checking");
-            TxtOutput.Text = string.Empty;
-
-            var result = await _databaseHealthService.CheckAsync(TxtSqlitePath.Text);
-            TxtStatus.Text = result.Success ? T("status.connected") : T("status.failed");
-            TxtOutput.Text = result.Message;
-        } finally {
-            BtnCheck.IsEnabled = true;
-        }
-    }
-
     private void ModuleButton_Click(object sender, RoutedEventArgs e) {
         if (sender is not Button button) {
             return;
@@ -123,13 +95,14 @@ public partial class MainWindow : Window {
         var moduleLabel = T(key);
 
         if (string.Equals(key, "module.browser", StringComparison.OrdinalIgnoreCase)) {
-            if (string.IsNullOrWhiteSpace(TxtSqlitePath.Text) || !File.Exists(TxtSqlitePath.Text)) {
+            var sqlitePath = NormalizeSqlitePath(_sqlitePath);
+            if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
                 TxtStatus.Text = T("status.failed");
                 TxtOutput.Text = T("msg.sqlite_missing");
                 return;
             }
 
-            var browserWindow = new PersonBrowserWindow(TxtSqlitePath.Text, _localizationService) {
+            var browserWindow = new PersonBrowserWindow(sqlitePath, _localizationService) {
                 Owner = this
             };
             browserWindow.Show();
@@ -139,8 +112,68 @@ public partial class MainWindow : Window {
             return;
         }
 
+        if (TryGetQueryModuleKind(key, out var moduleKind)) {
+            var sqlitePath = NormalizeSqlitePath(_sqlitePath);
+            if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+                TxtStatus.Text = T("status.failed");
+                TxtOutput.Text = T("msg.sqlite_missing");
+                return;
+            }
+
+            try {
+                var window = new QueryModuleWindow(moduleKind, _localizationService, sqlitePath) {
+                    Owner = this
+                };
+                window.Show();
+
+                TxtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+                TxtOutput.Text = T("msg.query_shell_opened");
+            } catch (Exception ex) {
+                TxtStatus.Text = T("status.failed");
+                TxtOutput.Text = ex.Message;
+                MessageBox.Show(this, ex.Message, "CBDB", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            return;
+        }
+
         TxtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
         TxtOutput.Text = string.Format(T("msg.module_todo"), moduleLabel);
+    }
+
+    private static bool TryGetQueryModuleKind(string key, out QueryModuleKind kind) {
+        switch (key) {
+            case "module.entry":
+                kind = QueryModuleKind.Entry;
+                return true;
+            case "module.office":
+                kind = QueryModuleKind.Office;
+                return true;
+            case "module.kinship":
+                kind = QueryModuleKind.Kinship;
+                return true;
+            case "module.associations":
+                kind = QueryModuleKind.Associations;
+                return true;
+            case "module.networks":
+                kind = QueryModuleKind.Networks;
+                return true;
+            case "module.association_pairs":
+                kind = QueryModuleKind.AssociationPairs;
+                return true;
+            case "module.place":
+                kind = QueryModuleKind.Place;
+                return true;
+            case "module.status":
+                kind = QueryModuleKind.Status;
+                return true;
+            case "module.texts":
+                kind = QueryModuleKind.Texts;
+                return true;
+            default:
+                kind = default;
+                return false;
+        }
     }
 
     private void BtnReportError_Click(object sender, RoutedEventArgs e) {
@@ -153,9 +186,42 @@ public partial class MainWindow : Window {
         TxtOutput.Text = T("msg.index_addr_todo");
     }
 
-    private void BtnRelinkTables_Click(object sender, RoutedEventArgs e) {
-        TxtStatus.Text = T("button.relink_tables");
-        TxtOutput.Text = T("msg.dataset_hint");
+    private async void BtnRelinkTables_Click(object sender, RoutedEventArgs e) {
+        var dialog = new OpenFileDialog {
+            Filter = "SQLite Database (*.sqlite3;*.db;*.sqlite)|*.sqlite3;*.db;*.sqlite|All Files (*.*)|*.*",
+            CheckFileExists = true,
+            Multiselect = false,
+            Title = T("dialog.select_sqlite")
+        };
+
+        if (!string.IsNullOrWhiteSpace(_sqlitePath)) {
+            try {
+                dialog.InitialDirectory = Path.GetDirectoryName(_sqlitePath);
+                dialog.FileName = Path.GetFileName(_sqlitePath);
+            } catch {
+                // Ignore invalid path; dialog will use default location.
+            }
+        }
+
+        if (dialog.ShowDialog(this) != true) {
+            return;
+        }
+
+        _sqlitePath = NormalizeSqlitePath(dialog.FileName);
+
+        try {
+            TxtStatus.Text = T("status.checking");
+            TxtOutput.Text = string.Empty;
+
+            var result = await _databaseHealthService.CheckAsync(_sqlitePath);
+            TxtStatus.Text = result.Success ? T("status.connected") : T("status.failed");
+            TxtOutput.Text = result.Success
+                ? $"{result.Message}{Environment.NewLine}{_sqlitePath}"
+                : result.Message;
+        } catch (Exception ex) {
+            TxtStatus.Text = T("status.failed");
+            TxtOutput.Text = ex.Message;
+        }
     }
 
     private void BtnUsersGuide_Click(object sender, RoutedEventArgs e) {
@@ -184,9 +250,23 @@ public partial class MainWindow : Window {
 
     private string T(string key) => _localizationService.Get(key);
 
+    private static string NormalizeSqlitePath(string? path) {
+        if (string.IsNullOrWhiteSpace(path)) {
+            return string.Empty;
+        }
+
+        return path.Trim().Trim((char)34);
+    }
+
     private static string GuessDefaultSqlitePath() {
-        var probe = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "cbdb-sqlite-db", "cbdb_20260304.sqlite3"));
-        return File.Exists(probe) ? probe : string.Empty;
+        var appDataProbe = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory, "..", "..", "..", "..", "..", "data", "cbdb_20260304.sqlite3"));
+        if (File.Exists(appDataProbe)) {
+            return appDataProbe;
+        }
+
+        var legacyProbe = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory, "..", "..", "..", "..", "..", "cbdb-sqlite-db", "cbdb_20260304.sqlite3"));
+        return File.Exists(legacyProbe) ? legacyProbe : string.Empty;
     }
 }
-

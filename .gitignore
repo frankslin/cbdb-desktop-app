@@ -12,3 +12,8 @@
 .vs/
 *.user
 *.suo
+
+# Local SQLite payload
+data/*.sqlite
+data/*.sqlite3
+data/*.db

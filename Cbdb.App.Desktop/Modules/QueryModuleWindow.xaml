@@ -1,0 +1,184 @@
+﻿<Window x:Class="Cbdb.App.Desktop.Modules.QueryModuleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CBDB Query Module"
+        Height="760"
+        Width="1220"
+        MinHeight="680"
+        MinWidth="1060"
+        Background="#E9E9E9">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border BorderBrush="#B7B7B7" BorderThickness="1" Background="#EFEFEF" Padding="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
+                    <Button Name="BtnSelectPrimary" MinWidth="130" Height="30" Margin="0,0,0,6" />
+                    <Button Name="BtnImportList" MinWidth="130" Height="30" Margin="0,0,0,6" />
+                    <Button Name="BtnSaveList" MinWidth="130" Height="30" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBox Name="TxtPrimaryA" Height="28" Margin="0,0,0,6" />
+                    <TextBox Name="TxtPrimaryB" Height="28" Margin="0,0,0,6" />
+                    <TextBox Name="TxtPrimaryC" Height="28" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBlock Name="LblType" Margin="0,4,0,12" VerticalAlignment="Center" />
+                    <TextBlock Name="LblYears" Margin="0,4,0,0" VerticalAlignment="Center" />
+                    <TextBlock Name="LblDynasties" Margin="0,12,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBox Name="TxtTypeA" Height="28" Margin="0,0,0,6" />
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Name="LblFrom" Grid.Column="0" Margin="0,4,6,0" />
+                        <TextBox Name="TxtYearFrom" Grid.Column="1" Height="24" Margin="0,0,8,0" Text="-200" />
+                        <TextBlock Name="LblTo" Grid.Column="2" Margin="0,4,6,0" />
+                        <TextBox Name="TxtYearTo" Grid.Column="3" Height="24" Text="1911" />
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Name="LblFromDyn" Margin="0,4,6,0" />
+                        <TextBox Name="TxtDynFrom" Grid.Column="1" Height="24" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="2" Name="LblToDyn" Margin="0,4,6,0" />
+                        <TextBox Name="TxtDynTo" Grid.Column="3" Height="24" />
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBlock Name="LblDateMode" Margin="0,0,0,4" FontWeight="SemiBold" />
+                    <RadioButton Name="RdoNoDates" Margin="0,0,0,3" GroupName="DateMode" />
+                    <RadioButton Name="RdoUseIndexYears" Margin="0,0,0,3" GroupName="DateMode" />
+                    <RadioButton Name="RdoUseDynasties" Margin="0,0,0,8" GroupName="DateMode" />
+                    <CheckBox Name="ChkIncludeSubunits" Margin="0,0,0,3" />
+                    <CheckBox Name="ChkUseXy" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="5" Orientation="Vertical" Margin="0,0,8,0">
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Name="BtnSelectPlace" Height="30" Margin="0,0,6,0" />
+                        <Button Grid.Column="1" Name="BtnImportPlaces" Height="30" Margin="0,0,6,0" />
+                        <Button Grid.Column="2" Name="BtnAllPlaces" Height="30" />
+                    </Grid>
+                    <TextBox Name="TxtPlaceA" Height="28" Margin="0,0,0,6" />
+                    <TextBox Name="TxtPlaceB" Height="28" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="6" Orientation="Vertical" HorizontalAlignment="Right">
+                    <TextBlock Name="LblDisplayLanguage" Margin="0,2,0,6" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Name="BtnLangZhHant" Width="54" Height="28" Margin="0,0,6,0" Content="繁體" IsEnabled="False" />
+                        <Button Name="BtnLangZhHans" Width="54" Height="28" Margin="0,0,6,0" Content="简体" IsEnabled="False" />
+                        <Button Name="BtnLangEn" Width="54" Height="28" Content="EN" IsEnabled="False" />
+                    </StackPanel>
+                    <Border Name="AdvancedPanel" Margin="0,10,0,0" BorderBrush="#C8C8C8" BorderThickness="1" Padding="8" Background="#F5F5F5">
+                        <StackPanel>
+                            <CheckBox Name="ChkIncludeKinship" Margin="0,0,0,6" />
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Name="LblMaxNodeDist" VerticalAlignment="Center" />
+                                <TextBox Name="TxtMaxNodeDist" Grid.Column="1" Text="3" Height="24" />
+                            </Grid>
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Name="LblMaxLoop" VerticalAlignment="Center" />
+                                <TextBox Name="TxtMaxLoop" Grid.Column="1" Text="10" Height="24" />
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Name="LblMaxAncestor" VerticalAlignment="Center" />
+                                <TextBox Name="TxtMaxAncestor" Grid.Column="1" Text="2" Height="24" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" BorderBrush="#B7B7B7" BorderThickness="1" Background="White" Padding="8" Margin="0,8,0,8">
+            <TabControl Name="TabsResults">
+                <TabItem Name="TabMain">
+                    <DataGrid Name="GridMain" IsReadOnly="True" AutoGenerateColumns="True" />
+                </TabItem>
+                <TabItem Name="TabSecondary">
+                    <DataGrid Name="GridSecondary" IsReadOnly="True" AutoGenerateColumns="True" />
+                </TabItem>
+                <TabItem Name="TabPeople">
+                    <DataGrid Name="GridPeople" IsReadOnly="True" AutoGenerateColumns="True" />
+                </TabItem>
+                <TabItem Name="TabAggregate">
+                    <DataGrid Name="GridAggregate" IsReadOnly="True" AutoGenerateColumns="True" />
+                </TabItem>
+            </TabControl>
+        </Border>
+
+        <Border Grid.Row="2" BorderBrush="#B7B7B7" BorderThickness="1" Background="#EFEFEF" Padding="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Name="BtnRunQuery" MinWidth="100" Height="30" Margin="0,0,8,0" />
+                    <Button Name="BtnSavePersonIds" MinWidth="130" Height="30" Margin="0,0,8,0" />
+                    <Button Name="BtnSaveGIS" MinWidth="100" Height="30" Margin="0,0,8,0" />
+                    <CheckBox Name="ChkKml" Margin="0,6,14,0" Content="KML" />
+                    <TextBlock Name="LblEncoding" Margin="0,6,6,0" />
+                    <ComboBox Name="CmbEncoding" Width="110" Height="26">
+                        <ComboBoxItem Content="UTF-8" IsSelected="True" />
+                        <ComboBoxItem Content="GB18030" />
+                        <ComboBoxItem Content="Big-5" />
+                        <ComboBoxItem Content="Pinyin" />
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Name="BtnHelp" MinWidth="90" Height="30" Margin="0,0,8,0" />
+                    <Button Name="BtnClose" MinWidth="90" Height="30" Click="BtnClose_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

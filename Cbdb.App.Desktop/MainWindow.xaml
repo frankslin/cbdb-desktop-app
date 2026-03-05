@@ -53,28 +53,13 @@
                 BorderBrush="#D0D0D0"
                 BorderThickness="1"
                 Background="White">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBox Name="TxtSqlitePath"
-                         Margin="0,0,8,0"
-                         MinHeight="30"
-                         VerticalContentAlignment="Center" />
-                <Button Grid.Column="1"
-                        Name="BtnBrowse"
-                        Margin="0,0,8,0"
-                        MinWidth="88"
-                        Click="BtnBrowse_Click"
-                        Content="Browse" />
-                <Button Grid.Column="2"
-                        Name="BtnCheck"
-                        MinWidth="128"
-                        Click="BtnCheck_Click"
-                        Content="Check DB" />
-            </Grid>
+            <DockPanel>
+                <Button Name="BtnRelinkTables"
+                        Height="34"
+                        MinWidth="260"
+                        HorizontalAlignment="Left"
+                        Click="BtnRelinkTables_Click" />
+            </DockPanel>
         </Border>
 
         <Border Grid.Row="2"
@@ -98,7 +83,6 @@
                     <Button Name="BtnModuleTexts" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.texts" />
                     <Button Name="BtnReportError" Height="40" Margin="0,16,0,4" Click="BtnReportError_Click" />
                     <Button Name="BtnChangeIndexAddress" Height="40" Margin="0,4" Click="BtnChangeIndexAddress_Click" />
-                    <Button Name="BtnRelinkTables" Height="40" Margin="0,4" Click="BtnRelinkTables_Click" />
                 </StackPanel>
             </ScrollViewer>
         </Border>
@@ -133,3 +117,5 @@
         </Border>
     </Grid>
 </Window>
+
+

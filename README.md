@@ -37,6 +37,15 @@ dotnet run --project .\Cbdb.App.Desktop\Cbdb.App.Desktop.csproj
 
 Open `Cbdb.WindowsApp.sln`, set `Cbdb.App.Desktop` as startup project, press `F5`.
 
+
+## SQLite Location
+
+Default bundled DB location:
+
+- `data/cbdb_20260304.sqlite3`
+
+On startup, the app auto-loads this path into the SQLite textbox.
+For backward compatibility, it still falls back to `../cbdb-sqlite-db/cbdb_20260304.sqlite3` if present.
 ## Current Bootstrap State
 
 - Solution and 3 projects created
@@ -66,3 +75,6 @@ Main window texts are key-driven via localization service.
 2. Implement LookAt query framework
 3. Add export flows (CSV/HTML)
 4. Add secondary feature: address rank editing + index address rebuild
+
+
+
