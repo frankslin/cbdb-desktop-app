@@ -1,0 +1,11 @@
+﻿# Ignore build outputs
+**/bin/
+**/obj/
+
+# Local dotnet sandbox state used in this workspace
+.dotnet/
+
+# VS user files
+.vs/
+*.user
+*.suo
