@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Cbdb.App.Core;
 using Cbdb.App.Data;
+using Cbdb.App.Desktop.Browser;
 using Cbdb.App.Desktop.Localization;
 using Microsoft.Win32;
 
@@ -121,6 +122,23 @@ public partial class MainWindow : Window {
         var key = button.Tag?.ToString() ?? "module.unknown";
         var moduleLabel = T(key);
 
+        if (string.Equals(key, "module.browser", StringComparison.OrdinalIgnoreCase)) {
+            if (string.IsNullOrWhiteSpace(TxtSqlitePath.Text) || !File.Exists(TxtSqlitePath.Text)) {
+                TxtStatus.Text = T("status.failed");
+                TxtOutput.Text = T("msg.sqlite_missing");
+                return;
+            }
+
+            var browserWindow = new PersonBrowserWindow(TxtSqlitePath.Text, _localizationService) {
+                Owner = this
+            };
+            browserWindow.Show();
+
+            TxtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+            TxtOutput.Text = T("msg.browser_opened");
+            return;
+        }
+
         TxtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
         TxtOutput.Text = string.Format(T("msg.module_todo"), moduleLabel);
     }
@@ -171,3 +189,4 @@ public partial class MainWindow : Window {
         return File.Exists(probe) ? probe : string.Empty;
     }
 }
+
