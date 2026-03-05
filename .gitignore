@@ -2,6 +2,9 @@
 **/bin/
 **/obj/
 
+# NuGet local package cache
+.nuget/
+
 # Local dotnet sandbox state used in this workspace
 .dotnet/
 
