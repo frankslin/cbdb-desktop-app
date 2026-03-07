@@ -28,6 +28,12 @@ public partial class QueryModuleWindow : Window {
     }
 
     private void SetupModule() {
+        BtnSelectPrimary.Tag = "qm.select_filter";
+        BtnImportList.Tag = "qm.import_list";
+        TabMain.Tag = "qm.tab_main";
+        TabSecondary.Tag = "qm.tab_secondary";
+        TabPeople.Tag = "qm.tab_people";
+        TabAggregate.Tag = "qm.tab_aggregate";
         AdvancedPanel.Visibility = Visibility.Collapsed;
         TabSecondary.Visibility = Visibility.Collapsed;
         TabPeople.Visibility = Visibility.Visible;
@@ -423,15 +429,15 @@ AND ($useDynasty = 0 OR ({alias}.c_dy BETWEEN $dyFrom AND $dyTo))";
 
     private List<string> GetColumns() {
         return _module switch {
-            QueryModuleKind.Entry => new List<string> { "Name", "??", "Index Year", "Entry Type", "???", "Index Place" },
-            QueryModuleKind.Associations => new List<string> { "Name", "??", "Index Year", "Associate", "????", "Assoc. Index" },
-            QueryModuleKind.Office => new List<string> { "Name", "??", "Index Year", "Office", "Address Type", "Place" },
-            QueryModuleKind.Kinship => new List<string> { "Name", "??", "Sex", "Index Year", "Kin Name", "Kin Index" },
+            QueryModuleKind.Entry => new List<string> { "Name", "NameChn", "Index Year", "Entry Type", "Entry Code", "Index Place" },
+            QueryModuleKind.Associations => new List<string> { "Name", "NameChn", "Index Year", "Associate", "Assoc Type", "Assoc. Index" },
+            QueryModuleKind.Office => new List<string> { "Name", "NameChn", "Index Year", "Office", "Address Type", "Place" },
+            QueryModuleKind.Kinship => new List<string> { "Name", "NameChn", "Sex", "Index Year", "Kin Name", "Kin Index" },
             QueryModuleKind.Networks => new List<string> { "Person A", "Person B", "Relation", "Type", "First Year", "Last Year" },
-            QueryModuleKind.AssociationPairs => new List<string> { "Name", "Linked to", "????", "Kin/Non", "Link" },
-            QueryModuleKind.Place => new List<string> { "Name", "??", "Index Year", "Place Name", "??", "Category" },
-            QueryModuleKind.Status => new List<string> { "Name", "??", "Index Year", "Status", "????", "First Year" },
-            QueryModuleKind.Texts => new List<string> { "Name", "??", "Index Year", "Role", "Title", "??", "Category" },
+            QueryModuleKind.AssociationPairs => new List<string> { "Name", "Linked to", "Relation Type", "Kin/Non", "Link" },
+            QueryModuleKind.Place => new List<string> { "Name", "NameChn", "Index Year", "Place Name", "Address Type", "Category" },
+            QueryModuleKind.Status => new List<string> { "Name", "NameChn", "Index Year", "Status", "Status Code", "First Year" },
+            QueryModuleKind.Texts => new List<string> { "Name", "NameChn", "Index Year", "Role", "Title", "Text Year", "Category" },
             _ => new List<string> { "Name", "Value" }
         };
     }
@@ -495,4 +501,5 @@ AND ($useDynasty = 0 OR ({alias}.c_dy BETWEEN $dyFrom AND $dyTo))";
         public int DynastyTo { get; set; }
     }
 }
+
 
