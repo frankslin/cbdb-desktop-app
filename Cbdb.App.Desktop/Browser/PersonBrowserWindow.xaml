@@ -2,48 +2,49 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CBDB Browser"
-        Height="760"
-        Width="1220"
-        MinHeight="680"
-        MinWidth="1060"
-        Background="#E9E9E9">
-    <Grid Margin="10">
+        Height="820"
+        Width="1380"
+        MinHeight="720"
+        MinWidth="1180"
+        Background="#DCDCDC">
+    <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid>
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="92" />
+                    <ColumnDefinition Width="92" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox Name="TxtKeyword"
+                         Grid.Column="0"
+                         Height="30"
+                         Margin="0,0,8,0"
+                         VerticalContentAlignment="Center"
+                         KeyDown="TxtKeyword_KeyDown" />
+                <Button Name="BtnSearch" Grid.Column="1" Height="30" Margin="0,0,8,0" Click="BtnSearch_Click" Content="Search" />
+                <Button Name="BtnClear" Grid.Column="2" Height="30" Click="BtnClear_Click" Content="Clear" />
+            </Grid>
+            <TextBlock Name="LblSearchByName" Margin="2,6,0,0" Foreground="#444" FontWeight="SemiBold" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,8,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="220" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="420" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Button Name="BtnSearch" Width="92" Height="30" Margin="0,0,8,0" Click="BtnSearch_Click" Content="Search" />
-            <TextBox Grid.Column="1" Name="TxtKeyword" Height="30" Margin="0,0,8,0" VerticalContentAlignment="Center" />
-            <Button Grid.Column="2" Name="BtnClear" Width="90" Height="30" Margin="0,0,8,0" Click="BtnClear_Click" Content="Clear" />
-            <TextBlock Grid.Column="3" Name="LblSearchByName" VerticalAlignment="Center" FontWeight="SemiBold" />
-            <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Name="BtnLangZhHant" Width="54" Height="28" Margin="0,0,6,0" Content="繁" IsEnabled="False" />
-                <Button Name="BtnLangZhHans" Width="54" Height="28" Margin="0,0,6,0" Content="简" IsEnabled="False" />
-                <Button Name="BtnLangEn" Width="54" Height="28" Content="EN" IsEnabled="False" />
-            </StackPanel>
-        </Grid>
-
-        <Grid Grid.Row="1" Margin="0,10,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0" BorderBrush="#B7B7B7" BorderThickness="1" Background="White" Padding="6" Margin="0,0,8,0">
+            <Border Grid.Column="0" BorderBrush="#A9A9A9" BorderThickness="1" Background="#F3F3F3" Padding="4" Margin="0,0,6,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
@@ -52,185 +53,255 @@
                               IsReadOnly="True"
                               SelectionMode="Single"
                               SelectionChanged="GridPeople_SelectionChanged"
-                              LoadingRow="GridPeople_LoadingRow">
+                              LoadingRow="GridPeople_LoadingRow"
+                              HeadersVisibility="Column"
+                              GridLinesVisibility="Vertical"
+                              CanUserResizeRows="False"
+                              CanUserAddRows="False"
+                              Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn x:Name="ColPersonId" Header="ID" Binding="{Binding PersonId}" Width="70" />
-                            <DataGridTextColumn x:Name="ColName" Header="Name" Binding="{Binding Name}" Width="*" />
-                            <DataGridTextColumn x:Name="ColNameChn" Header="中文名" Binding="{Binding NameChn}" Width="*" />
+                            <DataGridTextColumn x:Name="ColNameChn" Header="Chinese Name" Binding="{Binding NameChn}" Width="120" />
+                            <DataGridTextColumn x:Name="ColNameRm" Header="Pinyin Name" Binding="{Binding NameRm}" Width="130" />
+                            <DataGridTextColumn x:Name="ColIndexYear" Header="Index Year" Binding="{Binding IndexYear}" Width="85" />
+                            <DataGridTextColumn x:Name="ColIndexAddress" Header="Index Address" Binding="{Binding IndexAddress}" Width="220" />
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <StackPanel Grid.Row="1" Margin="0,8,0,0">
-                        <Button Name="BtnSaveToFile" Height="30" Content="Save to File" />
+                    <TextBlock Grid.Row="1" Name="TxtRecord" Margin="2,6,2,4" Foreground="#333" />
+
+                    <StackPanel Grid.Row="2">
+                        <Button Name="BtnClearSearchResult" Height="28" Margin="0,0,0,4" IsEnabled="False" Content="Clear Search" />
+                        <Button Name="BtnSaveToFile" Height="28" Content="Save to File" />
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <Border Grid.Column="1" BorderBrush="#B7B7B7" BorderThickness="1" Background="#EFEFEF" Padding="8">
+            <Border Grid.Column="1" BorderBrush="#A9A9A9" BorderThickness="1" Background="#E9E9E9" Padding="6">
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+                    <Border BorderBrush="#C7C7C7" BorderThickness="1" Background="#F7F7F7" Padding="10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Column="0" Name="LblPersonId" Margin="0,4,6,0" />
-                        <TextBox Grid.Column="1" Name="ValPersonId" Height="24" IsReadOnly="True" Margin="0,0,8,0" />
-                        <TextBlock Grid.Column="2" Name="LblGender" Margin="0,4,6,0" />
-                        <TextBox Grid.Column="3" Name="ValGender" Height="24" IsReadOnly="True" Margin="0,0,8,0" />
-                        <TextBlock Grid.Column="4" Name="LblIndexYear" Margin="0,4,6,0" />
-                        <TextBox Grid.Column="5" Name="ValIndexYear" Height="24" IsReadOnly="True" Margin="0,0,8,0" />
-                        <TextBox Grid.Column="6" Name="TxtNotes" Height="24" IsReadOnly="True" />
-                    </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_chn" />
+                                <TextBox Name="ValSurnameChn" Grid.Column="1" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_chn" />
+                                <TextBox Name="ValMingziChn" Grid.Column="3" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_chn" />
+                                <TextBox Name="ValNameChn" Grid.Column="5" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" Text="c_personid" />
+                                <TextBox Name="ValPersonId" Grid.Column="7" Height="24" IsReadOnly="True" />
+                            </Grid>
 
-                    <TabControl Grid.Row="1" Name="TabsDetail" Margin="0,8,0,0" SelectionChanged="TabsDetail_SelectionChanged">
-                        <TabItem Name="TabBirthDeath" Header="Birth/Death">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <Grid Margin="8">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
+                            <Grid Grid.Row="1" Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname" />
+                                <TextBox Name="ValSurname" Grid.Column="1" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi" />
+                                <TextBox Name="ValMingzi" Grid.Column="3" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name" />
+                                <TextBox Name="ValName" Grid.Column="5" Height="24" IsReadOnly="True" />
+                                <TextBlock Name="LblGenderSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                                <Grid Grid.Column="7">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="160" />
-                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="220" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-
-                                    <TextBlock Name="LblName" Grid.Row="0" />
-                                    <TextBlock Name="ValName" Grid.Row="0" Grid.Column="1" />
-                                    <TextBlock Name="LblNameChn" Grid.Row="1" />
-                                    <TextBlock Name="ValNameChn" Grid.Row="1" Grid.Column="1" />
-                                    <TextBlock Name="LblDynasty" Grid.Row="2" />
-                                    <TextBlock Name="ValDynasty" Grid.Row="2" Grid.Column="1" />
-                                    <TextBlock Name="LblBirthDeath" Grid.Row="3" />
-                                    <TextBlock Name="ValBirthDeath" Grid.Row="3" Grid.Column="1" />
-                                    <TextBlock Name="LblIndexAddress" Grid.Row="4" />
-                                    <TextBlock Name="ValIndexAddress" Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" />
-
-                                    <Separator Grid.Row="5" Grid.ColumnSpan="2" Margin="0,8" />
-
-                                    <TextBlock Name="LblAltNames" Grid.Row="6" />
-                                    <TextBlock Name="ValAltNames" Grid.Row="6" Grid.Column="1" />
-                                    <TextBlock Name="LblKin" Grid.Row="7" />
-                                    <TextBlock Name="ValKin" Grid.Row="7" Grid.Column="1" />
-                                    <TextBlock Name="LblAssoc" Grid.Row="8" />
-                                    <TextBlock Name="ValAssoc" Grid.Row="8" Grid.Column="1" />
+                                    <TextBox Name="ValGender" Grid.Column="0" Height="24" IsReadOnly="True" />
+                                    <CheckBox Name="ChkFemale" Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" IsEnabled="False" />
                                 </Grid>
+                            </Grid>
+
+                            <Grid Grid.Row="2" Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_proper" />
+                                <TextBox Name="ValSurnameProper" Grid.Column="1" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_proper" />
+                                <TextBox Name="ValMingziProper" Grid.Column="3" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_proper" />
+                                <TextBox Name="ValNameProper" Grid.Column="5" Height="24" IsReadOnly="True" />
+                                <TextBlock Name="LblIndexYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                                <TextBox Name="ValIndexYear" Grid.Column="7" Height="24" IsReadOnly="True" />
+                            </Grid>
+
+                            <Grid Grid.Row="3" Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="130" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_rm" />
+                                <TextBox Name="ValSurnameRm" Grid.Column="1" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_rm" />
+                                <TextBox Name="ValMingziRm" Grid.Column="3" Height="24" IsReadOnly="True" />
+                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_rm" />
+                                <TextBox Name="ValNameRm" Grid.Column="5" Height="24" IsReadOnly="True" />
+                                <TextBlock Name="LblBirthDeathSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                                <TextBox Name="ValBirthDeath" Grid.Column="7" Height="24" IsReadOnly="True" />
+                            </Grid>
+
+                            <Grid Grid.Row="4" Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="1.3*" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Name="LblIndexAddressSummary" Grid.Column="0" VerticalAlignment="Top" />
+                                <TextBox Name="ValIndexAddress" Grid.Column="1" Height="48" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                                <TextBlock Name="LblDynastySummary" Grid.Column="2" VerticalAlignment="Top" />
+                                <TextBox Name="ValDynasty" Grid.Column="3" Height="48" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1" Margin="0,6,0,0" BorderBrush="#C7C7C7" BorderThickness="1" Background="#F7F7F7" Padding="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="220" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Name="LblNotesSummary" Grid.Column="0" VerticalAlignment="Top" />
+                            <TextBox Name="TxtNotes" Grid.Column="1" Height="54" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                        </Grid>
+                    </Border>
+
+                    <TabControl Grid.Row="2" Name="TabsDetail" Margin="0,8,0,0" SelectionChanged="TabsDetail_SelectionChanged">
+                        <TabItem Name="TabBirthDeath" Header="Basic Information">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                <StackPanel Margin="8">
+                                    <TextBlock Name="LblAllFieldsHeader" FontSize="16" FontWeight="Bold" Foreground="#333" Text="All BIOG_MAIN Fields" />
+                                    <ItemsControl Name="ItemsBasicFields" Margin="0,10,0,0">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Width="330" Margin="0,0,10,10" Padding="8" BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA">
+                                                    <StackPanel>
+                                                        <TextBlock FontWeight="SemiBold" Foreground="#4A4A4A" Text="{Binding FieldName}" />
+                                                        <TextBox Margin="0,6,0,0"
+                                                                 MinHeight="26"
+                                                                 IsReadOnly="True"
+                                                                 TextWrapping="NoWrap"
+                                                                 AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                                                                 Text="{Binding Value}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </ScrollViewer>
                         </TabItem>
 
                         <TabItem Name="TabAddresses" Header="Addresses">
-                            <DataGrid Name="GridAddresses" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <DataGrid Name="GridAddresses" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
 
-                        <TabItem Name="TabAltNames" Header="Alt Names">
-                            <DataGrid Name="GridAltNames" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                        <TabItem Name="TabAltNames" Header="Alt. Names">
+                            <DataGrid Name="GridAltNames" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
 
                         <TabItem Name="TabWritings" Header="Writings">
-                            <DataGrid Name="GridWritings" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <DataGrid Name="GridWritings" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
 
                         <TabItem Name="TabPostings" Header="Postings">
-                            <DataGrid Name="GridPostings" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <DataGrid Name="GridPostings" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
 
                         <TabItem Name="TabEntry" Header="Entry">
-                            <DataGrid Name="GridEntry" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <DataGrid Name="GridEntry" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
 
                         <TabItem Name="TabEvents" Header="Events">
-                            <DataGrid Name="GridEvents" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <DataGrid Name="GridEvents" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
 
                         <TabItem Name="TabStatus" Header="Status">
-                            <DataGrid Name="GridStatus" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <DataGrid Name="GridStatus" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
 
                         <TabItem Name="TabKinship" Header="Kinship">
-                            <DataGrid Name="GridKinship" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <DataGrid Name="GridKinship" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
 
                         <TabItem Name="TabAssociations" Header="Associations">
-                            <DataGrid Name="GridAssociations" AutoGenerateColumns="False" IsReadOnly="True">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Primary" Binding="{Binding Primary}" Width="1.5*" />
-                                    <DataGridTextColumn Header="Secondary" Binding="{Binding Secondary}" Width="1.2*" />
-                                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <DataGrid Name="GridAssociations" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                        </TabItem>
+
+                        <TabItem Name="TabPossessions" Header="Possessions">
+                            <DataGrid Name="GridPossessions" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                        </TabItem>
+
+                        <TabItem Name="TabSources" Header="Sources">
+                            <DataGrid Name="GridSources" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                        </TabItem>
+
+                        <TabItem Name="TabInstitutions" Header="Institutions">
+                            <DataGrid Name="GridInstitutions" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
                     </TabControl>
                 </Grid>
             </Border>
         </Grid>
 
-        <TextBlock Grid.Row="2" Name="TxtFooter" Margin="0,10,0,0" Foreground="#444" TextWrapping="Wrap" Text="Ready" />
+        <TextBlock Grid.Row="2" Name="TxtFooter" Margin="0,8,0,0" Foreground="#333" TextWrapping="NoWrap" Text="Ready" />
     </Grid>
 </Window>
+
+
+
+
+
+
+

@@ -19,6 +19,9 @@ public partial class MainWindow : Window {
     public MainWindow() {
         InitializeComponent();
         _sqlitePath = GuessDefaultSqlitePath();
+        if (!string.IsNullOrWhiteSpace(_sqlitePath)) {
+            TxtOutput.Text = _sqlitePath;
+        }
 
         _localizationService.LanguageChanged += (_, _) => ApplyLocalization();
         ApplyLocalization();
@@ -259,10 +262,44 @@ public partial class MainWindow : Window {
     }
 
     private static string GuessDefaultSqlitePath() {
-        var appDataProbe = Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory, "..", "..", "..", "..", "..", "data", "cbdb_20260304.sqlite3"));
-        if (File.Exists(appDataProbe)) {
-            return appDataProbe;
+        static string? FindInDataFolder(string root) {
+            if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root)) {
+                return null;
+            }
+
+            var dataDir = Path.Combine(root, "data");
+            if (!Directory.Exists(dataDir)) {
+                return null;
+            }
+
+            var preferred = Path.Combine(dataDir, "cbdb_20260304.sqlite3");
+            if (File.Exists(preferred)) {
+                return preferred;
+            }
+
+            var firstAny = Directory.EnumerateFiles(dataDir)
+                .Where(path =>
+                    path.EndsWith(".sqlite3", StringComparison.OrdinalIgnoreCase) ||
+                    path.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase) ||
+                    path.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault();
+
+            return firstAny;
+        }
+
+        var roots = new List<string> {
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..")),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..")),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..")),
+            Directory.GetCurrentDirectory()
+        };
+
+        foreach (var root in roots.Distinct(StringComparer.OrdinalIgnoreCase)) {
+            var found = FindInDataFolder(root);
+            if (!string.IsNullOrWhiteSpace(found)) {
+                return found;
+            }
         }
 
         var legacyProbe = Path.GetFullPath(Path.Combine(

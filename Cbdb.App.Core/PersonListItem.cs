@@ -2,9 +2,8 @@
 
 public sealed record PersonListItem(
     int PersonId,
-    string? Name,
     string? NameChn,
+    string? NameRm,
     int? IndexYear,
-    string? Dynasty,
-    string? DynastyChn
+    string? IndexAddress
 );

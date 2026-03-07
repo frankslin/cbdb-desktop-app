@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.IO;
 using System.Windows;
 using Cbdb.App.Core;
@@ -127,7 +127,6 @@ public partial class QueryModuleWindow : Window {
         BtnImportPlaces.Content = T("qm.import_places");
         BtnAllPlaces.Content = T("qm.all_places");
 
-        LblDisplayLanguage.Text = T("qm.display_language");
 
         ChkIncludeKinship.Content = T("qm.include_kinship_relations");
         LblMaxNodeDist.Text = T("qm.max_node_distance");
@@ -496,3 +495,4 @@ AND ($useDynasty = 0 OR ({alias}.c_dy BETWEEN $dyFrom AND $dyTo))";
         public int DynastyTo { get; set; }
     }
 }
+

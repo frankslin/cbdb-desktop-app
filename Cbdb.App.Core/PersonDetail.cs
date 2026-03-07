@@ -2,6 +2,14 @@
 
 public sealed record PersonDetail(
     int PersonId,
+    string? SurnameChn,
+    string? MingziChn,
+    string? Surname,
+    string? Mingzi,
+    string? SurnameProper,
+    string? MingziProper,
+    string? SurnameRm,
+    string? MingziRm,
     string? Name,
     string? NameChn,
     int? IndexYear,
@@ -18,5 +26,6 @@ public sealed record PersonDetail(
     int OfficeCount,
     int EntryCount,
     int StatusCount,
-    int TextCount
+    int TextCount,
+    IReadOnlyList<PersonFieldValue> Fields
 );

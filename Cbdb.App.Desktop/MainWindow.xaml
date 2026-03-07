@@ -13,7 +13,6 @@
     <Grid Margin="14">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -47,24 +46,8 @@
         </Grid>
 
         <Border Grid.Row="1"
-                Grid.ColumnSpan="2"
-                Margin="0,12,0,10"
-                Padding="10"
-                BorderBrush="#D0D0D0"
-                BorderThickness="1"
-                Background="White">
-            <DockPanel>
-                <Button Name="BtnRelinkTables"
-                        Height="34"
-                        MinWidth="260"
-                        HorizontalAlignment="Left"
-                        Click="BtnRelinkTables_Click" />
-            </DockPanel>
-        </Border>
-
-        <Border Grid.Row="2"
                 Grid.Column="0"
-                Margin="4,0,14,0"
+                Margin="4,12,14,0"
                 Padding="20,16"
                 BorderBrush="Black"
                 BorderThickness="1"
@@ -81,21 +64,22 @@
                     <Button Name="BtnModulePlace" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.place" />
                     <Button Name="BtnModuleStatus" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.status" />
                     <Button Name="BtnModuleTexts" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.texts" />
-                    <Button Name="BtnReportError" Height="40" Margin="0,16,0,4" Click="BtnReportError_Click" />
-                    <Button Name="BtnChangeIndexAddress" Height="40" Margin="0,4" Click="BtnChangeIndexAddress_Click" />
                 </StackPanel>
             </ScrollViewer>
         </Border>
 
-        <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="1"
                     Grid.Column="1"
                     VerticalAlignment="Bottom"
                     Margin="0,0,0,10">
+            <Button Name="BtnReportError" Height="46" Margin="0,0,0,10" Click="BtnReportError_Click" />
+            <Button Name="BtnRelinkTables" Height="46" Margin="0,0,0,10" Click="BtnRelinkTables_Click" />
+            <Button Name="BtnChangeIndexAddress" Height="46" Margin="0,0,0,10" Click="BtnChangeIndexAddress_Click" />
             <Button Name="BtnUsersGuide" Height="46" Margin="0,0,0,10" Click="BtnUsersGuide_Click" />
             <Button Name="BtnExit" Height="36" Click="BtnExit_Click" />
         </StackPanel>
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="2"
                 Grid.ColumnSpan="2"
                 Margin="0,12,0,0"
                 Padding="8"
@@ -117,5 +101,3 @@
         </Border>
     </Grid>
 </Window>
-
-

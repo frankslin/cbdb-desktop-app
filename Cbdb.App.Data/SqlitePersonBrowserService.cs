@@ -1,3 +1,4 @@
+﻿using System.Data;
 using Cbdb.App.Core;
 using Microsoft.Data.Sqlite;
 
@@ -19,7 +20,6 @@ public sealed class SqlitePersonBrowserService : IPersonBrowserService {
         offset = Math.Max(0, offset);
 
         var list = new List<PersonListItem>(limit);
-
         var builder = new SqliteConnectionStringBuilder {
             DataSource = sqlitePath,
             Mode = SqliteOpenMode.ReadOnly
@@ -31,7 +31,8 @@ public sealed class SqlitePersonBrowserService : IPersonBrowserService {
         var normalized = NormalizeSqliteText(keyword);
         var hasKeyword = !string.IsNullOrWhiteSpace(normalized);
 
-        await using var command = connection.CreateCommand();        command.CommandText = hasKeyword
+        await using var command = connection.CreateCommand();
+        command.CommandText = hasKeyword
             ? @"
 WITH matched_ids AS (
     SELECT b.c_personid
@@ -43,8 +44,10 @@ WITH matched_ids AS (
         OR b.c_name_proper LIKE $kw
         OR b.c_surname LIKE $kw
         OR b.c_surname_chn LIKE $kw
+        OR b.c_surname_rm LIKE $kw
         OR b.c_mingzi LIKE $kw
         OR b.c_mingzi_chn LIKE $kw
+        OR b.c_mingzi_rm LIKE $kw
     UNION
     SELECT a.c_personid
     FROM ALTNAME_DATA a
@@ -52,31 +55,28 @@ WITH matched_ids AS (
 )
 SELECT
     b.c_personid,
-    b.c_name,
     b.c_name_chn,
+    b.c_name,
     b.c_index_year,
-    d.c_dynasty,
-    d.c_dynasty_chn
+    COALESCE(ac.c_name_chn, ac.c_name) AS c_index_address
 FROM matched_ids m
 JOIN BIOG_MAIN b ON b.c_personid = m.c_personid
-LEFT JOIN DYNASTIES d ON d.c_dy = b.c_dy
+LEFT JOIN ADDR_CODES ac ON ac.c_addr_id = b.c_index_addr_id
 ORDER BY b.c_personid
 LIMIT $limit OFFSET $offset;"
             : @"
 SELECT
     b.c_personid,
-    b.c_name,
     b.c_name_chn,
+    b.c_name,
     b.c_index_year,
-    d.c_dynasty,
-    d.c_dynasty_chn
+    COALESCE(ac.c_name_chn, ac.c_name) AS c_index_address
 FROM BIOG_MAIN b
-LEFT JOIN DYNASTIES d ON d.c_dy = b.c_dy
+LEFT JOIN ADDR_CODES ac ON ac.c_addr_id = b.c_index_addr_id
 ORDER BY b.c_personid
 LIMIT $limit OFFSET $offset;";
 
         command.CommandTimeout = 12;
-
         command.Parameters.AddWithValue("$limit", limit);
         command.Parameters.AddWithValue("$offset", offset);
 
@@ -88,11 +88,10 @@ LIMIT $limit OFFSET $offset;";
         while (await reader.ReadAsync(cancellationToken)) {
             list.Add(new PersonListItem(
                 PersonId: reader.GetInt32(0),
-                Name: reader.IsDBNull(1) ? null : reader.GetString(1),
-                NameChn: reader.IsDBNull(2) ? null : reader.GetString(2),
+                NameChn: reader.IsDBNull(1) ? null : reader.GetString(1),
+                NameRm: reader.IsDBNull(2) ? null : reader.GetString(2),
                 IndexYear: reader.IsDBNull(3) ? null : reader.GetInt32(3),
-                Dynasty: reader.IsDBNull(4) ? null : reader.GetString(4),
-                DynastyChn: reader.IsDBNull(5) ? null : reader.GetString(5)
+                IndexAddress: reader.IsDBNull(4) ? null : reader.GetString(4)
             ));
         }
 
@@ -112,10 +111,38 @@ LIMIT $limit OFFSET $offset;";
         await using var connection = new SqliteConnection(builder.ConnectionString);
         await connection.OpenAsync(cancellationToken);
 
-        await using var command = connection.CreateCommand();
-        command.CommandText = @"
+        int detailPersonId;
+        string? surnameChn;
+        string? mingziChn;
+        string? surname;
+        string? mingzi;
+        string? surnameProper;
+        string? mingziProper;
+        string? surnameRm;
+        string? mingziRm;
+        string? name;
+        string? nameChn;
+        int? indexYear;
+        string? dynasty;
+        string? dynastyChn;
+        int? birthYear;
+        int? deathYear;
+        string? gender;
+        string? indexAddress;
+        string? indexAddressChn;
+
+        await using (var command = connection.CreateCommand()) {
+            command.CommandText = @"
 SELECT
     b.c_personid,
+    b.c_surname_chn,
+    b.c_mingzi_chn,
+    b.c_surname,
+    b.c_mingzi,
+    b.c_surname_proper,
+    b.c_mingzi_proper,
+    b.c_surname_rm,
+    b.c_mingzi_rm,
     b.c_name,
     b.c_name_chn,
     b.c_index_year,
@@ -131,53 +158,85 @@ LEFT JOIN DYNASTIES d ON d.c_dy = b.c_dy
 LEFT JOIN ADDR_CODES ac ON ac.c_addr_id = b.c_index_addr_id
 WHERE b.c_personid = $personId
 LIMIT 1;";
-        command.Parameters.AddWithValue("$personId", personId);
+            command.Parameters.AddWithValue("$personId", personId);
 
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (!await reader.ReadAsync(cancellationToken)) {
-            return null;
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken)) {
+                return null;
+            }
+
+            detailPersonId = reader.GetInt32(0);
+            surnameChn = reader.IsDBNull(1) ? null : reader.GetString(1);
+            mingziChn = reader.IsDBNull(2) ? null : reader.GetString(2);
+            surname = reader.IsDBNull(3) ? null : reader.GetString(3);
+            mingzi = reader.IsDBNull(4) ? null : reader.GetString(4);
+            surnameProper = reader.IsDBNull(5) ? null : reader.GetString(5);
+            mingziProper = reader.IsDBNull(6) ? null : reader.GetString(6);
+            surnameRm = reader.IsDBNull(7) ? null : reader.GetString(7);
+            mingziRm = reader.IsDBNull(8) ? null : reader.GetString(8);
+            name = reader.IsDBNull(9) ? null : reader.GetString(9);
+            nameChn = reader.IsDBNull(10) ? null : reader.GetString(10);
+            indexYear = reader.IsDBNull(11) ? null : reader.GetInt32(11);
+            dynasty = reader.IsDBNull(12) ? null : reader.GetString(12);
+            dynastyChn = reader.IsDBNull(13) ? null : reader.GetString(13);
+            birthYear = reader.IsDBNull(14) ? null : reader.GetInt32(14);
+            deathYear = reader.IsDBNull(15) ? null : reader.GetInt32(15);
+            gender = reader.IsDBNull(16)
+                ? "Unknown"
+                : (reader.GetInt32(16) == -1 ? "F" : "M");
+            indexAddress = reader.IsDBNull(17) ? null : reader.GetString(17);
+            indexAddressChn = reader.IsDBNull(18) ? null : reader.GetString(18);
         }
 
-        var gender = reader.IsDBNull(8)
-            ? "Unknown"
-            : (reader.GetInt32(8) == -1 ? "F" : "M");
+        var fields = await LoadBiogMainFieldsAsync(connection, personId, dynasty, dynastyChn, indexAddress, indexAddressChn, cancellationToken);
 
         return new PersonDetail(
-            PersonId: reader.GetInt32(0),
-            Name: reader.IsDBNull(1) ? null : reader.GetString(1),
-            NameChn: reader.IsDBNull(2) ? null : reader.GetString(2),
-            IndexYear: reader.IsDBNull(3) ? null : reader.GetInt32(3),
-            Dynasty: reader.IsDBNull(4) ? null : reader.GetString(4),
-            DynastyChn: reader.IsDBNull(5) ? null : reader.GetString(5),
-            BirthYear: reader.IsDBNull(6) ? null : reader.GetInt32(6),
-            DeathYear: reader.IsDBNull(7) ? null : reader.GetInt32(7),
+            PersonId: detailPersonId,
+            SurnameChn: surnameChn,
+            MingziChn: mingziChn,
+            Surname: surname,
+            Mingzi: mingzi,
+            SurnameProper: surnameProper,
+            MingziProper: mingziProper,
+            SurnameRm: surnameRm,
+            MingziRm: mingziRm,
+            Name: name,
+            NameChn: nameChn,
+            IndexYear: indexYear,
+            Dynasty: dynasty,
+            DynastyChn: dynastyChn,
+            BirthYear: birthYear,
+            DeathYear: deathYear,
             Gender: gender,
-            IndexAddress: reader.IsDBNull(9) ? null : reader.GetString(9),
-            IndexAddressChn: reader.IsDBNull(10) ? null : reader.GetString(10),
+            IndexAddress: indexAddress,
+            IndexAddressChn: indexAddressChn,
             AltNameCount: await CountAsync(connection, "SELECT COUNT(*) FROM ALTNAME_DATA WHERE c_personid = $personId", personId, cancellationToken),
             KinCount: await CountAsync(connection, "SELECT COUNT(*) FROM KIN_DATA WHERE c_personid = $personId", personId, cancellationToken),
             AssocCount: await CountAsync(connection, "SELECT COUNT(*) FROM ASSOC_DATA WHERE c_personid = $personId", personId, cancellationToken),
             OfficeCount: await CountAsync(connection, "SELECT COUNT(*) FROM POSTED_TO_OFFICE_DATA WHERE c_personid = $personId", personId, cancellationToken),
             EntryCount: await CountAsync(connection, "SELECT COUNT(*) FROM ENTRY_DATA WHERE c_personid = $personId", personId, cancellationToken),
             StatusCount: await CountAsync(connection, "SELECT COUNT(*) FROM STATUS_DATA WHERE c_personid = $personId", personId, cancellationToken),
-            TextCount: await CountAsync(connection, "SELECT COUNT(*) FROM BIOG_TEXT_DATA WHERE c_personid = $personId", personId, cancellationToken)
+            TextCount: await CountAsync(connection, "SELECT COUNT(*) FROM BIOG_TEXT_DATA WHERE c_personid = $personId", personId, cancellationToken),
+            Fields: fields
         );
     }
 
-    public async Task<IReadOnlyList<PersonRelatedItem>> GetRelatedItemsAsync(
+    public async Task<DataTable> GetRelatedItemsAsync(
         string sqlitePath,
         int personId,
         PersonRelatedCategory category,
         int limit = 200,
         CancellationToken cancellationToken = default
     ) {
+        var table = new DataTable();
+
         if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
-            return Array.Empty<PersonRelatedItem>();
+            return table;
         }
 
         limit = Math.Clamp(limit, 1, 1000);
 
-        var (tableName, preferredColumns) = GetRelatedTableConfig(category);
+        var tableName = GetRelatedTableName(category);
         var builder = new SqliteConnectionStringBuilder {
             DataSource = sqlitePath,
             Mode = SqliteOpenMode.ReadOnly
@@ -187,30 +246,12 @@ LIMIT 1;";
         await connection.OpenAsync(cancellationToken);
 
         var columns = await GetTableColumnsAsync(connection, tableName, cancellationToken);
-        if (!columns.Contains("c_personid", StringComparer.OrdinalIgnoreCase)) {
-            return Array.Empty<PersonRelatedItem>();
-        }
-
-        var picked = preferredColumns
-            .Where(c => columns.Contains(c, StringComparer.OrdinalIgnoreCase))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(4)
-            .ToList();
-
-        if (picked.Count == 0) {
-            picked = columns
-                .Where(c => !string.Equals(c, "c_personid", StringComparison.OrdinalIgnoreCase))
-                .Where(c => !c.EndsWith("id", StringComparison.OrdinalIgnoreCase))
-                .Take(4)
-                .ToList();
-        }
-
-        if (picked.Count == 0) {
-            picked = new List<string> { "rowid" };
+        if (columns.Count == 0 || !columns.Contains("c_personid", StringComparer.OrdinalIgnoreCase)) {
+            return table;
         }
 
         var orderColumn = PickOrderColumn(columns);
-        var selectedColumnsSql = string.Join(", ", picked.Select(QuoteIdentifier));
+        var selectedColumnsSql = string.Join(", ", columns.Select(QuoteIdentifier));
 
         await using var command = connection.CreateCommand();
         command.CommandText = $@"
@@ -222,33 +263,40 @@ LIMIT $limit;";
         command.Parameters.AddWithValue("$personId", personId);
         command.Parameters.AddWithValue("$limit", limit);
 
-        var result = new List<PersonRelatedItem>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        while (await reader.ReadAsync(cancellationToken)) {
-            var values = new List<string>();
+        table.Load(reader);
+        return table;
+    }
+
+    private static async Task<IReadOnlyList<PersonFieldValue>> LoadBiogMainFieldsAsync(
+        SqliteConnection connection,
+        int personId,
+        string? dynasty,
+        string? dynastyChn,
+        string? indexAddress,
+        string? indexAddressChn,
+        CancellationToken cancellationToken
+    ) {
+        var fields = new List<PersonFieldValue>();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM BIOG_MAIN WHERE c_personid = $personId LIMIT 1;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken)) {
             for (var i = 0; i < reader.FieldCount; i++) {
-                if (reader.IsDBNull(i)) {
-                    continue;
-                }
-
-                var text = Convert.ToString(reader.GetValue(i));
-                if (!string.IsNullOrWhiteSpace(text)) {
-                    values.Add(text.Trim());
-                }
+                var value = reader.IsDBNull(i) ? string.Empty : Convert.ToString(reader.GetValue(i));
+                fields.Add(new PersonFieldValue(reader.GetName(i), value));
             }
-
-            if (values.Count == 0) {
-                continue;
-            }
-
-            var primary = values[0];
-            var secondary = values.Count > 1 ? values[1] : null;
-            var note = values.Count > 2 ? string.Join(" | ", values.Skip(2)) : null;
-
-            result.Add(new PersonRelatedItem(primary, secondary, note));
         }
 
-        return result;
+        fields.Add(new PersonFieldValue("ref_dynasty", dynasty ?? string.Empty));
+        fields.Add(new PersonFieldValue("ref_dynasty_chn", dynastyChn ?? string.Empty));
+        fields.Add(new PersonFieldValue("ref_index_addr_name", indexAddress ?? string.Empty));
+        fields.Add(new PersonFieldValue("ref_index_addr_name_chn", indexAddressChn ?? string.Empty));
+
+        return fields;
     }
 
     private static async Task<int> CountAsync(SqliteConnection connection, string sql, int personId, CancellationToken cancellationToken) {
@@ -259,18 +307,18 @@ LIMIT $limit;";
         return Convert.ToInt32(value);
     }
 
-    private static (string tableName, IReadOnlyList<string> preferredColumns) GetRelatedTableConfig(PersonRelatedCategory category) {
+    private static string GetRelatedTableName(PersonRelatedCategory category) {
         return category switch {
-            PersonRelatedCategory.Addresses => ("BIOG_ADDR_DATA", new[] { "c_addr_id", "c_firstyear", "c_lastyear", "c_notes" }),
-            PersonRelatedCategory.AltNames => ("ALTNAME_DATA", new[] { "c_alt_name", "c_alt_name_chn", "c_alt_name_chnx", "c_notes" }),
-            PersonRelatedCategory.Writings => ("BIOG_TEXT_DATA", new[] { "c_textid", "c_role_id", "c_year", "c_notes" }),
-            PersonRelatedCategory.Postings => ("POSTED_TO_OFFICE_DATA", new[] { "c_office_id", "c_firstyear", "c_lastyear", "c_notes" }),
-            PersonRelatedCategory.Entries => ("ENTRY_DATA", new[] { "c_entry_code", "c_firstyear", "c_lastyear", "c_notes" }),
-            PersonRelatedCategory.Events => ("EVENT_DATA", new[] { "c_event_code", "c_firstyear", "c_lastyear", "c_notes" }),
-            PersonRelatedCategory.Status => ("STATUS_DATA", new[] { "c_status_code", "c_firstyear", "c_lastyear", "c_notes" }),
-            PersonRelatedCategory.Kinship => ("KIN_DATA", new[] { "c_kin_name", "c_kin_code", "c_kin_id", "c_notes" }),
-            PersonRelatedCategory.Associations => ("ASSOC_DATA", new[] { "c_assoc_desc", "c_assoc_code", "c_assoc_personid", "c_notes" }),
-            _ => ("ALTNAME_DATA", new[] { "c_alt_name", "c_alt_name_chn" })
+            PersonRelatedCategory.Addresses => "BIOG_ADDR_DATA",
+            PersonRelatedCategory.AltNames => "ALTNAME_DATA",
+            PersonRelatedCategory.Writings => "BIOG_TEXT_DATA",
+            PersonRelatedCategory.Postings => "POSTED_TO_OFFICE_DATA",
+            PersonRelatedCategory.Entries => "ENTRY_DATA",
+            PersonRelatedCategory.Events => "EVENT_DATA",
+            PersonRelatedCategory.Status => "STATUS_DATA",
+            PersonRelatedCategory.Kinship => "KIN_DATA",
+            PersonRelatedCategory.Associations => "ASSOC_DATA",
+            _ => "ALTNAME_DATA"
         };
     }
 
@@ -292,8 +340,8 @@ LIMIT $limit;";
 
     private static string PickOrderColumn(IReadOnlyList<string> columns) {
         var priorities = new[] {
-            "c_sort",
             "c_sequence",
+            "c_sort",
             "c_index_year",
             "c_year",
             "c_firstyear",
@@ -302,7 +350,7 @@ LIMIT $limit;";
         };
 
         foreach (var name in priorities) {
-            if (columns.Contains(name, StringComparer.OrdinalIgnoreCase) || name == "rowid") {
+            if (name == "rowid" || columns.Contains(name, StringComparer.OrdinalIgnoreCase)) {
                 return name;
             }
         }
@@ -322,3 +370,4 @@ LIMIT $limit;";
         return value.Trim().Replace("\"", string.Empty);
     }
 }
+

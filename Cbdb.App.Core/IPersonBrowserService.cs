@@ -1,4 +1,6 @@
-﻿namespace Cbdb.App.Core;
+﻿using System.Data;
+
+namespace Cbdb.App.Core;
 
 public interface IPersonBrowserService {
     Task<IReadOnlyList<PersonListItem>> SearchAsync(
@@ -15,7 +17,7 @@ public interface IPersonBrowserService {
         CancellationToken cancellationToken = default
     );
 
-    Task<IReadOnlyList<PersonRelatedItem>> GetRelatedItemsAsync(
+    Task<DataTable> GetRelatedItemsAsync(
         string sqlitePath,
         int personId,
         PersonRelatedCategory category,
