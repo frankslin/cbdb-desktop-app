@@ -46,6 +46,9 @@ public partial class PersonBrowserWindow : Window {
         _tabGrids[PersonRelatedCategory.Status] = GridStatus;
         _tabGrids[PersonRelatedCategory.Kinship] = GridKinship;
         _tabGrids[PersonRelatedCategory.Associations] = GridAssociations;
+        _tabGrids[PersonRelatedCategory.Possessions] = GridPossessions;
+        _tabGrids[PersonRelatedCategory.Sources] = GridSources;
+        _tabGrids[PersonRelatedCategory.Institutions] = GridInstitutions;
 
         _localizationService.LanguageChanged += OnLanguageChanged;
         ApplyLocalization();
@@ -91,18 +94,18 @@ public partial class PersonBrowserWindow : Window {
 
     private void UpdateTabHeaders(PersonDetail? detail) {
         TabBirthDeath.Header = B("tab_birth_death");
-        TabAddresses.Header = B("tab_addresses");
+        TabAddresses.Header = WithCount(B("tab_addresses"), detail?.AddressCount);
         TabAltNames.Header = WithCount(B("tab_alt_names"), detail?.AltNameCount);
         TabWritings.Header = WithCount(B("tab_writings"), detail?.TextCount);
         TabPostings.Header = WithCount(B("tab_postings"), detail?.OfficeCount);
         TabEntry.Header = WithCount(B("tab_entry"), detail?.EntryCount);
-        TabEvents.Header = B("tab_events");
+        TabEvents.Header = WithCount(B("tab_events"), detail?.EventCount);
         TabStatus.Header = WithCount(B("tab_status"), detail?.StatusCount);
         TabKinship.Header = WithCount(B("tab_kinship"), detail?.KinCount);
         TabAssociations.Header = WithCount(B("tab_associations"), detail?.AssocCount);
-        TabPossessions.Header = B("tab_possessions");
-        TabSources.Header = B("tab_sources");
-        TabInstitutions.Header = B("tab_institutions");
+        TabPossessions.Header = WithCount(B("tab_possessions"), detail?.PossessionCount);
+        TabSources.Header = WithCount(B("tab_sources"), detail?.SourceCount);
+        TabInstitutions.Header = WithCount(B("tab_institutions"), detail?.InstitutionCount);
     }
 
     private static string WithCount(string label, int? count) {
@@ -307,6 +310,9 @@ public partial class PersonBrowserWindow : Window {
         if (TabsDetail.SelectedItem == TabStatus) return PersonRelatedCategory.Status;
         if (TabsDetail.SelectedItem == TabKinship) return PersonRelatedCategory.Kinship;
         if (TabsDetail.SelectedItem == TabAssociations) return PersonRelatedCategory.Associations;
+        if (TabsDetail.SelectedItem == TabPossessions) return PersonRelatedCategory.Possessions;
+        if (TabsDetail.SelectedItem == TabSources) return PersonRelatedCategory.Sources;
+        if (TabsDetail.SelectedItem == TabInstitutions) return PersonRelatedCategory.Institutions;
 
         return null;
     }
@@ -501,6 +507,9 @@ public partial class PersonBrowserWindow : Window {
         };
     }
 }
+
+
+
 
 
 

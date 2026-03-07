@@ -210,13 +210,18 @@ LIMIT 1;";
             Gender: gender,
             IndexAddress: indexAddress,
             IndexAddressChn: indexAddressChn,
+            AddressCount: await CountAsync(connection, "SELECT COUNT(*) FROM BIOG_ADDR_DATA WHERE c_personid = $personId", personId, cancellationToken),
             AltNameCount: await CountAsync(connection, "SELECT COUNT(*) FROM ALTNAME_DATA WHERE c_personid = $personId", personId, cancellationToken),
             KinCount: await CountAsync(connection, "SELECT COUNT(*) FROM KIN_DATA WHERE c_personid = $personId", personId, cancellationToken),
             AssocCount: await CountAsync(connection, "SELECT COUNT(*) FROM ASSOC_DATA WHERE c_personid = $personId", personId, cancellationToken),
             OfficeCount: await CountAsync(connection, "SELECT COUNT(*) FROM POSTED_TO_OFFICE_DATA WHERE c_personid = $personId", personId, cancellationToken),
             EntryCount: await CountAsync(connection, "SELECT COUNT(*) FROM ENTRY_DATA WHERE c_personid = $personId", personId, cancellationToken),
+            EventCount: await CountAsync(connection, "SELECT COUNT(*) FROM EVENTS_DATA WHERE c_personid = $personId", personId, cancellationToken),
             StatusCount: await CountAsync(connection, "SELECT COUNT(*) FROM STATUS_DATA WHERE c_personid = $personId", personId, cancellationToken),
             TextCount: await CountAsync(connection, "SELECT COUNT(*) FROM BIOG_TEXT_DATA WHERE c_personid = $personId", personId, cancellationToken),
+            PossessionCount: await CountAsync(connection, "SELECT COUNT(*) FROM POSSESSION_DATA WHERE c_personid = $personId", personId, cancellationToken),
+            SourceCount: await CountAsync(connection, "SELECT COUNT(*) FROM BIOG_SOURCE_DATA WHERE c_personid = $personId", personId, cancellationToken),
+            InstitutionCount: await CountAsync(connection, "SELECT COUNT(*) FROM BIOG_INST_DATA WHERE c_personid = $personId", personId, cancellationToken),
             Fields: fields
         );
     }
@@ -314,10 +319,13 @@ LIMIT $limit;";
             PersonRelatedCategory.Writings => "BIOG_TEXT_DATA",
             PersonRelatedCategory.Postings => "POSTED_TO_OFFICE_DATA",
             PersonRelatedCategory.Entries => "ENTRY_DATA",
-            PersonRelatedCategory.Events => "EVENT_DATA",
+            PersonRelatedCategory.Events => "EVENTS_DATA",
             PersonRelatedCategory.Status => "STATUS_DATA",
             PersonRelatedCategory.Kinship => "KIN_DATA",
             PersonRelatedCategory.Associations => "ASSOC_DATA",
+            PersonRelatedCategory.Possessions => "POSSESSION_DATA",
+            PersonRelatedCategory.Sources => "BIOG_SOURCE_DATA",
+            PersonRelatedCategory.Institutions => "BIOG_INST_DATA",
             _ => "ALTNAME_DATA"
         };
     }
@@ -370,4 +378,7 @@ LIMIT $limit;";
         return value.Trim().Replace("\"", string.Empty);
     }
 }
+
+
+
 

@@ -20,12 +20,17 @@ public sealed record PersonDetail(
     string? Gender,
     string? IndexAddress,
     string? IndexAddressChn,
+    int AddressCount,
     int AltNameCount,
     int KinCount,
     int AssocCount,
     int OfficeCount,
     int EntryCount,
+    int EventCount,
     int StatusCount,
     int TextCount,
+    int PossessionCount,
+    int SourceCount,
+    int InstitutionCount,
     IReadOnlyList<PersonFieldValue> Fields
 );

@@ -9,5 +9,8 @@ public enum PersonRelatedCategory {
     Events,
     Status,
     Kinship,
-    Associations
+    Associations,
+    Possessions,
+    Sources,
+    Institutions
 }
