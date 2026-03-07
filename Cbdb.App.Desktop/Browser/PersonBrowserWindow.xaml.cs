@@ -77,6 +77,19 @@ public partial class PersonBrowserWindow : Window {
         ColIndexYear.Header = B("grid_index_year");
         ColIndexAddress.Header = B("grid_index_address");
 
+        LblSurnameChnField.Text = B("field_surname_chn");
+        LblMingziChnField.Text = B("field_mingzi_chn");
+        LblNameChnField.Text = B("field_name_chn");
+        LblSurnameField.Text = B("field_surname");
+        LblMingziField.Text = B("field_mingzi");
+        LblNameField.Text = B("field_name");
+        LblSurnameProperField.Text = B("field_surname_proper");
+        LblMingziProperField.Text = B("field_mingzi_proper");
+        LblNameProperField.Text = B("field_name_proper");
+        LblSurnameRmField.Text = B("field_surname_rm");
+        LblMingziRmField.Text = B("field_mingzi_rm");
+        LblNameRmField.Text = B("field_name_rm");
+
         LblGenderSummary.Text = B("gender");
         ChkFemale.Content = B("female");
         LblIndexYearSummary.Text = B("index_year");
@@ -84,6 +97,7 @@ public partial class PersonBrowserWindow : Window {
         LblIndexAddressSummary.Text = B("index_address");
         LblDynastySummary.Text = B("dynasty");
         LblNotesSummary.Text = B("notes");
+        TxtRelatedLoading.Text = B("loading_related");
 
         UpdateTabHeaders(_currentDetail);
 
@@ -269,6 +283,7 @@ public partial class PersonBrowserWindow : Window {
 
         try {
             _isLoadingTab = true;
+            SetRelatedLoadingState(true, category.Value);
             TxtFooter.Text = B("loading_related");
 
             var rows = await Task.Run(
@@ -282,6 +297,7 @@ public partial class PersonBrowserWindow : Window {
             TxtFooter.Text = ex.Message;
         } finally {
             _isLoadingTab = false;
+            SetRelatedLoadingState(false, null);
         }
     }
 
@@ -319,11 +335,36 @@ public partial class PersonBrowserWindow : Window {
 
     private void ResetTabData() {
         _loadedTabs.Clear();
+        SetRelatedLoadingState(false, null);
         foreach (var grid in _tabGrids.Values) {
             grid.ItemsSource = null;
         }
     }
 
+    private void SetRelatedLoadingState(bool isLoading, PersonRelatedCategory? category) {
+        PanelRelatedLoading.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
+        TxtRelatedLoading.Text = isLoading && category.HasValue
+            ? $"{B("loading_related")} {GetTabLabel(category.Value)}"
+            : B("loading_related");
+    }
+
+    private string GetTabLabel(PersonRelatedCategory category) {
+        return category switch {
+            PersonRelatedCategory.Addresses => B("tab_addresses"),
+            PersonRelatedCategory.AltNames => B("tab_alt_names"),
+            PersonRelatedCategory.Writings => B("tab_writings"),
+            PersonRelatedCategory.Postings => B("tab_postings"),
+            PersonRelatedCategory.Entries => B("tab_entry"),
+            PersonRelatedCategory.Events => B("tab_events"),
+            PersonRelatedCategory.Status => B("tab_status"),
+            PersonRelatedCategory.Kinship => B("tab_kinship"),
+            PersonRelatedCategory.Associations => B("tab_associations"),
+            PersonRelatedCategory.Possessions => B("tab_possessions"),
+            PersonRelatedCategory.Sources => B("tab_sources"),
+            PersonRelatedCategory.Institutions => B("tab_institutions"),
+            _ => B("loading_related")
+        };
+    }
     private void UpdateFooterText() {
         TxtFooter.Text = _hasMore
             ? string.Format(B("search_result_count_more"), _people.Count)
@@ -399,6 +440,18 @@ public partial class PersonBrowserWindow : Window {
                 "grid_name_rm" => "拼音",
                 "grid_index_year" => "索引年",
                 "grid_index_address" => "索引地址",
+                "field_surname_chn" => "姓（中文）",
+                "field_mingzi_chn" => "名（中文）",
+                "field_name_chn" => "姓名（中文）",
+                "field_surname" => "姓（拼音）",
+                "field_mingzi" => "名（拼音）",
+                "field_name" => "姓名（拼音）",
+                "field_surname_proper" => "外文姓／原文姓",
+                "field_mingzi_proper" => "外文名／原文名",
+                "field_name_proper" => "外文全名／原文全名",
+                "field_surname_rm" => "姓（羅馬字轉寫）",
+                "field_mingzi_rm" => "名（羅馬字轉寫）",
+                "field_name_rm" => "姓名（羅馬字轉寫）",
                 "gender" => "性別",
                 "female" => "女性",
                 "index_year" => "索引年",
@@ -438,6 +491,18 @@ public partial class PersonBrowserWindow : Window {
                 "grid_name_rm" => "拼音",
                 "grid_index_year" => "索引年",
                 "grid_index_address" => "索引地址",
+                "field_surname_chn" => "姓（中文）",
+                "field_mingzi_chn" => "名（中文）",
+                "field_name_chn" => "姓名（中文）",
+                "field_surname" => "姓（拼音）",
+                "field_mingzi" => "名（拼音）",
+                "field_name" => "姓名（拼音）",
+                "field_surname_proper" => "外文姓／原文姓",
+                "field_mingzi_proper" => "外文名／原文名",
+                "field_name_proper" => "外文全名／原文全名",
+                "field_surname_rm" => "姓（罗马字转写）",
+                "field_mingzi_rm" => "名（罗马字转写）",
+                "field_name_rm" => "姓名（罗马字转写）",
                 "gender" => "性别",
                 "female" => "女性",
                 "index_year" => "索引年",
@@ -477,6 +542,18 @@ public partial class PersonBrowserWindow : Window {
                 "grid_name_rm" => "Pinyin",
                 "grid_index_year" => "Index Year",
                 "grid_index_address" => "Index Address",
+                "field_surname_chn" => "Surname (Chinese)",
+                "field_mingzi_chn" => "Given Name (Chinese)",
+                "field_name_chn" => "Full Name (Chinese)",
+                "field_surname" => "Surname (Pinyin)",
+                "field_mingzi" => "Given Name (Pinyin)",
+                "field_name" => "Full Name (Pinyin)",
+                "field_surname_proper" => "Surname (Foreign/Original)",
+                "field_mingzi_proper" => "Given Name (Foreign/Original)",
+                "field_name_proper" => "Full Name (Foreign/Original)",
+                "field_surname_rm" => "Surname (Romanized)",
+                "field_mingzi_rm" => "Given Name (Romanized)",
+                "field_name_rm" => "Full Name (Romanized)",
                 "gender" => "Gender",
                 "female" => "Female",
                 "index_year" => "Index Year",
@@ -507,6 +584,10 @@ public partial class PersonBrowserWindow : Window {
         };
     }
 }
+
+
+
+
 
 
 

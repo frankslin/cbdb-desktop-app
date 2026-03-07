@@ -1,10 +1,43 @@
-﻿using System.Data;
+﻿using System.Collections.Concurrent;
+using System.Data;
 using Cbdb.App.Core;
 using Microsoft.Data.Sqlite;
 
 namespace Cbdb.App.Data;
 
 public sealed class SqlitePersonBrowserService : IPersonBrowserService {
+    private static readonly HashSet<string> HiddenBiogMainFields = new(StringComparer.OrdinalIgnoreCase) {
+        "c_personid",
+        "c_surname_chn",
+        "c_mingzi_chn",
+        "c_name_chn",
+        "c_surname",
+        "c_mingzi",
+        "c_name",
+        "c_surname_proper",
+        "c_mingzi_proper",
+        "c_name_proper",
+        "c_surname_rm",
+        "c_mingzi_rm",
+        "c_name_rm",
+        "c_female",
+        "c_birthyear",
+        "c_deathyear",
+        "c_index_year",
+        "c_dy",
+        "c_index_addr_id",
+        "c_notes"
+    };
+
+    private static readonly string[] PreferredDisplayColumns = [
+        "c_name_chn", "c_name", "c_alt_name_chn", "c_alt_name", "c_title_chn", "c_title",
+        "c_desc_chn", "c_desc", "c_dynasty_chn", "c_dynasty", "c_inst_name_chn", "c_inst_name",
+        "c_addr_chn", "c_addr", "c_event_chn", "c_event", "c_role_desc_chn", "c_role_desc",
+        "c_text_title_chn", "c_text_title", "name_chn", "name", "title_chn", "title", "label_chn", "label"
+    ];
+
+    private static readonly ConcurrentDictionary<string, string?> LookupCache = new();
+
     public async Task<IReadOnlyList<PersonListItem>> SearchAsync(
         string sqlitePath,
         string? keyword,
@@ -188,7 +221,7 @@ LIMIT 1;";
             indexAddressChn = reader.IsDBNull(18) ? null : reader.GetString(18);
         }
 
-        var fields = await LoadBiogMainFieldsAsync(connection, personId, dynasty, dynastyChn, indexAddress, indexAddressChn, cancellationToken);
+        var fields = await LoadBiogMainFieldsAsync(connection, personId, cancellationToken);
 
         return new PersonDetail(
             PersonId: detailPersonId,
@@ -270,19 +303,16 @@ LIMIT $limit;";
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         table.Load(reader);
-        return table;
+        return await EnrichTableAsync(connection, tableName, table, cancellationToken);
     }
 
     private static async Task<IReadOnlyList<PersonFieldValue>> LoadBiogMainFieldsAsync(
         SqliteConnection connection,
         int personId,
-        string? dynasty,
-        string? dynastyChn,
-        string? indexAddress,
-        string? indexAddressChn,
         CancellationToken cancellationToken
     ) {
         var fields = new List<PersonFieldValue>();
+        var foreignKeys = await GetForeignKeysAsync(connection, "BIOG_MAIN", cancellationToken);
 
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM BIOG_MAIN WHERE c_personid = $personId LIMIT 1;";
@@ -291,15 +321,16 @@ LIMIT $limit;";
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         if (await reader.ReadAsync(cancellationToken)) {
             for (var i = 0; i < reader.FieldCount; i++) {
+                var fieldName = reader.GetName(i);
+                if (HiddenBiogMainFields.Contains(fieldName)) {
+                    continue;
+                }
+
                 var value = reader.IsDBNull(i) ? string.Empty : Convert.ToString(reader.GetValue(i));
-                fields.Add(new PersonFieldValue(reader.GetName(i), value));
+                var displayValue = await FormatForeignKeyValueAsync(connection, foreignKeys, fieldName, value, cancellationToken);
+                fields.Add(new PersonFieldValue(fieldName, displayValue));
             }
         }
-
-        fields.Add(new PersonFieldValue("ref_dynasty", dynasty ?? string.Empty));
-        fields.Add(new PersonFieldValue("ref_dynasty_chn", dynastyChn ?? string.Empty));
-        fields.Add(new PersonFieldValue("ref_index_addr_name", indexAddress ?? string.Empty));
-        fields.Add(new PersonFieldValue("ref_index_addr_name_chn", indexAddressChn ?? string.Empty));
 
         return fields;
     }
@@ -346,6 +377,173 @@ LIMIT $limit;";
         return columns;
     }
 
+    private static async Task<List<ForeignKeyInfo>> GetForeignKeysAsync(
+        SqliteConnection connection,
+        string tableName,
+        CancellationToken cancellationToken
+    ) {
+        var foreignKeys = new List<ForeignKeyInfo>();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA foreign_key_list({QuoteIdentifier(tableName)});";
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            var fromColumn = reader.IsDBNull(3) ? null : reader.GetString(3);
+            var referenceTable = reader.IsDBNull(2) ? null : reader.GetString(2);
+            var referenceColumn = reader.IsDBNull(4) ? null : reader.GetString(4);
+
+            if (string.IsNullOrWhiteSpace(fromColumn)
+                || string.IsNullOrWhiteSpace(referenceTable)
+                || string.IsNullOrWhiteSpace(referenceColumn)) {
+                continue;
+            }
+
+            foreignKeys.Add(new ForeignKeyInfo(fromColumn, referenceTable, referenceColumn));
+        }
+
+        return foreignKeys;
+    }
+
+    private static async Task<DataTable> EnrichTableAsync(
+        SqliteConnection connection,
+        string tableName,
+        DataTable source,
+        CancellationToken cancellationToken
+    ) {
+        var foreignKeys = await GetForeignKeysAsync(connection, tableName, cancellationToken);
+        if (foreignKeys.Count == 0) {
+            return source;
+        }
+
+        var displayTable = new DataTable();
+        foreach (DataColumn column in source.Columns) {
+            displayTable.Columns.Add(column.ColumnName, typeof(string));
+        }
+
+        foreach (DataRow row in source.Rows) {
+            var newRow = displayTable.NewRow();
+            foreach (DataColumn column in source.Columns) {
+                var rawValue = row.IsNull(column) ? string.Empty : Convert.ToString(row[column]) ?? string.Empty;
+                newRow[column.ColumnName] = await FormatForeignKeyValueAsync(connection, foreignKeys, column.ColumnName, rawValue, cancellationToken);
+            }
+
+            displayTable.Rows.Add(newRow);
+        }
+
+        return displayTable;
+    }
+
+    private static async Task<string> FormatForeignKeyValueAsync(
+        SqliteConnection connection,
+        IReadOnlyList<ForeignKeyInfo> foreignKeys,
+        string columnName,
+        string? rawValue,
+        CancellationToken cancellationToken
+    ) {
+        if (string.IsNullOrWhiteSpace(rawValue)) {
+            return string.Empty;
+        }
+
+        var foreignKey = foreignKeys.FirstOrDefault(fk => string.Equals(fk.FromColumn, columnName, StringComparison.OrdinalIgnoreCase));
+        if (foreignKey is null) {
+            return rawValue;
+        }
+
+        var resolved = await ResolveForeignKeyTextAsync(connection, foreignKey, rawValue, cancellationToken);
+        return string.IsNullOrWhiteSpace(resolved) ? rawValue : $"{rawValue} | {resolved}";
+    }
+
+    private static async Task<string?> ResolveForeignKeyTextAsync(
+        SqliteConnection connection,
+        ForeignKeyInfo foreignKey,
+        string rawValue,
+        CancellationToken cancellationToken
+    ) {
+        var cacheKey = $"{foreignKey.ReferenceTable}|{foreignKey.ReferenceColumn}|{rawValue}";
+        if (LookupCache.TryGetValue(cacheKey, out var cached)) {
+            return cached;
+        }
+
+        var columns = await GetTableColumnsAsync(connection, foreignKey.ReferenceTable, cancellationToken);
+        if (columns.Count == 0) {
+            LookupCache[cacheKey] = null;
+            return null;
+        }
+
+        var displayColumns = PickDisplayColumns(columns);
+        if (displayColumns.Count == 0) {
+            LookupCache[cacheKey] = null;
+            return null;
+        }
+
+        var selectSql = string.Join(", ", displayColumns.Select(QuoteIdentifier));
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = $@"
+SELECT {selectSql}
+FROM {QuoteIdentifier(foreignKey.ReferenceTable)}
+WHERE {QuoteIdentifier(foreignKey.ReferenceColumn)} = $value
+LIMIT 1;";
+        command.Parameters.AddWithValue("$value", rawValue);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken)) {
+            LookupCache[cacheKey] = null;
+            return null;
+        }
+
+        var parts = new List<string>();
+        for (var i = 0; i < reader.FieldCount; i++) {
+            if (reader.IsDBNull(i)) {
+                continue;
+            }
+
+            var text = Convert.ToString(reader.GetValue(i));
+            if (!string.IsNullOrWhiteSpace(text) && !parts.Contains(text, StringComparer.OrdinalIgnoreCase)) {
+                parts.Add(text);
+            }
+        }
+
+        var result = parts.Count == 0 ? null : string.Join(" / ", parts);
+        LookupCache[cacheKey] = result;
+        return result;
+    }
+
+    private static List<string> PickDisplayColumns(IReadOnlyList<string> columns) {
+        var selected = new List<string>();
+
+        foreach (var preferred in PreferredDisplayColumns) {
+            var match = columns.FirstOrDefault(column => string.Equals(column, preferred, StringComparison.OrdinalIgnoreCase));
+            if (match is not null && !selected.Contains(match, StringComparer.OrdinalIgnoreCase)) {
+                selected.Add(match);
+            }
+
+            if (selected.Count >= 2) {
+                return selected;
+            }
+        }
+
+        foreach (var column in columns) {
+            if (column.EndsWith("_id", StringComparison.OrdinalIgnoreCase)
+                || column.EndsWith("_code", StringComparison.OrdinalIgnoreCase)
+                || column.Contains("created_", StringComparison.OrdinalIgnoreCase)
+                || column.Contains("modified_", StringComparison.OrdinalIgnoreCase)) {
+                continue;
+            }
+
+            if (!selected.Contains(column, StringComparer.OrdinalIgnoreCase)) {
+                selected.Add(column);
+            }
+
+            if (selected.Count >= 2) {
+                break;
+            }
+        }
+
+        return selected;
+    }
+
     private static string PickOrderColumn(IReadOnlyList<string> columns) {
         var priorities = new[] {
             "c_sequence",
@@ -377,8 +575,10 @@ LIMIT $limit;";
 
         return value.Trim().Replace("\"", string.Empty);
     }
+
+    private sealed record ForeignKeyInfo(
+        string FromColumn,
+        string ReferenceTable,
+        string ReferenceColumn
+    );
 }
-
-
-
-

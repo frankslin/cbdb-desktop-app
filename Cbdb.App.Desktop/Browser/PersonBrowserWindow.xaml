@@ -116,11 +116,11 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="0.9*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_chn" />
+                                <TextBlock Name="LblSurnameChnField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_chn" />
                                 <TextBox Name="ValSurnameChn" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
-                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_chn" />
+                                <TextBlock Name="LblMingziChnField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_chn" />
                                 <TextBox Name="ValMingziChn" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
-                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_chn" />
+                                <TextBlock Name="LblNameChnField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_chn" />
                                 <TextBox Name="ValNameChn" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                                 <TextBlock Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" Text="c_personid" />
                                 <TextBox Name="ValPersonId" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
@@ -137,11 +137,11 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="0.9*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname" />
+                                <TextBlock Name="LblSurnameField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname" />
                                 <TextBox Name="ValSurname" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
-                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi" />
+                                <TextBlock Name="LblMingziField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi" />
                                 <TextBox Name="ValMingzi" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
-                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name" />
+                                <TextBlock Name="LblNameField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name" />
                                 <TextBox Name="ValName" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                                 <TextBlock Name="LblGenderSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
                                 <Grid Grid.Column="7">
@@ -165,11 +165,11 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="0.9*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_proper" />
+                                <TextBlock Name="LblSurnameProperField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_proper" />
                                 <TextBox Name="ValSurnameProper" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
-                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_proper" />
+                                <TextBlock Name="LblMingziProperField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_proper" />
                                 <TextBox Name="ValMingziProper" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
-                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_proper" />
+                                <TextBlock Name="LblNameProperField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_proper" />
                                 <TextBox Name="ValNameProper" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                                 <TextBlock Name="LblIndexYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
                                 <TextBox Name="ValIndexYear" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
@@ -186,11 +186,11 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="0.9*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_rm" />
+                                <TextBlock Name="LblSurnameRmField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" Text="c_surname_rm" />
                                 <TextBox Name="ValSurnameRm" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
-                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_rm" />
+                                <TextBlock Name="LblMingziRmField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" Text="c_mingzi_rm" />
                                 <TextBox Name="ValMingziRm" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
-                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_rm" />
+                                <TextBlock Name="LblNameRmField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_rm" />
                                 <TextBox Name="ValNameRm" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                                 <TextBlock Name="LblBirthDeathSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
                                 <TextBox Name="ValBirthDeath" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="90" IsReadOnly="True" />
@@ -231,7 +231,9 @@
                         </Grid>
                     </Border>
 
-                    <TabControl Grid.Row="2" Name="TabsDetail" Margin="0,8,0,0" SelectionChanged="TabsDetail_SelectionChanged">
+                    <Grid Grid.Row="2" Margin="0,8,0,0">
+                        <TabControl Name="TabsDetail"
+                                    SelectionChanged="TabsDetail_SelectionChanged">
                         <TabItem Name="TabBirthDeath" Header="Basic Information">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                                 <StackPanel Margin="8">
@@ -309,7 +311,29 @@
                         <TabItem Name="TabInstitutions" Header="Institutions">
                             <DataGrid Name="GridInstitutions" AutoGenerateColumns="True" IsReadOnly="True" AutoGeneratingColumn="RelatedGrid_AutoGeneratingColumn" CanUserAddRows="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </TabItem>
-                    </TabControl>
+                        </TabControl>
+
+                        <Border Name="PanelRelatedLoading"
+                                Visibility="Collapsed"
+                                Background="#80FFFFFF"
+                                BorderBrush="#A9A9A9"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="18"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Panel.ZIndex="10">
+                            <StackPanel Width="220">
+                                <TextBlock Name="TxtRelatedLoading"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,10"
+                                           FontWeight="SemiBold"
+                                           Foreground="#333"
+                                           Text="Loading details..." />
+                                <ProgressBar IsIndeterminate="True" Height="16" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
@@ -317,6 +341,10 @@
         <TextBlock Grid.Row="2" Name="TxtFooter" Margin="0,8,0,0" Foreground="#333" TextWrapping="NoWrap" Text="Ready" />
     </Grid>
 </Window>
+
+
+
+
 
 
 
