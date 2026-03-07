@@ -180,8 +180,20 @@ public partial class MainWindow : Window {
     }
 
     private void BtnReportError_Click(object sender, RoutedEventArgs e) {
-        TxtStatus.Text = T("button.report_error");
-        TxtOutput.Text = T("msg.report_todo");
+        const string reportUrl = "https://cbdb.hsites.harvard.edu/report-error";
+
+        try {
+            Process.Start(new ProcessStartInfo {
+                FileName = reportUrl,
+                UseShellExecute = true
+            });
+
+            TxtStatus.Text = T("button.report_error");
+            TxtOutput.Text = reportUrl;
+        } catch (Exception ex) {
+            TxtStatus.Text = T("status.failed");
+            TxtOutput.Text = ex.Message;
+        }
     }
 
     private void BtnChangeIndexAddress_Click(object sender, RoutedEventArgs e) {
@@ -307,3 +319,4 @@ public partial class MainWindow : Window {
         return File.Exists(legacyProbe) ? legacyProbe : string.Empty;
     }
 }
+
