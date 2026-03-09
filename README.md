@@ -19,7 +19,7 @@ This subdirectory contains a new Windows desktop app workspace for CBDB SQLite b
 ### Clone and Build
 
 ```powershell
-git clone <repo-url>
+git clone https://github.com/frankslin/cbdb-windows-app
 cd cbdb-windows-app
 
 dotnet restore
