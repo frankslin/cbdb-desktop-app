@@ -91,11 +91,14 @@ public partial class PersonBrowserWindow : Window {
         LblNameRmField.Text = B("field_name_rm");
 
         LblGenderSummary.Text = B("gender");
-        ChkFemale.Content = B("female");
-        LblIndexYearSummary.Text = B("index_year");
-        LblBirthDeathSummary.Text = B("birth_death");
-        LblIndexAddressSummary.Text = B("index_address");
+        LblBirthYearSummary.Text = B("birth_year");
+        LblDeathYearSummary.Text = B("death_year");
         LblDynastySummary.Text = B("dynasty");
+        LblIndexYearSummary.Text = B("index_year");
+        LblIndexYearTypeSummary.Text = B("index_year_type");
+        LblIndexYearSourceSummary.Text = B("index_year_source");
+        LblIndexAddressSummary.Text = B("index_address");
+        LblIndexAddressTypeSummary.Text = B("index_address_type");
         LblNotesSummary.Text = B("notes");
         TxtRelatedLoading.Text = B("loading_related");
 
@@ -245,11 +248,14 @@ public partial class PersonBrowserWindow : Window {
             ValNameProper.Text = GetFieldValue(detail, "c_name_proper");
             ValNameRm.Text = GetFieldValue(detail, "c_name_rm");
             ValDynasty.Text = JoinDisplay(detail.DynastyChn, detail.Dynasty);
+            ValBirthYear.Text = detail.BirthYear?.ToString() ?? string.Empty;
+            ValDeathYear.Text = detail.DeathYear?.ToString() ?? string.Empty;
+            ValGender.Text = detail.Gender switch { "F" => B("female"), "M" => B("male"), _ => B("unknown") };
             ValIndexYear.Text = detail.IndexYear?.ToString() ?? string.Empty;
-            ValBirthDeath.Text = $"{detail.BirthYear?.ToString() ?? "?"} / {detail.DeathYear?.ToString() ?? "?"}";
-            ValGender.Text = detail.Gender ?? string.Empty;
-            ChkFemale.IsChecked = string.Equals(detail.Gender, "F", StringComparison.OrdinalIgnoreCase);
+            ValIndexYearType.Text = detail.IndexYearType ?? string.Empty;
+            ValIndexYearSource.Text = detail.IndexYearSource ?? string.Empty;
             ValIndexAddress.Text = JoinDisplay(detail.IndexAddressChn, detail.IndexAddress);
+            ValIndexAddressType.Text = detail.IndexAddressType ?? string.Empty;
             TxtNotes.Text = GetFieldValue(detail, "c_notes");
 
             _detailFields.Clear();
@@ -390,11 +396,14 @@ public partial class PersonBrowserWindow : Window {
         ValNameProper.Text = string.Empty;
         ValNameRm.Text = string.Empty;
         ValDynasty.Text = string.Empty;
-        ValIndexYear.Text = string.Empty;
-        ValBirthDeath.Text = string.Empty;
+        ValBirthYear.Text = string.Empty;
+        ValDeathYear.Text = string.Empty;
         ValGender.Text = string.Empty;
-        ChkFemale.IsChecked = false;
+        ValIndexYear.Text = string.Empty;
+        ValIndexYearType.Text = string.Empty;
+        ValIndexYearSource.Text = string.Empty;
         ValIndexAddress.Text = string.Empty;
+        ValIndexAddressType.Text = string.Empty;
         TxtNotes.Text = string.Empty;
         TxtRecord.Text = "Record: 0";
         _detailFields.Clear();
@@ -453,10 +462,16 @@ public partial class PersonBrowserWindow : Window {
                 "field_mingzi_rm" => "名（羅馬字轉寫）",
                 "field_name_rm" => "姓名（羅馬字轉寫）",
                 "gender" => "性別",
-                "female" => "女性",
+                "male" => "男",
+                "female" => "女",
+                "unknown" => "未詳",
+                "birth_year" => "出生年",
+                "death_year" => "卒年",
                 "index_year" => "索引年",
-                "birth_death" => "生 / 卒",
+                "index_year_type" => "類型",
+                "index_year_source" => "來源",
                 "index_address" => "索引地址",
+                "index_address_type" => "類型",
                 "dynasty" => "朝代",
                 "notes" => "備註",
                 "tab_birth_death" => "基本資料",
@@ -504,10 +519,16 @@ public partial class PersonBrowserWindow : Window {
                 "field_mingzi_rm" => "名（罗马字转写）",
                 "field_name_rm" => "姓名（罗马字转写）",
                 "gender" => "性别",
-                "female" => "女性",
+                "male" => "男",
+                "female" => "女",
+                "unknown" => "未详",
+                "birth_year" => "出生年",
+                "death_year" => "卒年",
                 "index_year" => "索引年",
-                "birth_death" => "生 / 卒",
+                "index_year_type" => "类型",
+                "index_year_source" => "来源",
                 "index_address" => "索引地址",
+                "index_address_type" => "类型",
                 "dynasty" => "朝代",
                 "notes" => "备注",
                 "tab_birth_death" => "基本资料",
@@ -555,10 +576,16 @@ public partial class PersonBrowserWindow : Window {
                 "field_mingzi_rm" => "Given Name (Romanized)",
                 "field_name_rm" => "Full Name (Romanized)",
                 "gender" => "Gender",
+                "male" => "Male",
                 "female" => "Female",
+                "unknown" => "Unknown",
+                "birth_year" => "Birth Year",
+                "death_year" => "Death Year",
                 "index_year" => "Index Year",
-                "birth_death" => "Birth / Death",
+                "index_year_type" => "Type",
+                "index_year_source" => "Source",
                 "index_address" => "Index Address",
+                "index_address_type" => "Type",
                 "dynasty" => "Dynasty",
                 "notes" => "Notes",
                 "tab_birth_death" => "Basic Information",
@@ -584,6 +611,8 @@ public partial class PersonBrowserWindow : Window {
         };
     }
 }
+
+
 
 
 

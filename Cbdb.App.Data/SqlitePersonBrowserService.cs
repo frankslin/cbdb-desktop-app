@@ -24,16 +24,19 @@ public sealed class SqlitePersonBrowserService : IPersonBrowserService {
         "c_birthyear",
         "c_deathyear",
         "c_index_year",
+        "c_index_year_type_code",
+        "c_index_year_source_id",
         "c_dy",
         "c_index_addr_id",
+        "c_index_addr_type_code",
         "c_notes"
     };
 
     private static readonly string[] PreferredDisplayColumns = [
         "c_name_chn", "c_name", "c_alt_name_chn", "c_alt_name", "c_title_chn", "c_title",
         "c_desc_chn", "c_desc", "c_dynasty_chn", "c_dynasty", "c_inst_name_chn", "c_inst_name",
-        "c_addr_chn", "c_addr", "c_event_chn", "c_event", "c_role_desc_chn", "c_role_desc",
-        "c_text_title_chn", "c_text_title", "name_chn", "name", "title_chn", "title", "label_chn", "label"
+        "c_addr_desc_chn", "c_addr_desc", "c_addr_chn", "c_addr", "c_event_chn", "c_event",
+        "c_role_desc_chn", "c_role_desc", "c_text_title_chn", "c_text_title", "name_chn", "name", "title_chn", "title", "label_chn", "label"
     ];
 
     private static readonly ConcurrentDictionary<string, string?> LookupCache = new();
@@ -156,6 +159,8 @@ LIMIT $limit OFFSET $offset;";
         string? name;
         string? nameChn;
         int? indexYear;
+        string? indexYearType;
+        string? indexYearSource;
         string? dynasty;
         string? dynastyChn;
         int? birthYear;
@@ -163,6 +168,7 @@ LIMIT $limit OFFSET $offset;";
         string? gender;
         string? indexAddress;
         string? indexAddressChn;
+        string? indexAddressType;
 
         await using (var command = connection.CreateCommand()) {
             command.CommandText = @"
@@ -179,16 +185,25 @@ SELECT
     b.c_name,
     b.c_name_chn,
     b.c_index_year,
+    b.c_index_year_type_code,
+    COALESCE(iy.c_index_year_type_hz, iy.c_index_year_type_desc),
+    b.c_index_year_source_id,
+    COALESCE(src.c_name_chn, src.c_name),
     d.c_dynasty,
     d.c_dynasty_chn,
     b.c_birthyear,
     b.c_deathyear,
     b.c_female,
     ac.c_name,
-    ac.c_name_chn
+    ac.c_name_chn,
+    b.c_index_addr_type_code,
+    COALESCE(bac.c_addr_desc_chn, bac.c_addr_desc)
 FROM BIOG_MAIN b
+LEFT JOIN INDEXYEAR_TYPE_CODES iy ON iy.c_index_year_type_code = b.c_index_year_type_code
+LEFT JOIN BIOG_MAIN src ON src.c_personid = b.c_index_year_source_id
 LEFT JOIN DYNASTIES d ON d.c_dy = b.c_dy
 LEFT JOIN ADDR_CODES ac ON ac.c_addr_id = b.c_index_addr_id
+LEFT JOIN BIOG_ADDR_CODES bac ON bac.c_addr_type = b.c_index_addr_type_code
 WHERE b.c_personid = $personId
 LIMIT 1;";
             command.Parameters.AddWithValue("$personId", personId);
@@ -210,15 +225,18 @@ LIMIT 1;";
             name = reader.IsDBNull(9) ? null : reader.GetString(9);
             nameChn = reader.IsDBNull(10) ? null : reader.GetString(10);
             indexYear = reader.IsDBNull(11) ? null : reader.GetInt32(11);
-            dynasty = reader.IsDBNull(12) ? null : reader.GetString(12);
-            dynastyChn = reader.IsDBNull(13) ? null : reader.GetString(13);
-            birthYear = reader.IsDBNull(14) ? null : reader.GetInt32(14);
-            deathYear = reader.IsDBNull(15) ? null : reader.GetInt32(15);
-            gender = reader.IsDBNull(16)
+            indexYearType = reader.IsDBNull(13) ? (reader.IsDBNull(12) ? null : reader.GetString(12)) : reader.GetString(13);
+            indexYearSource = reader.IsDBNull(15) ? (reader.IsDBNull(14) ? null : Convert.ToString(reader.GetValue(14))) : reader.GetString(15);
+            dynasty = reader.IsDBNull(16) ? null : reader.GetString(16);
+            dynastyChn = reader.IsDBNull(17) ? null : reader.GetString(17);
+            birthYear = reader.IsDBNull(18) ? null : reader.GetInt32(18);
+            deathYear = reader.IsDBNull(19) ? null : reader.GetInt32(19);
+            gender = reader.IsDBNull(20)
                 ? "Unknown"
-                : (reader.GetInt32(16) == -1 ? "F" : "M");
-            indexAddress = reader.IsDBNull(17) ? null : reader.GetString(17);
-            indexAddressChn = reader.IsDBNull(18) ? null : reader.GetString(18);
+                : (reader.GetInt32(20) == 1 ? "F" : "M");
+            indexAddress = reader.IsDBNull(21) ? null : reader.GetString(21);
+            indexAddressChn = reader.IsDBNull(22) ? null : reader.GetString(22);
+            indexAddressType = reader.IsDBNull(24) ? (reader.IsDBNull(23) ? null : Convert.ToString(reader.GetValue(23))) : reader.GetString(24);
         }
 
         var fields = await LoadBiogMainFieldsAsync(connection, personId, cancellationToken);
@@ -236,6 +254,8 @@ LIMIT 1;";
             Name: name,
             NameChn: nameChn,
             IndexYear: indexYear,
+            IndexYearType: indexYearType,
+            IndexYearSource: indexYearSource,
             Dynasty: dynasty,
             DynastyChn: dynastyChn,
             BirthYear: birthYear,
@@ -243,6 +263,7 @@ LIMIT 1;";
             Gender: gender,
             IndexAddress: indexAddress,
             IndexAddressChn: indexAddressChn,
+            IndexAddressType: indexAddressType,
             AddressCount: await CountAsync(connection, "SELECT COUNT(*) FROM BIOG_ADDR_DATA WHERE c_personid = $personId", personId, cancellationToken),
             AltNameCount: await CountAsync(connection, "SELECT COUNT(*) FROM ALTNAME_DATA WHERE c_personid = $personId", personId, cancellationToken),
             KinCount: await CountAsync(connection, "SELECT COUNT(*) FROM KIN_DATA WHERE c_personid = $personId", personId, cancellationToken),

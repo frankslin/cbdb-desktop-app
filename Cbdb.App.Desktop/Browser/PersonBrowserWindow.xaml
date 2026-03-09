@@ -103,6 +103,8 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <Grid>
@@ -144,14 +146,7 @@
                                 <TextBlock Name="LblNameField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name" />
                                 <TextBox Name="ValName" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                                 <TextBlock Name="LblGenderSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
-                                <Grid Grid.Column="7">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Name="ValGender" Grid.Column="0" Height="24" Margin="6,0,0,0" MinWidth="80" IsReadOnly="True" />
-                                    <CheckBox Name="ChkFemale" Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" IsEnabled="False" />
-                                </Grid>
+                                <TextBox Name="ValGender" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="80" IsReadOnly="True" />
                             </Grid>
 
                             <Grid Grid.Row="2" Margin="0,6,0,0">
@@ -171,8 +166,8 @@
                                 <TextBox Name="ValMingziProper" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                                 <TextBlock Name="LblNameProperField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_proper" />
                                 <TextBox Name="ValNameProper" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
-                                <TextBlock Name="LblIndexYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
-                                <TextBox Name="ValIndexYear" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
+                                <TextBlock Name="LblBirthYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                                <TextBox Name="ValBirthYear" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
                             </Grid>
 
                             <Grid Grid.Row="3" Margin="0,6,0,0">
@@ -192,21 +187,47 @@
                                 <TextBox Name="ValMingziRm" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                                 <TextBlock Name="LblNameRmField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" Text="c_name_rm" />
                                 <TextBox Name="ValNameRm" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
-                                <TextBlock Name="LblBirthDeathSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
-                                <TextBox Name="ValBirthDeath" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="90" IsReadOnly="True" />
+                                <TextBlock Name="LblDeathYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                                <TextBox Name="ValDeathYear" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="90" IsReadOnly="True" />
                             </Grid>
 
                             <Grid Grid.Row="4" Margin="0,8,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="1.35*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Name="LblDynastySummary" Grid.Column="0" VerticalAlignment="Center" />
+                                <TextBox Name="ValDynasty" Grid.Column="1" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                            </Grid>
+
+                            <Grid Grid.Row="5" Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="0.8*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="1.1*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="1.4*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Name="LblIndexYearSummary" Grid.Column="0" VerticalAlignment="Center" />
+                                <TextBox Name="ValIndexYear" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" />
+                                <TextBlock Name="LblIndexYearTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
+                                <TextBox Name="ValIndexYearType" Grid.Column="3" Height="24" Margin="6,0,10,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                                <TextBlock Name="LblIndexYearSourceSummary" Grid.Column="4" VerticalAlignment="Center" />
+                                <TextBox Name="ValIndexYearSource" Grid.Column="5" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                            </Grid>
+
+                            <Grid Grid.Row="6" Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="1.5*" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="1*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Name="LblIndexAddressSummary" Grid.Column="0" VerticalAlignment="Top" />
-                                <TextBox Name="ValIndexAddress" Grid.Column="1" Margin="6,0,10,0" MinHeight="56" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
-                                <TextBlock Name="LblDynastySummary" Grid.Column="2" VerticalAlignment="Top" />
-                                <TextBox Name="ValDynasty" Grid.Column="3" Margin="6,0,0,0" MinHeight="56" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                                <TextBlock Name="LblIndexAddressSummary" Grid.Column="0" VerticalAlignment="Center" />
+                                <TextBox Name="ValIndexAddress" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                                <TextBlock Name="LblIndexAddressTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
+                                <TextBox Name="ValIndexAddressType" Grid.Column="3" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
                             </Grid>
                         </Grid>
                     </Border>
@@ -341,6 +362,8 @@
         <TextBlock Grid.Row="2" Name="TxtFooter" Margin="0,8,0,0" Foreground="#333" TextWrapping="NoWrap" Text="Ready" />
     </Grid>
 </Window>
+
+
 
 
 
