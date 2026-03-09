@@ -1,4 +1,6 @@
-﻿using Cbdb.App.Core;
+﻿using System.Windows;
+using System.Windows.Media;
+using Cbdb.App.Core;
 
 namespace Cbdb.App.Desktop.Localization;
 
@@ -321,12 +323,17 @@ public sealed class AppLocalizationService : ILocalizationService {
 
     public event EventHandler? LanguageChanged;
 
+    public AppLocalizationService() {
+        ApplyFontFamily(CurrentLanguage);
+    }
+
     public void SetLanguage(UiLanguage language) {
         if (CurrentLanguage == language) {
             return;
         }
 
         CurrentLanguage = language;
+        ApplyFontFamily(CurrentLanguage);
         LanguageChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -341,7 +348,22 @@ public sealed class AppLocalizationService : ILocalizationService {
 
         return key;
     }
+
+    private static void ApplyFontFamily(UiLanguage language) {
+        if (Application.Current is null) {
+            return;
+        }
+
+        var familyName = language switch {
+            UiLanguage.SimplifiedChinese => "Microsoft YaHei UI",
+            UiLanguage.TraditionalChinese => "Microsoft JhengHei UI",
+            _ => "Segoe UI"
+        };
+
+        Application.Current.Resources["AppFontFamily"] = new FontFamily(familyName);
+    }
 }
+
 
 
 

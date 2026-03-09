@@ -4,6 +4,18 @@
              xmlns:local="clr-namespace:Cbdb.App.Desktop"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <FontFamily x:Key="AppFontFamily">Microsoft JhengHei UI</FontFamily>
+
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+        </Style>
+
+        <Style TargetType="{x:Type Control}">
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+        </Style>
+
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+        </Style>
     </Application.Resources>
 </Application>
