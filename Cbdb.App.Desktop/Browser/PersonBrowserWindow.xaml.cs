@@ -36,6 +36,7 @@ public partial class PersonBrowserWindow : Window {
 
         GridPeople.ItemsSource = _people;
         ItemsBasicFields.ItemsSource = _detailFields;
+        InitializeBasicInfoLayout();
 
         _tabGrids[PersonRelatedCategory.Addresses] = GridAddresses;
         _tabGrids[PersonRelatedCategory.AltNames] = GridAltNames;
@@ -70,6 +71,7 @@ public partial class PersonBrowserWindow : Window {
         LblSearchByName.Text = B("keyword_tooltip");
         LblAllFieldsHeader.Text = B("all_fields_header");
         TxtKeyword.ToolTip = B("keyword_tooltip");
+        ApplyBasicInfoLocalization();
 
         ColPersonId.Header = B("grid_person_id");
         ColNameChn.Header = B("grid_name_chn");
@@ -258,10 +260,7 @@ public partial class PersonBrowserWindow : Window {
             ValIndexAddressType.Text = detail.IndexAddressType ?? string.Empty;
             TxtNotes.Text = GetFieldValue(detail, "c_notes");
 
-            _detailFields.Clear();
-            foreach (var field in detail.Fields) {
-                _detailFields.Add(field);
-            }
+            PopulateBasicInfo(detail);
 
             await LoadSelectedTabAsync();
         } catch (Exception ex) {
@@ -406,7 +405,7 @@ public partial class PersonBrowserWindow : Window {
         ValIndexAddressType.Text = string.Empty;
         TxtNotes.Text = string.Empty;
         TxtRecord.Text = "Record: 0";
-        _detailFields.Clear();
+        ClearBasicInfo();
     }
 
     private static string GetFieldValue(PersonDetail detail, string fieldName) {

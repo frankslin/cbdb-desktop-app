@@ -36,10 +36,26 @@ public sealed class SqlitePersonBrowserService : IPersonBrowserService {
         "c_name_chn", "c_name", "c_alt_name_chn", "c_alt_name", "c_title_chn", "c_title",
         "c_desc_chn", "c_desc", "c_dynasty_chn", "c_dynasty", "c_inst_name_chn", "c_inst_name",
         "c_addr_desc_chn", "c_addr_desc", "c_addr_chn", "c_addr", "c_event_chn", "c_event",
-        "c_role_desc_chn", "c_role_desc", "c_text_title_chn", "c_text_title", "name_chn", "name", "title_chn", "title", "label_chn", "label"
+        "c_role_desc_chn", "c_role_desc", "c_text_title_chn", "c_text_title", "c_nianhao_chn", "c_nianhao_pin",
+        "c_ganzhi_chn", "c_ganzhi_py", "c_choronym_chn", "c_choronym_desc",
+        "c_household_status_desc_chn", "c_household_status_desc", "name_chn", "name", "title_chn", "title", "label_chn", "label"
     ];
 
     private static readonly ConcurrentDictionary<string, string?> LookupCache = new();
+    private static readonly Dictionary<string, ForeignKeyInfo> ManualLookupColumns = new(StringComparer.OrdinalIgnoreCase) {
+        ["c_by_nh_code"] = new("c_by_nh_code", "NIAN_HAO", "c_nianhao_id"),
+        ["c_dy_nh_code"] = new("c_dy_nh_code", "NIAN_HAO", "c_nianhao_id"),
+        ["c_fl_ey_nh_code"] = new("c_fl_ey_nh_code", "NIAN_HAO", "c_nianhao_id"),
+        ["c_fl_ly_nh_code"] = new("c_fl_ly_nh_code", "NIAN_HAO", "c_nianhao_id"),
+        ["c_by_day_gz"] = new("c_by_day_gz", "GANZHI_CODES", "c_ganzhi_code"),
+        ["c_dy_day_gz"] = new("c_dy_day_gz", "GANZHI_CODES", "c_ganzhi_code"),
+        ["c_by_range"] = new("c_by_range", "YEAR_RANGE_CODES", "c_range_code"),
+        ["c_dy_range"] = new("c_dy_range", "YEAR_RANGE_CODES", "c_range_code"),
+        ["c_death_age_range"] = new("c_death_age_range", "YEAR_RANGE_CODES", "c_range_code"),
+        ["c_choronym_code"] = new("c_choronym_code", "CHORONYM_CODES", "c_choronym_code"),
+        ["c_household_status_code"] = new("c_household_status_code", "HOUSEHOLD_STATUS_CODES", "c_household_status_code"),
+        ["c_ethnicity_code"] = new("c_ethnicity_code", "ETHNICITY_TRIBE_CODES", "c_ethnicity_code")
+    };
 
     public async Task<IReadOnlyList<PersonListItem>> SearchAsync(
         string sqlitePath,
