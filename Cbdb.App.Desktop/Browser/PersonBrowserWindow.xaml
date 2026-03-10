@@ -72,7 +72,7 @@
                     <TextBlock Grid.Row="1" Name="TxtRecord" Margin="2,6,2,4" Foreground="#333" />
 
                     <StackPanel Grid.Row="2">
-                        <Button Name="BtnSaveToFile" Height="28" Content="Save to File" />
+                        <Button Name="BtnSaveToFile" Height="28" Click="BtnSaveToFile_Click" Content="Save to File" />
                     </StackPanel>
                 </Grid>
             </Border>

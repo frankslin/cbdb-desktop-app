@@ -1,11 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Cbdb.App.Core;
 using Cbdb.App.Data;
+using Microsoft.Win32;
 
 namespace Cbdb.App.Desktop.Browser;
 
@@ -148,6 +150,59 @@ public partial class PersonBrowserWindow : Window {
         await SearchAsync();
     }
 
+    private void BtnSaveToFile_Click(object sender, RoutedEventArgs e) {
+        if (_people.Count == 0) {
+            MessageBox.Show(this, "There is no data to export.", Title, MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var dialog = new SaveFileDialog {
+            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+            DefaultExt = ".csv",
+            AddExtension = true,
+            FileName = $"cbdb_people_{DateTime.Now:yyyyMMdd_HHmmss}.csv"
+        };
+
+        if (dialog.ShowDialog(this) != true) {
+            return;
+        }
+
+        try {
+            var builder = new StringBuilder();
+            builder.AppendLine(string.Join(",", new[] {
+                EscapeCsv(Convert.ToString(ColPersonId.Header)),
+                EscapeCsv(Convert.ToString(ColNameChn.Header)),
+                EscapeCsv(Convert.ToString(ColNameRm.Header)),
+                EscapeCsv(Convert.ToString(ColIndexYear.Header)),
+                EscapeCsv(Convert.ToString(ColIndexAddress.Header))
+            }));
+
+            foreach (var person in _people) {
+                builder.AppendLine(string.Join(",", new[] {
+                    EscapeCsv(person.PersonId.ToString()),
+                    EscapeCsv(person.NameChn),
+                    EscapeCsv(person.NameRm),
+                    EscapeCsv(person.IndexYear?.ToString()),
+                    EscapeCsv(person.IndexAddress)
+                }));
+            }
+
+            File.WriteAllText(dialog.FileName, builder.ToString(), new UTF8Encoding(true));
+            MessageBox.Show(this, $"CSV exported to:`n{dialog.FileName}", Title, MessageBoxButton.OK, MessageBoxImage.Information);
+        } catch (Exception ex) {
+            MessageBox.Show(this, ex.Message, Title, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private static string EscapeCsv(string? value) {
+        if (string.IsNullOrEmpty(value)) {
+            return string.Empty;
+        }
+
+        var needsQuotes = value.Contains(',') || value.Contains('"') || value.Contains('\r') || value.Contains('\n');
+        var escaped = value.Replace("\"", "\"\"");
+        return needsQuotes ? $"\"{escaped}\"" : escaped;
+    }
     private async Task SearchAsync() {
         if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
             _people.Clear();

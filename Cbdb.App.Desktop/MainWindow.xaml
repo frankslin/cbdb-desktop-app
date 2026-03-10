@@ -76,7 +76,7 @@
                     <Button Name="BtnModuleAssociationPairs" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.association_pairs" />
                     <Button Name="BtnModulePlace" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.place" />
                     <Button Name="BtnModuleStatus" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.status" />
-                    <Button Name="BtnModuleTexts" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.texts" Margin="0,0,12,0" />
+                    <Button Name="BtnModuleTexts" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.texts" />
                 </UniformGrid>
             </ScrollViewer>
         </Border>
