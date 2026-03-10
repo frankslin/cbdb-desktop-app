@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Data;
 using Cbdb.App.Core;
 using Microsoft.Data.Sqlite;
@@ -186,7 +186,8 @@ SELECT
     b.c_name_chn,
     b.c_index_year,
     b.c_index_year_type_code,
-    COALESCE(iy.c_index_year_type_hz, iy.c_index_year_type_desc),
+    iy.c_index_year_type_hz,
+    iy.c_index_year_type_desc,
     b.c_index_year_source_id,
     COALESCE(src.c_name_chn, src.c_name),
     d.c_dynasty,
@@ -225,18 +226,22 @@ LIMIT 1;";
             name = reader.IsDBNull(9) ? null : reader.GetString(9);
             nameChn = reader.IsDBNull(10) ? null : reader.GetString(10);
             indexYear = reader.IsDBNull(11) ? null : reader.GetInt32(11);
-            indexYearType = reader.IsDBNull(13) ? (reader.IsDBNull(12) ? null : reader.GetString(12)) : reader.GetString(13);
-            indexYearSource = reader.IsDBNull(15) ? (reader.IsDBNull(14) ? null : Convert.ToString(reader.GetValue(14))) : reader.GetString(15);
-            dynasty = reader.IsDBNull(16) ? null : reader.GetString(16);
-            dynastyChn = reader.IsDBNull(17) ? null : reader.GetString(17);
-            birthYear = reader.IsDBNull(18) ? null : reader.GetInt32(18);
-            deathYear = reader.IsDBNull(19) ? null : reader.GetInt32(19);
-            gender = reader.IsDBNull(20)
+            indexYearType = JoinDisplay(
+                reader.IsDBNull(13) ? null : reader.GetString(13),
+                reader.IsDBNull(14) ? null : reader.GetString(14),
+                " ({0})"
+            );
+            indexYearSource = reader.IsDBNull(16) ? (reader.IsDBNull(15) ? null : Convert.ToString(reader.GetValue(15))) : reader.GetString(16);
+            dynasty = reader.IsDBNull(17) ? null : reader.GetString(17);
+            dynastyChn = reader.IsDBNull(18) ? null : reader.GetString(18);
+            birthYear = reader.IsDBNull(19) ? null : reader.GetInt32(19);
+            deathYear = reader.IsDBNull(20) ? null : reader.GetInt32(20);
+            gender = reader.IsDBNull(21)
                 ? "Unknown"
-                : (reader.GetInt32(20) == 1 ? "F" : "M");
-            indexAddress = reader.IsDBNull(21) ? null : reader.GetString(21);
-            indexAddressChn = reader.IsDBNull(22) ? null : reader.GetString(22);
-            indexAddressType = reader.IsDBNull(24) ? (reader.IsDBNull(23) ? null : Convert.ToString(reader.GetValue(23))) : reader.GetString(24);
+                : (reader.GetInt32(21) == 1 ? "F" : "M");
+            indexAddress = reader.IsDBNull(22) ? null : reader.GetString(22);
+            indexAddressChn = reader.IsDBNull(23) ? null : reader.GetString(23);
+            indexAddressType = reader.IsDBNull(25) ? (reader.IsDBNull(24) ? null : Convert.ToString(reader.GetValue(24))) : reader.GetString(25);
         }
 
         var fields = await LoadBiogMainFieldsAsync(connection, personId, cancellationToken);
@@ -589,6 +594,16 @@ LIMIT 1;";
         return $"\"{identifier.Replace("\"", "\"\"")}\"";
     }
 
+    private static string? JoinDisplay(string? primary, string? secondary, string secondaryPattern = " / {0}") {
+        if (string.IsNullOrWhiteSpace(primary)) {
+            return secondary;
+        }
+        if (string.IsNullOrWhiteSpace(secondary) || string.Equals(primary, secondary, StringComparison.OrdinalIgnoreCase)) {
+            return primary;
+        }
+        return primary + string.Format(secondaryPattern, secondary);
+    }
+
     private static string? NormalizeSqliteText(string? value) {
         if (string.IsNullOrWhiteSpace(value)) {
             return null;
@@ -603,3 +618,4 @@ LIMIT 1;";
         string ReferenceColumn
     );
 }
+
