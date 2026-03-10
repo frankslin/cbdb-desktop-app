@@ -1,0 +1,54 @@
+name: Build Desktop App
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore Cbdb.WindowsApp.sln --configfile NuGet.Config
+
+      - name: Publish self-contained win-x64 app
+        run: >
+          dotnet publish Cbdb.App.Desktop/Cbdb.App.Desktop.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:IncludeNativeLibrariesForSelfExtract=true
+          /p:EnableCompressionInSingleFile=true
+          /p:DebugType=None
+          /p:DebugSymbols=false
+          -o artifacts/publish/win-x64
+
+      - name: Copy bundled data and docs
+        shell: pwsh
+        run: |
+          if (Test-Path data) {
+            Copy-Item data artifacts/publish/win-x64/data -Recurse -Force
+          }
+          Copy-Item README.md artifacts/publish/win-x64/README.md
+          if (Test-Path AGENTS.md) {
+            Copy-Item AGENTS.md artifacts/publish/win-x64/AGENTS.md
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbdb-windows-app-win-x64
+          path: artifacts/publish/win-x64
+          if-no-files-found: error
