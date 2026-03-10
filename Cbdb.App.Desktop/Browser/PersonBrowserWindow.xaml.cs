@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -101,7 +101,6 @@ public partial class PersonBrowserWindow : Window {
         LblIndexYearSourceSummary.Text = B("index_year_source");
         LblIndexAddressSummary.Text = B("index_address");
         LblIndexAddressTypeSummary.Text = B("index_address_type");
-        LblNotesSummary.Text = B("notes");
         TxtRelatedLoading.Text = B("loading_related");
 
         UpdateTabHeaders(_currentDetail);
@@ -258,7 +257,6 @@ public partial class PersonBrowserWindow : Window {
             ValIndexYearSource.Text = detail.IndexYearSource ?? string.Empty;
             ValIndexAddress.Text = JoinDisplay(detail.IndexAddressChn, detail.IndexAddress);
             ValIndexAddressType.Text = detail.IndexAddressType ?? string.Empty;
-            TxtNotes.Text = GetFieldValue(detail, "c_notes");
 
             PopulateBasicInfo(detail);
 
@@ -403,7 +401,6 @@ public partial class PersonBrowserWindow : Window {
         ValIndexYearSource.Text = string.Empty;
         ValIndexAddress.Text = string.Empty;
         ValIndexAddressType.Text = string.Empty;
-        TxtNotes.Text = string.Empty;
         TxtRecord.Text = "Record: 0";
         ClearBasicInfo();
     }

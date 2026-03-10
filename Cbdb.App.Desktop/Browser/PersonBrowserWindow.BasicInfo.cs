@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using Cbdb.App.Core;
 using Cbdb.App.Desktop.Localization;
@@ -6,29 +6,13 @@ using Cbdb.App.Desktop.Localization;
 namespace Cbdb.App.Desktop.Browser;
 
 public partial class PersonBrowserWindow {
-    private static readonly HashSet<string> StructuredBasicFieldNames = new(StringComparer.OrdinalIgnoreCase) {
-        "c_birthyear", "c_by_nh_code", "c_by_nh_year", "c_by_month", "c_by_intercalary", "c_by_day", "c_by_day_gz", "c_by_range",
-        "c_deathyear", "c_dy_nh_code", "c_dy_nh_year", "c_dy_month", "c_dy_intercalary", "c_dy_day", "c_dy_day_gz", "c_dy_range",
-        "c_death_age", "c_death_age_range",
-        "c_fl_earliest_year", "c_fl_ey_nh_code", "c_fl_ey_nh_year", "c_fl_ey_notes",
-        "c_fl_latest_year", "c_fl_ly_nh_code", "c_fl_ly_nh_year", "c_fl_ly_notes",
-        "c_choronym_code", "c_household_status_code", "c_ethnicity_code", "c_tribe",
-        "c_created_by", "c_created_date", "c_modified_by", "c_modified_date",
-        "c_self_bio"
-    };
-
     private readonly Dictionary<string, GroupBox> _basicGroups = new();
     private readonly Dictionary<string, TextBlock> _basicLabels = new();
     private readonly Dictionary<string, TextBox> _basicValues = new();
     private readonly Dictionary<string, CheckBox> _basicChecks = new();
-    private ItemsControl? _basicFieldsItemsControl;
-    private TextBlock? _basicFieldsHeader;
 
     private void InitializeBasicInfoLayout() {
         TabBirthDeath.Content = BuildBasicInfoContent();
-        if (_basicFieldsItemsControl is not null) {
-            _basicFieldsItemsControl.ItemsSource = _detailFields;
-        }
     }
 
     private UIElement BuildBasicInfoContent() {
@@ -37,58 +21,14 @@ public partial class PersonBrowserWindow {
         root.Children.Add(CreateDeathGroup());
         root.Children.Add(CreateFirstLastGroup());
         root.Children.Add(CreateIdentityGroup());
+        root.Children.Add(CreateNotesGroup());
         root.Children.Add(CreateAuditGroup());
-
-        _basicFieldsHeader = new TextBlock {
-            FontSize = 16,
-            FontWeight = FontWeights.Bold,
-            Foreground = System.Windows.Media.Brushes.DimGray,
-            Margin = new Thickness(0, 0, 0, 10)
-        };
-        root.Children.Add(_basicFieldsHeader);
-
-        _basicFieldsItemsControl = new ItemsControl();
-        _basicFieldsItemsControl.ItemsPanel = new ItemsPanelTemplate(new FrameworkElementFactory(typeof(StackPanel)));
-        _basicFieldsItemsControl.ItemTemplate = BuildOtherFieldTemplate();
-        root.Children.Add(_basicFieldsItemsControl);
 
         return new ScrollViewer {
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             Content = root
         };
-    }
-
-    private DataTemplate BuildOtherFieldTemplate() {
-        var border = new FrameworkElementFactory(typeof(Border));
-        border.SetValue(FrameworkElement.WidthProperty, 330.0);
-        border.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 10, 10));
-        border.SetValue(Border.PaddingProperty, new Thickness(8));
-        border.SetValue(Border.BorderBrushProperty, System.Windows.Media.Brushes.LightGray);
-        border.SetValue(Border.BorderThicknessProperty, new Thickness(1));
-        border.SetValue(Border.BackgroundProperty, System.Windows.Media.Brushes.WhiteSmoke);
-
-        var stack = new FrameworkElementFactory(typeof(StackPanel));
-        border.AppendChild(stack);
-
-        var label = new FrameworkElementFactory(typeof(TextBlock));
-        label.SetValue(TextBlock.FontWeightProperty, FontWeights.SemiBold);
-        label.SetValue(TextBlock.ForegroundProperty, System.Windows.Media.Brushes.DimGray);
-        label.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding(nameof(PersonFieldValue.FieldName)));
-        stack.AppendChild(label);
-
-        var value = new FrameworkElementFactory(typeof(TextBox));
-        value.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 6, 0, 0));
-        value.SetValue(FrameworkElement.MinHeightProperty, 26.0);
-        value.SetValue(TextBox.IsReadOnlyProperty, true);
-        value.SetValue(TextBox.TextWrappingProperty, TextWrapping.NoWrap);
-        value.SetValue(TextBox.AcceptsReturnProperty, true);
-        value.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
-        value.SetValue(ScrollViewer.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
-        value.SetBinding(TextBox.TextProperty, new System.Windows.Data.Binding(nameof(PersonFieldValue.Value)));
-        stack.AppendChild(value);
-
-        return new DataTemplate { VisualTree = border };
     }
 
     private GroupBox CreateBirthGroup() {
@@ -148,6 +88,17 @@ public partial class PersonBrowserWindow {
             ("household", CreateWideValueBox("household")),
             ("ethnicity_tribe", CreateWideValueBox("ethnicity_tribe"))
         });
+        return group;
+    }
+
+    private GroupBox CreateNotesGroup() {
+        var group = CreateGroup("notes_group");
+        var grid = new Grid { Margin = new Thickness(8) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        AddPair(grid, 0, 0, "notes", CreateMultilineValueBox("notes"));
+        group.Content = grid;
         return group;
     }
 
@@ -272,6 +223,7 @@ public partial class PersonBrowserWindow {
         SetGroupHeader("death_group");
         SetGroupHeader("fl_group");
         SetGroupHeader("identity_group");
+        SetGroupHeader("notes_group");
         SetGroupHeader("audit_group");
 
         foreach (var pair in _basicLabels) {
@@ -283,9 +235,6 @@ public partial class PersonBrowserWindow {
         }
         if (_basicChecks.TryGetValue("death_intercalary", out var deathIntercalary)) {
             deathIntercalary.Content = BasicText("death_intercalary");
-        }
-        if (_basicFieldsHeader is not null) {
-            _basicFieldsHeader.Text = BasicText("other_fields_header");
         }
     }
 
@@ -326,18 +275,12 @@ public partial class PersonBrowserWindow {
         SetValue("choronym", GetDisplayOnlyField(detail, "c_choronym_code"));
         SetValue("household", GetDisplayOnlyField(detail, "c_household_status_code"));
         SetValue("ethnicity_tribe", JoinDisplay(GetDisplayOnlyField(detail, "c_ethnicity_code"), GetRawField(detail, "c_tribe")));
+        SetValue("notes", GetRawField(detail, "c_notes"));
 
         SetValue("created_by", GetRawField(detail, "c_created_by"));
         SetValue("created_date", GetRawField(detail, "c_created_date"));
         SetValue("modified_by", GetRawField(detail, "c_modified_by"));
         SetValue("modified_date", GetRawField(detail, "c_modified_date"));
-
-        _detailFields.Clear();
-        foreach (var field in detail.Fields) {
-            if (!StructuredBasicFieldNames.Contains(field.FieldName)) {
-                _detailFields.Add(field);
-            }
-        }
     }
 
     private void ClearBasicInfo() {
@@ -347,7 +290,6 @@ public partial class PersonBrowserWindow {
         foreach (var check in _basicChecks.Values) {
             check.IsChecked = false;
         }
-        _detailFields.Clear();
     }
 
     private void SetValue(string key, string? value) {
@@ -411,12 +353,13 @@ public partial class PersonBrowserWindow {
                 "choronym" => "\u90E1\u671B",
                 "household" => "\u6236\u7C4D",
                 "ethnicity_tribe" => "\u7A2E\u65CF\uFF0F\u90E8\u65CF",
+                "notes" => "\u5099\u8A3B",
+                "notes_group" => "\u5099\u8A3B",
                 "audit_group" => "\u5EFA\u7ACB\u8207\u4FEE\u6539",
                 "created_by" => "\u5EFA\u7ACB\u4EBA",
                 "created_date" => "\u5EFA\u7ACB\u65E5\u671F",
                 "modified_by" => "\u4FEE\u6539\u4EBA",
                 "modified_date" => "\u4FEE\u6539\u65E5\u671F",
-                "other_fields_header" => "\u5176\u4ED6 BIOG_MAIN \u6B04\u4F4D",
                 _ => key
             },
             UiLanguage.SimplifiedChinese => key switch {
@@ -451,12 +394,13 @@ public partial class PersonBrowserWindow {
                 "choronym" => "\u90E1\u671B",
                 "household" => "\u6237\u7C4D",
                 "ethnicity_tribe" => "\u79CD\u65CF\uFF0F\u90E8\u65CF",
+                "notes" => "\u5907\u6CE8",
+                "notes_group" => "\u5907\u6CE8",
                 "audit_group" => "\u521B\u5EFA\u4E0E\u4FEE\u6539",
                 "created_by" => "\u521B\u5EFA\u4EBA",
                 "created_date" => "\u521B\u5EFA\u65E5\u671F",
                 "modified_by" => "\u4FEE\u6539\u4EBA",
                 "modified_date" => "\u4FEE\u6539\u65E5\u671F",
-                "other_fields_header" => "\u5176\u4ED6 BIOG_MAIN \u5B57\u6BB5",
                 _ => key
             },
             _ => key switch {
@@ -491,12 +435,13 @@ public partial class PersonBrowserWindow {
                 "choronym" => "Choronym",
                 "household" => "Household Status",
                 "ethnicity_tribe" => "Ethnicity / Tribe",
+                "notes" => "Notes",
+                "notes_group" => "Notes",
                 "audit_group" => "Created and Modified",
                 "created_by" => "Created By",
                 "created_date" => "Created Date",
                 "modified_by" => "Modified By",
                 "modified_date" => "Modified Date",
-                "other_fields_header" => "Other BIOG_MAIN Fields",
                 _ => key
             }
         };

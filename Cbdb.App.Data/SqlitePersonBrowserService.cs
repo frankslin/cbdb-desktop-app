@@ -27,7 +27,8 @@ public sealed class SqlitePersonBrowserService : IPersonBrowserService {
         "c_dy",
         "c_index_addr_id",
         "c_index_addr_type_code",
-        "c_notes"
+        "c_notes",
+        "c_self_bio"
     };
 
     private static readonly string[] PreferredDisplayColumns = [
@@ -36,7 +37,8 @@ public sealed class SqlitePersonBrowserService : IPersonBrowserService {
         "c_addr_desc_chn", "c_addr_desc", "c_addr_chn", "c_addr", "c_event_chn", "c_event",
         "c_role_desc_chn", "c_role_desc", "c_text_title_chn", "c_text_title", "c_nianhao_chn", "c_nianhao_pin",
         "c_ganzhi_chn", "c_ganzhi_py", "c_choronym_chn", "c_choronym_desc",
-        "c_household_status_desc_chn", "c_household_status_desc", "name_chn", "name", "title_chn", "title", "label_chn", "label"
+        "c_household_status_desc_chn", "c_household_status_desc", "c_range_chn", "c_range", "c_approx_chn", "c_approx",
+        "name_chn", "name", "title_chn", "title", "label_chn", "label"
     ];
 
     private static readonly ConcurrentDictionary<string, string?> LookupCache = new();
@@ -497,11 +499,23 @@ LIMIT $limit;";
 
         var foreignKey = foreignKeys.FirstOrDefault(fk => string.Equals(fk.FromColumn, columnName, StringComparison.OrdinalIgnoreCase));
         if (foreignKey is null) {
+            ManualLookupColumns.TryGetValue(columnName, out foreignKey);
+        }
+        if (foreignKey is null) {
             return rawValue;
         }
 
         var resolved = await ResolveForeignKeyTextAsync(connection, foreignKey, rawValue, cancellationToken);
-        return string.IsNullOrWhiteSpace(resolved) ? rawValue : $"{rawValue} | {resolved}";
+        if (string.IsNullOrWhiteSpace(resolved)) {
+            return rawValue;
+        }
+        return ShouldDisplayLookupOnly(columnName) ? resolved : $"{rawValue} | {resolved}";
+    }
+
+    private static bool ShouldDisplayLookupOnly(string columnName) {
+        return ManualLookupColumns.ContainsKey(columnName)
+            || columnName.EndsWith("_code", StringComparison.OrdinalIgnoreCase)
+            || columnName.EndsWith("_range", StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task<string?> ResolveForeignKeyTextAsync(

@@ -91,7 +91,6 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="140" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -231,28 +230,7 @@
                             </Grid>
                         </Grid>
                     </Border>
-
-                    <Border Grid.Row="1" Margin="0,6,0,0" BorderBrush="#C7C7C7" BorderThickness="1" Background="#F7F7F7" Padding="10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Name="LblNotesSummary" Grid.Column="0" VerticalAlignment="Top" />
-                            <TextBox Name="TxtNotes"
-                                     Grid.Column="1"
-                                     Margin="6,0,0,0"
-                                     MinHeight="110"
-                                     VerticalAlignment="Stretch"
-                                     IsReadOnly="True"
-                                     TextWrapping="Wrap"
-                                     AcceptsReturn="True"
-                                     HorizontalScrollBarVisibility="Auto"
-                                     VerticalScrollBarVisibility="Auto" />
-                        </Grid>
-                    </Border>
-
-                    <Grid Grid.Row="2" Margin="0,8,0,0">
+                    <Grid Grid.Row="1" Margin="0,8,0,0">
                         <TabControl Name="TabsDetail"
                                     SelectionChanged="TabsDetail_SelectionChanged">
                         <TabItem Name="TabBirthDeath" Header="Basic Information">
