@@ -1,0 +1,112 @@
+# CBDB Windows App Status
+
+## Project Goal
+- Build a Windows desktop app for browsing and querying the SQLite CBDB database.
+- The app should functionally mirror the existing Access application where practical, while reading directly from the bundled SQLite database in the app repository.
+- `Index Year` rebuild is not needed.
+- `Change Index Address Ranking` and rebuilding `Index Address` are secondary features and can be implemented later.
+- UI must support Traditional Chinese, Simplified Chinese, and English from the start.
+
+## Current Scope
+- Main navigation window exists.
+- Person browser is the primary implemented module and current main area of active work.
+- Query-module shell windows exist for the major modules, but they are still scaffolding rather than full Access-equivalent implementations.
+- Database is expected to be read from the app-local `data` directory.
+
+## Current Progress
+- Main window has been built and localized.
+- Home page module buttons were redesigned from a single vertical stack into a more compact grid of large buttons.
+- The error-report button opens the Harvard error-report page in the system browser.
+- Locale-specific UI fonts are in place:
+  - Traditional Chinese: `Microsoft JhengHei UI`
+  - Simplified Chinese: `Microsoft YaHei UI`
+  - English: `Segoe UI`
+- Person browser supports:
+  - searching by person-name fields and alt names
+  - paged loading on the left list
+  - Enter-to-search behavior
+  - resizable left/right split layout
+  - right-side summary panel
+  - related tabs with lazy loading and loading indicators
+- Person list currently shows:
+  - `c_personid`
+  - Chinese name
+  - Pinyin name
+  - `Index Year`
+  - `Index Address`
+- Person detail summary currently includes:
+  - name variants
+  - gender
+  - birth year
+  - death year
+  - dynasty
+  - index year summary fields
+  - index address summary fields
+- Basic Information tab has already been reworked into a structured form and no longer contains the old leftover dynamic `Other BIOG_MAIN Fields` section.
+- Basic Information tab currently includes structured sections for:
+  - birth
+  - death
+  - age at death
+  - earliest/latest living year
+  - choronym
+  - household status
+  - ethnicity/tribe
+  - notes
+  - created/modified fields
+- The `Notes` field was moved out of the right summary pane and into the Basic Information tab.
+- Several code fields now use lookup tables instead of showing only raw codes, including:
+  - reign title (`NIAN_HAO`)
+  - ganzhi (`GANZHI_CODES`)
+  - year range (`YEAR_RANGE_CODES`)
+  - choronym (`CHORONYM_CODES`)
+  - household status (`HOUSEHOLD_STATUS_CODES`)
+  - ethnicity (`ETHNICITY_TRIBE_CODES`)
+- `Index Year Source` summary display has been customized to show:
+  - `person id / Chinese full name / English full name`
+- Earliest/latest living year layout was refined so each of earliest and latest uses:
+  - one row for Gregorian year, reign title, and reign year
+  - one separate notes row using a multiline control
+
+## What Is Not Stable Yet
+- Person browser data enrichment still relies on a generic lookup pipeline and is not fully Access-like yet.
+- Query-module windows still need substantial implementation work beyond shell layout.
+- The person browser still needs closer alignment with the Access UI and field semantics.
+- Code-field display rules are only partially normalized; more Access-like display behavior is still needed.
+- Related-tab load performance is noticeably slower than tab-count queries and needs optimization.
+
+## Known Pitfalls
+- Do not casually rewrite files that contain Chinese string literals using PowerShell text replacement.
+  - This repeatedly produced mojibake in `Cbdb.App.Desktop/Browser/PersonBrowserWindow.xaml.cs`.
+  - The current known-good recovery baseline for that file is commit `3f04536`.
+  - If garbling reappears, restore from a known-good commit first and then reapply only minimal safe changes.
+- `apply_patch` has been unreliable in this workspace, especially on Windows/XAML-heavy files.
+- CRLF handling has been fragile during scripted replacements.
+  - Literal `` `r`n `` has accidentally been written into source files before.
+- Person detail loading is sensitive to SQL column order.
+  - Several regressions came from changing selected columns without updating reader indexes consistently.
+  - When possible, avoid expanding positional reader logic unless the SQL and indexes are updated together.
+- Related-tab loading is slow mainly because counts use simple indexed `COUNT(*)` queries, while tab content currently uses a much heavier path:
+  - read table schema
+  - select all columns
+  - load a `DataTable`
+  - enrich many cells one-by-one via lookup queries
+- Generic per-cell lookup is workable for correctness but not for performance.
+  - The long-term fix is per-tab SQL with joins, or at minimum column-level/batch caching.
+
+## Recommended Working Rules For Future Changes
+- Treat `Cbdb.App.Desktop/Browser/PersonBrowserWindow.xaml.cs` as a high-risk file for encoding damage.
+- Before editing that file, diff against a known-good commit if any Chinese UI text looks suspicious.
+- For code-field display changes, prefer data-layer lookup fixes in `Cbdb.App.Data/SqlitePersonBrowserService.cs` over UI-layer string hacks.
+- For Basic Information tab work, prefer incremental changes and compile after each small step.
+- When adding or changing person-detail SQL, verify both:
+  - query column order
+  - matching `reader.Get*` indexes
+- If Chinese text appears garbled, stop feature work and repair encoding first.
+- Avoid introducing duplicate representations of the same field in both the summary panel and Basic Information tab unless that duplication is explicitly intended.
+
+## High-Priority Next Steps
+- Finish populating the remaining Basic Information fields so the structured form is fully backed by real data.
+- Continue improving code-field display to match the Access app more closely.
+- Optimize related-tab loading by replacing the generic per-cell lookup path for the heaviest tabs with dedicated SQL.
+- Continue aligning the remaining query modules with the Access manual and screenshots.
+- Commit this `AGENTS.md` into the repository so future contributors get the current project state directly after clone.
