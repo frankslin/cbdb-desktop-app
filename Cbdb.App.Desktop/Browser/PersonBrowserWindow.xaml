@@ -1,4 +1,4 @@
-<Window x:Class="Cbdb.App.Desktop.Browser.PersonBrowserWindow"
+﻿<Window x:Class="Cbdb.App.Desktop.Browser.PersonBrowserWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CBDB Browser"
@@ -72,7 +72,6 @@
                     <TextBlock Grid.Row="1" Name="TxtRecord" Margin="2,6,2,4" Foreground="#333" />
 
                     <StackPanel Grid.Row="2">
-                        <Button Name="BtnClearSearchResult" Height="28" Margin="0,0,0,4" IsEnabled="False" Content="Clear Search" />
                         <Button Name="BtnSaveToFile" Height="28" Content="Save to File" />
                     </StackPanel>
                 </Grid>
