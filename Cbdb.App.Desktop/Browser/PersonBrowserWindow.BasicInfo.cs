@@ -48,18 +48,37 @@ public partial class PersonBrowserWindow {
 
     private GroupBox CreateDeathGroup() {
         var group = CreateGroup("death_group");
-        group.Content = CreateLabeledGrid(new (string labelKey, FrameworkElement value)[] {
-            ("death_gregorian", CreateValueBox("death_year")),
-            ("death_nianhao", CreateWideValueBox("death_nianhao")),
-            ("death_nianhao_year", CreateValueBox("death_nianhao_year")),
-            ("death_month", CreateValueBox("death_month")),
-            ("death_intercalary", CreateReadOnlyCheckBox("death_intercalary")),
-            ("death_day", CreateValueBox("death_day")),
-            ("death_ganzhi", CreateWideValueBox("death_ganzhi")),
-            ("death_range", CreateWideValueBox("death_range")),
-            ("death_age", CreateValueBox("death_age")),
-            ("death_age_range", CreateWideValueBox("death_age_range"))
-        }, 3);
+        var grid = new Grid { Margin = new Thickness(8) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(220) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        AddRow(
+            grid,
+            0,
+            "death_gregorian", CreateValueBox("death_year"),
+            "death_nianhao", CreateWideValueBox("death_nianhao"),
+            "death_nianhao_year", CreateValueBox("death_nianhao_year")
+        );
+        AddRow(
+            grid,
+            1,
+            "death_month", CreateValueBox("death_month"),
+            "death_intercalary", CreateReadOnlyCheckBox("death_intercalary"),
+            "death_day", CreateValueBox("death_day")
+        );
+        AddPair(grid, 2, 0, "death_ganzhi", CreateWideValueBox("death_ganzhi"));
+        AddPair(grid, 2, 2, "death_range", CreateWideValueBox("death_range"));
+        AddPair(grid, 3, 0, "death_age", CreateValueBox("death_age"));
+        AddPair(grid, 3, 2, "death_age_range", CreateWideValueBox("death_age_range"));
+        group.Content = grid;
         return group;
     }
 
