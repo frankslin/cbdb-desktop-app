@@ -21,8 +21,6 @@ public sealed class SqlitePersonBrowserService : IPersonBrowserService {
         "c_mingzi_rm",
         "c_name_rm",
         "c_female",
-        "c_birthyear",
-        "c_deathyear",
         "c_index_year",
         "c_index_year_type_code",
         "c_index_year_source_id",
