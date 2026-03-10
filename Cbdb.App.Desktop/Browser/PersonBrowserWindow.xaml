@@ -1,4 +1,4 @@
-﻿<Window x:Class="Cbdb.App.Desktop.Browser.PersonBrowserWindow"
+<Window x:Class="Cbdb.App.Desktop.Browser.PersonBrowserWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CBDB Browser"
@@ -197,7 +197,7 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Name="LblDynastySummary" Grid.Column="0" VerticalAlignment="Center" />
-                                <TextBox Name="ValDynasty" Grid.Column="1" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                                <TextBox Name="ValDynasty" Grid.Column="1" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Hidden" />
                             </Grid>
 
                             <Grid Grid.Row="5" Margin="0,6,0,0">
@@ -212,9 +212,9 @@
                                 <TextBlock Name="LblIndexYearSummary" Grid.Column="0" VerticalAlignment="Center" />
                                 <TextBox Name="ValIndexYear" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" />
                                 <TextBlock Name="LblIndexYearTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
-                                <TextBox Name="ValIndexYearType" Grid.Column="3" Height="24" Margin="6,0,10,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                                <TextBox Name="ValIndexYearType" Grid.Column="3" Height="24" Margin="6,0,10,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Hidden" />
                                 <TextBlock Name="LblIndexYearSourceSummary" Grid.Column="4" VerticalAlignment="Center" />
-                                <TextBox Name="ValIndexYearSource" Grid.Column="5" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                                <TextBox Name="ValIndexYearSource" Grid.Column="5" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Hidden" />
                             </Grid>
 
                             <Grid Grid.Row="6" Margin="0,6,0,0">
@@ -225,9 +225,9 @@
                                     <ColumnDefinition Width="1*" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Name="LblIndexAddressSummary" Grid.Column="0" VerticalAlignment="Center" />
-                                <TextBox Name="ValIndexAddress" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                                <TextBox Name="ValIndexAddress" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Hidden" />
                                 <TextBlock Name="LblIndexAddressTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
-                                <TextBox Name="ValIndexAddressType" Grid.Column="3" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" />
+                                <TextBox Name="ValIndexAddressType" Grid.Column="3" Height="24" Margin="6,0,0,0" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Hidden" />
                             </Grid>
                         </Grid>
                     </Border>
