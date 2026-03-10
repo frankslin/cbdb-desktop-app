@@ -1,0 +1,161 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.Browser.PersonBrowserWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="clr-namespace:Cbdb.App.Core;assembly=Cbdb.App.Core"
+    Title="Person Browser"
+    Width="1380"
+    Height="820"
+    MinWidth="1180"
+    MinHeight="720"
+    Background="#DCDCDC">
+  <Grid Margin="8" RowDefinitions="Auto,*,Auto">
+    <StackPanel>
+      <Grid ColumnDefinitions="*,92,92">
+        <TextBox x:Name="TxtKeyword"
+                 Grid.Column="0"
+                 Height="30"
+                 Margin="0,0,8,0"
+                 VerticalContentAlignment="Center"
+                 KeyDown="TxtKeyword_KeyDown" />
+        <Button x:Name="BtnSearch" Grid.Column="1" Height="30" Margin="0,0,8,0" Click="BtnSearch_Click" />
+        <Button x:Name="BtnClear" Grid.Column="2" Height="30" Click="BtnClear_Click" />
+      </Grid>
+      <TextBlock x:Name="LblSearchByName" Margin="2,6,0,0" Foreground="#444" FontWeight="SemiBold" />
+    </StackPanel>
+
+    <Grid Grid.Row="1" Margin="0,8,0,0" ColumnDefinitions="4*,6,7*">
+      <Border Grid.Column="0"
+              BorderBrush="#A9A9A9"
+              BorderThickness="1"
+              Background="#F3F3F3"
+              Padding="4"
+              Margin="0,0,6,0">
+        <Grid RowDefinitions="Auto,*,Auto,Auto">
+          <Grid ColumnDefinitions="70,140,160,100,*" Margin="4,2,4,6">
+            <TextBlock Grid.Column="0" x:Name="HdrPersonId" FontWeight="Bold" />
+            <TextBlock Grid.Column="1" x:Name="HdrNameChn" FontWeight="Bold" />
+            <TextBlock Grid.Column="2" x:Name="HdrNameRm" FontWeight="Bold" />
+            <TextBlock Grid.Column="3" x:Name="HdrIndexYear" FontWeight="Bold" />
+            <TextBlock Grid.Column="4" x:Name="HdrIndexAddress" FontWeight="Bold" />
+          </Grid>
+
+          <ListBox x:Name="ListPeople"
+                   Grid.Row="1"
+                   SelectionChanged="ListPeople_SelectionChanged">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="core:PersonListItem">
+                <Border BorderBrush="#E2E2E2" BorderThickness="0,0,0,1" Padding="4,6">
+                  <Grid ColumnDefinitions="70,140,160,100,*">
+                    <TextBlock Grid.Column="0" Text="{Binding PersonId}" />
+                    <TextBlock Grid.Column="1" Text="{Binding NameChn}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="2" Text="{Binding NameRm}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="3" Text="{Binding IndexYear}" />
+                    <TextBlock Grid.Column="4" Text="{Binding IndexAddress}" TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <TextBlock x:Name="TxtRecord" Grid.Row="2" Margin="2,6,2,4" Foreground="#333" />
+          <Button x:Name="BtnSaveToFile" Grid.Row="3" Height="28" Click="BtnSaveToFile_Click" />
+        </Grid>
+      </Border>
+
+      <GridSplitter Grid.Column="1"
+                    Width="6"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    ResizeDirection="Columns"
+                    Background="#D0D0D0" />
+
+      <Border Grid.Column="2"
+              BorderBrush="#A9A9A9"
+              BorderThickness="1"
+              Background="#E9E9E9"
+              Padding="6">
+        <Grid RowDefinitions="Auto,*">
+          <Border BorderBrush="#C7C7C7" BorderThickness="1" Background="#F7F7F7" Padding="10">
+            <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+              <TextBlock x:Name="LblPersonId" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" />
+              <TextBox x:Name="ValPersonId" Grid.Row="0" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
+              <TextBlock x:Name="LblGender" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" />
+              <TextBox x:Name="ValGender" Grid.Row="0" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+
+              <TextBlock x:Name="LblNameChn" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" />
+              <TextBox x:Name="ValNameChn" Grid.Row="1" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
+              <TextBlock x:Name="LblName" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" />
+              <TextBox x:Name="ValName" Grid.Row="1" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+
+              <TextBlock x:Name="LblBirthYear" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" />
+              <TextBox x:Name="ValBirthYear" Grid.Row="2" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
+              <TextBlock x:Name="LblDeathYear" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" />
+              <TextBox x:Name="ValDeathYear" Grid.Row="2" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+
+              <TextBlock x:Name="LblDynasty" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" />
+              <TextBox x:Name="ValDynasty" Grid.Row="3" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
+              <TextBlock x:Name="LblIndexYear" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" />
+              <TextBox x:Name="ValIndexYear" Grid.Row="3" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+
+              <TextBlock x:Name="LblIndexYearType" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" />
+              <TextBox x:Name="ValIndexYearType" Grid.Row="4" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
+              <TextBlock x:Name="LblIndexAddressType" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" />
+              <TextBox x:Name="ValIndexAddressType" Grid.Row="4" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+
+              <TextBlock x:Name="LblIndexYearSource" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" />
+              <TextBox x:Name="ValIndexYearSource" Grid.Row="5" Grid.Column="1" Margin="6,0,12,0" IsReadOnly="True" />
+              <TextBlock x:Name="LblIndexAddress" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" />
+              <TextBox x:Name="ValIndexAddress" Grid.Row="5" Grid.Column="3" Margin="6,0,0,0" IsReadOnly="True" />
+            </Grid>
+          </Border>
+
+          <TabControl Grid.Row="1" Margin="0,8,0,0">
+            <TabItem x:Name="TabBasic">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8">
+                  <TextBlock x:Name="LblAllFieldsHeader" FontSize="16" FontWeight="Bold" Foreground="#333" />
+                  <TextBlock x:Name="TxtNoSelection" Margin="0,8,0,8" Foreground="#666" />
+                  <ItemsControl x:Name="ItemsBasicFields">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="core:PersonFieldValue">
+                        <Border Margin="0,0,0,10" Padding="8" BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA">
+                          <StackPanel>
+                            <TextBlock FontWeight="SemiBold" Foreground="#4A4A4A" Text="{Binding FieldName}" />
+                            <TextBox Margin="0,6,0,0"
+                                     IsReadOnly="True"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     Text="{Binding Value}" />
+                          </StackPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
+
+            <TabItem x:Name="TabRelated">
+              <StackPanel Margin="12">
+                <TextBlock x:Name="TxtRelatedCounts" TextWrapping="Wrap" />
+                <TextBlock x:Name="TxtRelatedCountsMore" Margin="0,6,0,0" TextWrapping="Wrap" />
+                <TextBlock x:Name="TxtRelatedCountsTail" Margin="0,6,0,0" TextWrapping="Wrap" />
+                <TextBlock x:Name="TxtRelatedPlaceholder" Margin="0,14,0,0" Foreground="#666" TextWrapping="Wrap" />
+              </StackPanel>
+            </TabItem>
+          </TabControl>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="2"
+            Margin="0,8,0,0"
+            Padding="8"
+            BorderBrush="#D0D0D0"
+            BorderThickness="1"
+            Background="White">
+      <TextBlock x:Name="TxtFooter" />
+    </Border>
+  </Grid>
+</Window>

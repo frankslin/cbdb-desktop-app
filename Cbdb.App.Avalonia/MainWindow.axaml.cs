@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Cbdb.App.Avalonia.Browser;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Core;
 using Cbdb.App.Data;
@@ -126,6 +127,20 @@ public partial class MainWindow : Window {
 
         var key = Convert.ToString(button.Tag) ?? "module.unknown";
         var moduleLabel = T(key);
+
+        if (key == "module.browser") {
+            if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
+                _txtStatus.Text = T("status.failed");
+                _txtOutput.Text = T("msg.sqlite_missing");
+                return;
+            }
+
+            var window = new PersonBrowserWindow(_sqlitePath, _localizationService);
+            window.Show();
+            _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+            _txtOutput.Text = T("msg.browser_opened");
+            return;
+        }
 
         _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
         _txtOutput.Text = key == "module.browser" ? T("msg.browser_todo") : string.Format(T("msg.module_todo"), moduleLabel);
