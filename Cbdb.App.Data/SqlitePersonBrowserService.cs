@@ -188,8 +188,18 @@ SELECT
     b.c_index_year_type_code,
     iy.c_index_year_type_hz,
     iy.c_index_year_type_desc,
-    b.c_index_year_source_id,
-    COALESCE(src.c_name_chn, src.c_name),
+    CASE
+        WHEN b.c_index_year_source_id IS NULL THEN NULL
+        ELSE CAST(b.c_index_year_source_id AS TEXT)
+             || CASE
+                    WHEN src.c_name_chn IS NOT NULL AND TRIM(src.c_name_chn) <> '' THEN ' / ' || TRIM(src.c_name_chn)
+                    ELSE ''
+                END
+             || CASE
+                    WHEN src.c_name IS NOT NULL AND TRIM(src.c_name) <> '' THEN ' / ' || TRIM(src.c_name)
+                    ELSE ''
+                END
+    END,
     d.c_dynasty,
     d.c_dynasty_chn,
     b.c_birthyear,
@@ -231,21 +241,17 @@ LIMIT 1;";
                 reader.IsDBNull(14) ? null : reader.GetString(14),
                 " / {0}"
             );
-            indexYearSource = FormatSourceDisplay(
-                reader.IsDBNull(15) ? null : Convert.ToString(reader.GetValue(15)),
-                reader.IsDBNull(16) ? null : reader.GetString(16),
-                reader.IsDBNull(17) ? null : reader.GetString(17)
-            );
-            dynasty = reader.IsDBNull(18) ? null : reader.GetString(18);
-            dynastyChn = reader.IsDBNull(19) ? null : reader.GetString(19);
-            birthYear = reader.IsDBNull(20) ? null : reader.GetInt32(20);
-            deathYear = reader.IsDBNull(21) ? null : reader.GetInt32(21);
-            gender = reader.IsDBNull(22)
+            indexYearSource = reader.IsDBNull(15) ? null : reader.GetString(15);
+            dynasty = reader.IsDBNull(16) ? null : reader.GetString(16);
+            dynastyChn = reader.IsDBNull(17) ? null : reader.GetString(17);
+            birthYear = reader.IsDBNull(18) ? null : reader.GetInt32(18);
+            deathYear = reader.IsDBNull(19) ? null : reader.GetInt32(19);
+            gender = reader.IsDBNull(20)
                 ? "Unknown"
-                : (reader.GetInt32(22) == 1 ? "F" : "M");
-            indexAddress = reader.IsDBNull(23) ? null : reader.GetString(23);
-            indexAddressChn = reader.IsDBNull(24) ? null : reader.GetString(24);
-            indexAddressType = reader.IsDBNull(26) ? (reader.IsDBNull(25) ? null : Convert.ToString(reader.GetValue(25))) : reader.GetString(26);
+                : (reader.GetInt32(20) == 1 ? "F" : "M");
+            indexAddress = reader.IsDBNull(21) ? null : reader.GetString(21);
+            indexAddressChn = reader.IsDBNull(22) ? null : reader.GetString(22);
+            indexAddressType = reader.IsDBNull(24) ? (reader.IsDBNull(23) ? null : Convert.ToString(reader.GetValue(23))) : reader.GetString(24);
         }
 
         var fields = await LoadBiogMainFieldsAsync(connection, personId, cancellationToken);
@@ -598,21 +604,6 @@ LIMIT 1;";
         return $"\"{identifier.Replace("\"", "\"\"")}\"";
     }
 
-    private static string? FormatSourceDisplay(string? personId, string? nameChn, string? name) {
-        var parts = new List<string>();
-
-        if (!string.IsNullOrWhiteSpace(personId)) {
-            parts.Add(personId.Trim());
-        }
-        if (!string.IsNullOrWhiteSpace(nameChn)) {
-            parts.Add(nameChn.Trim());
-        }
-        if (!string.IsNullOrWhiteSpace(name)) {
-            parts.Add(name.Trim());
-        }
-
-        return parts.Count == 0 ? null : string.Join(" / ", parts);
-    }
     private static string? JoinDisplay(string? primary, string? secondary, string secondaryPattern = " / {0}") {
         if (string.IsNullOrWhiteSpace(primary)) {
             return secondary;
