@@ -15,17 +15,40 @@ public partial class MainWindow : Window {
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
     private readonly AppLocalizationService _localizationService = new();
 
+    private Button _btnLangEn = null!;
+    private Button _btnLangZhHant = null!;
+    private Button _btnLangZhHans = null!;
+    private Button _btnModuleBrowser = null!;
+    private Button _btnModuleEntry = null!;
+    private Button _btnModuleOffice = null!;
+    private Button _btnModuleKinship = null!;
+    private Button _btnModuleAssociations = null!;
+    private Button _btnModuleNetworks = null!;
+    private Button _btnModuleAssociationPairs = null!;
+    private Button _btnModulePlace = null!;
+    private Button _btnModuleStatus = null!;
+    private Button _btnModuleTexts = null!;
+    private Button _btnReportError = null!;
+    private Button _btnRelinkTables = null!;
+    private Button _btnChangeIndexAddress = null!;
+    private Button _btnUsersGuide = null!;
+    private Button _btnExit = null!;
+    private TextBlock _txtHeaderMain = null!;
+    private TextBlock _txtStatus = null!;
+    private TextBox _txtOutput = null!;
+
     private string _sqlitePath = string.Empty;
 
     public MainWindow() {
         InitializeComponent();
+        InitializeControls();
 
         _localizationService.LanguageChanged += (_, _) => ApplyLocalization();
         _localizationService.ApplyCurrentLanguage();
 
         _sqlitePath = GuessDefaultSqlitePath();
         if (!string.IsNullOrWhiteSpace(_sqlitePath)) {
-            TxtOutput.Text = _sqlitePath;
+            _txtOutput.Text = _sqlitePath;
         }
 
         ApplyLocalization();
@@ -33,27 +56,27 @@ public partial class MainWindow : Window {
 
     private void ApplyLocalization() {
         Title = T("window.title");
-        TxtHeaderMain.Text = T("header.main");
+        _txtHeaderMain.Text = T("header.main");
 
-        SetModuleButtonContent(BtnModuleBrowser, "module.browser", "◎");
-        SetModuleButtonContent(BtnModuleEntry, "module.entry", "◇");
-        SetModuleButtonContent(BtnModuleOffice, "module.office", "▣");
-        SetModuleButtonContent(BtnModuleKinship, "module.kinship", "◌");
-        SetModuleButtonContent(BtnModuleAssociations, "module.associations", "△");
-        SetModuleButtonContent(BtnModuleNetworks, "module.networks", "⌘");
-        SetModuleButtonContent(BtnModuleAssociationPairs, "module.association_pairs", "◫");
-        SetModuleButtonContent(BtnModulePlace, "module.place", "◈");
-        SetModuleButtonContent(BtnModuleStatus, "module.status", "≡");
-        SetModuleButtonContent(BtnModuleTexts, "module.texts", "✦");
+        SetModuleButtonContent(_btnModuleBrowser, "module.browser", "◎");
+        SetModuleButtonContent(_btnModuleEntry, "module.entry", "◇");
+        SetModuleButtonContent(_btnModuleOffice, "module.office", "▣");
+        SetModuleButtonContent(_btnModuleKinship, "module.kinship", "◌");
+        SetModuleButtonContent(_btnModuleAssociations, "module.associations", "△");
+        SetModuleButtonContent(_btnModuleNetworks, "module.networks", "⌘");
+        SetModuleButtonContent(_btnModuleAssociationPairs, "module.association_pairs", "◫");
+        SetModuleButtonContent(_btnModulePlace, "module.place", "◈");
+        SetModuleButtonContent(_btnModuleStatus, "module.status", "≡");
+        SetModuleButtonContent(_btnModuleTexts, "module.texts", "✦");
 
-        BtnReportError.Content = T("button.report_error");
-        BtnChangeIndexAddress.Content = T("button.change_index_address");
-        BtnRelinkTables.Content = T("button.relink_tables");
-        BtnUsersGuide.Content = T("button.users_guide");
-        BtnExit.Content = T("button.exit");
+        _btnReportError.Content = T("button.report_error");
+        _btnChangeIndexAddress.Content = T("button.change_index_address");
+        _btnRelinkTables.Content = T("button.relink_tables");
+        _btnUsersGuide.Content = T("button.users_guide");
+        _btnExit.Content = T("button.exit");
 
-        if (string.IsNullOrWhiteSpace(TxtStatus.Text) || TxtStatus.Text == "Ready" || TxtStatus.Text == "就緒" || TxtStatus.Text == "就绪") {
-            TxtStatus.Text = T("status.ready");
+        if (string.IsNullOrWhiteSpace(_txtStatus.Text) || _txtStatus.Text == "Ready" || _txtStatus.Text == "就緒" || _txtStatus.Text == "就绪") {
+            _txtStatus.Text = T("status.ready");
         }
 
         HighlightLanguageButton();
@@ -64,36 +87,36 @@ public partial class MainWindow : Window {
     }
 
     private void HighlightLanguageButton() {
-        BtnLangEn.FontWeight = FontWeight.Normal;
-        BtnLangZhHant.FontWeight = FontWeight.Normal;
-        BtnLangZhHans.FontWeight = FontWeight.Normal;
+        _btnLangEn.FontWeight = FontWeight.Normal;
+        _btnLangZhHant.FontWeight = FontWeight.Normal;
+        _btnLangZhHans.FontWeight = FontWeight.Normal;
 
         switch (_localizationService.CurrentLanguage) {
             case UiLanguage.English:
-                BtnLangEn.FontWeight = FontWeight.Bold;
+                _btnLangEn.FontWeight = FontWeight.Bold;
                 break;
             case UiLanguage.TraditionalChinese:
-                BtnLangZhHant.FontWeight = FontWeight.Bold;
+                _btnLangZhHant.FontWeight = FontWeight.Bold;
                 break;
             case UiLanguage.SimplifiedChinese:
-                BtnLangZhHans.FontWeight = FontWeight.Bold;
+                _btnLangZhHans.FontWeight = FontWeight.Bold;
                 break;
         }
     }
 
     private void BtnLangEn_Click(object? sender, RoutedEventArgs e) {
         _localizationService.SetLanguage(UiLanguage.English);
-        TxtStatus.Text = T("status.language_set");
+        _txtStatus.Text = T("status.language_set");
     }
 
     private void BtnLangZhHant_Click(object? sender, RoutedEventArgs e) {
         _localizationService.SetLanguage(UiLanguage.TraditionalChinese);
-        TxtStatus.Text = T("status.language_set");
+        _txtStatus.Text = T("status.language_set");
     }
 
     private void BtnLangZhHans_Click(object? sender, RoutedEventArgs e) {
         _localizationService.SetLanguage(UiLanguage.SimplifiedChinese);
-        TxtStatus.Text = T("status.language_set");
+        _txtStatus.Text = T("status.language_set");
     }
 
     private void ModuleButton_Click(object? sender, RoutedEventArgs e) {
@@ -104,8 +127,8 @@ public partial class MainWindow : Window {
         var key = Convert.ToString(button.Tag) ?? "module.unknown";
         var moduleLabel = T(key);
 
-        TxtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
-        TxtOutput.Text = key == "module.browser" ? T("msg.browser_todo") : string.Format(T("msg.module_todo"), moduleLabel);
+        _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+        _txtOutput.Text = key == "module.browser" ? T("msg.browser_todo") : string.Format(T("msg.module_todo"), moduleLabel);
     }
 
     private async void BtnRelinkTables_Click(object? sender, RoutedEventArgs e) {
@@ -126,25 +149,25 @@ public partial class MainWindow : Window {
 
         var path = files[0].TryGetLocalPath();
         if (string.IsNullOrWhiteSpace(path)) {
-            TxtStatus.Text = T("status.failed");
-            TxtOutput.Text = T("msg.sqlite_missing");
+            _txtStatus.Text = T("status.failed");
+            _txtOutput.Text = T("msg.sqlite_missing");
             return;
         }
 
         _sqlitePath = NormalizeSqlitePath(path);
 
         try {
-            TxtStatus.Text = T("status.checking");
-            TxtOutput.Text = string.Empty;
+            _txtStatus.Text = T("status.checking");
+            _txtOutput.Text = string.Empty;
 
             var result = await _databaseHealthService.CheckAsync(_sqlitePath);
-            TxtStatus.Text = result.Success ? T("status.connected") : T("status.failed");
-            TxtOutput.Text = result.Success
+            _txtStatus.Text = result.Success ? T("status.connected") : T("status.failed");
+            _txtOutput.Text = result.Success
                 ? $"{result.Message}{Environment.NewLine}{_sqlitePath}"
                 : result.Message;
         } catch (Exception ex) {
-            TxtStatus.Text = T("status.failed");
-            TxtOutput.Text = ex.Message;
+            _txtStatus.Text = T("status.failed");
+            _txtOutput.Text = ex.Message;
         }
     }
 
@@ -153,34 +176,34 @@ public partial class MainWindow : Window {
 
         try {
             OpenExternalTarget(reportUrl);
-            TxtStatus.Text = T("button.report_error");
-            TxtOutput.Text = $"{T("msg.report_opened")}{Environment.NewLine}{reportUrl}";
+            _txtStatus.Text = T("button.report_error");
+            _txtOutput.Text = $"{T("msg.report_opened")}{Environment.NewLine}{reportUrl}";
         } catch (Exception ex) {
-            TxtStatus.Text = T("status.failed");
-            TxtOutput.Text = ex.Message;
+            _txtStatus.Text = T("status.failed");
+            _txtOutput.Text = ex.Message;
         }
     }
 
     private void BtnChangeIndexAddress_Click(object? sender, RoutedEventArgs e) {
-        TxtStatus.Text = T("button.change_index_address");
-        TxtOutput.Text = T("msg.index_addr_todo");
+        _txtStatus.Text = T("button.change_index_address");
+        _txtOutput.Text = T("msg.index_addr_todo");
     }
 
     private void BtnUsersGuide_Click(object? sender, RoutedEventArgs e) {
         try {
             var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "cbdb-user-guide", "docs", "index.md"));
             if (!File.Exists(path)) {
-                TxtStatus.Text = T("button.users_guide");
-                TxtOutput.Text = string.Format(T("msg.user_guide_not_found"), path);
+                _txtStatus.Text = T("button.users_guide");
+                _txtOutput.Text = string.Format(T("msg.user_guide_not_found"), path);
                 return;
             }
 
             OpenExternalTarget(path);
-            TxtStatus.Text = T("msg.user_guide_opened");
-            TxtOutput.Text = path;
+            _txtStatus.Text = T("msg.user_guide_opened");
+            _txtOutput.Text = path;
         } catch (Exception ex) {
-            TxtStatus.Text = T("msg.user_guide_failed");
-            TxtOutput.Text = ex.Message;
+            _txtStatus.Text = T("msg.user_guide_failed");
+            _txtOutput.Text = ex.Message;
         }
     }
 
@@ -192,6 +215,30 @@ public partial class MainWindow : Window {
 
     private void InitializeComponent() {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    private void InitializeControls() {
+        _btnLangEn = this.FindControl<Button>("BtnLangEn") ?? throw new InvalidOperationException("BtnLangEn not found.");
+        _btnLangZhHant = this.FindControl<Button>("BtnLangZhHant") ?? throw new InvalidOperationException("BtnLangZhHant not found.");
+        _btnLangZhHans = this.FindControl<Button>("BtnLangZhHans") ?? throw new InvalidOperationException("BtnLangZhHans not found.");
+        _btnModuleBrowser = this.FindControl<Button>("BtnModuleBrowser") ?? throw new InvalidOperationException("BtnModuleBrowser not found.");
+        _btnModuleEntry = this.FindControl<Button>("BtnModuleEntry") ?? throw new InvalidOperationException("BtnModuleEntry not found.");
+        _btnModuleOffice = this.FindControl<Button>("BtnModuleOffice") ?? throw new InvalidOperationException("BtnModuleOffice not found.");
+        _btnModuleKinship = this.FindControl<Button>("BtnModuleKinship") ?? throw new InvalidOperationException("BtnModuleKinship not found.");
+        _btnModuleAssociations = this.FindControl<Button>("BtnModuleAssociations") ?? throw new InvalidOperationException("BtnModuleAssociations not found.");
+        _btnModuleNetworks = this.FindControl<Button>("BtnModuleNetworks") ?? throw new InvalidOperationException("BtnModuleNetworks not found.");
+        _btnModuleAssociationPairs = this.FindControl<Button>("BtnModuleAssociationPairs") ?? throw new InvalidOperationException("BtnModuleAssociationPairs not found.");
+        _btnModulePlace = this.FindControl<Button>("BtnModulePlace") ?? throw new InvalidOperationException("BtnModulePlace not found.");
+        _btnModuleStatus = this.FindControl<Button>("BtnModuleStatus") ?? throw new InvalidOperationException("BtnModuleStatus not found.");
+        _btnModuleTexts = this.FindControl<Button>("BtnModuleTexts") ?? throw new InvalidOperationException("BtnModuleTexts not found.");
+        _btnReportError = this.FindControl<Button>("BtnReportError") ?? throw new InvalidOperationException("BtnReportError not found.");
+        _btnRelinkTables = this.FindControl<Button>("BtnRelinkTables") ?? throw new InvalidOperationException("BtnRelinkTables not found.");
+        _btnChangeIndexAddress = this.FindControl<Button>("BtnChangeIndexAddress") ?? throw new InvalidOperationException("BtnChangeIndexAddress not found.");
+        _btnUsersGuide = this.FindControl<Button>("BtnUsersGuide") ?? throw new InvalidOperationException("BtnUsersGuide not found.");
+        _btnExit = this.FindControl<Button>("BtnExit") ?? throw new InvalidOperationException("BtnExit not found.");
+        _txtHeaderMain = this.FindControl<TextBlock>("TxtHeaderMain") ?? throw new InvalidOperationException("TxtHeaderMain not found.");
+        _txtStatus = this.FindControl<TextBlock>("TxtStatus") ?? throw new InvalidOperationException("TxtStatus not found.");
+        _txtOutput = this.FindControl<TextBox>("TxtOutput") ?? throw new InvalidOperationException("TxtOutput not found.");
     }
 
     private static void OpenExternalTarget(string target) {
