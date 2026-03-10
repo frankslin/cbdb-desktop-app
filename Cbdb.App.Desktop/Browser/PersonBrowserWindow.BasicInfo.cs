@@ -69,14 +69,32 @@ public partial class PersonBrowserWindow {
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(240) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(220) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-        AddRow(grid, 0, "fl_first_year", CreateValueBox("fl_first_year"), "fl_first_nianhao", CreateWideValueBox("fl_first_nianhao"), "fl_first_notes", CreateMultilineValueBox("fl_first_notes"));
-        AddRow(grid, 1, "fl_last_year", CreateValueBox("fl_last_year"), "fl_last_nianhao", CreateWideValueBox("fl_last_nianhao"), "fl_last_notes", CreateMultilineValueBox("fl_last_notes"));
+        AddRow(
+            grid,
+            0,
+            "fl_first_year", CreateValueBox("fl_first_year"),
+            "fl_first_nianhao", CreateWideValueBox("fl_first_nianhao"),
+            "fl_first_nianhao_year", CreateValueBox("fl_first_nianhao_year")
+        );
+        AddWidePair(grid, 1, "fl_first_notes", CreateMultilineValueBox("fl_first_notes"));
+        AddRow(
+            grid,
+            2,
+            "fl_last_year", CreateValueBox("fl_last_year"),
+            "fl_last_nianhao", CreateWideValueBox("fl_last_nianhao"),
+            "fl_last_nianhao_year", CreateValueBox("fl_last_nianhao_year")
+        );
+        AddWidePair(grid, 3, "fl_last_notes", CreateMultilineValueBox("fl_last_notes"));
         group.Content = grid;
         return group;
     }
@@ -157,6 +175,20 @@ public partial class PersonBrowserWindow {
         AddPair(grid, row, 0, leftLabelKey, leftValue);
         AddPair(grid, row, 2, midLabelKey, midValue);
         AddPair(grid, row, 4, rightLabelKey, rightValue);
+    }
+
+    private void AddWidePair(Grid grid, int row, string labelKey, FrameworkElement value) {
+        var label = CreateLabel(labelKey);
+        label.Margin = new Thickness(0, 0, 6, row == grid.RowDefinitions.Count - 1 ? 0 : 6);
+        Grid.SetRow(label, row);
+        Grid.SetColumn(label, 0);
+        grid.Children.Add(label);
+
+        value.Margin = new Thickness(0, 0, 0, row == grid.RowDefinitions.Count - 1 ? 0 : 6);
+        Grid.SetRow(value, row);
+        Grid.SetColumn(value, 1);
+        Grid.SetColumnSpan(value, grid.ColumnDefinitions.Count - 1);
+        grid.Children.Add(value);
     }
 
     private void AddPair(Grid grid, int row, int column, string labelKey, FrameworkElement value) {
@@ -266,10 +298,12 @@ public partial class PersonBrowserWindow {
         SetValue("death_age_range", GetDisplayOnlyField(detail, "c_death_age_range"));
 
         SetValue("fl_first_year", GetRawField(detail, "c_fl_earliest_year"));
-        SetValue("fl_first_nianhao", JoinDisplay(GetDisplayOnlyField(detail, "c_fl_ey_nh_code"), GetRawField(detail, "c_fl_ey_nh_year")));
+        SetValue("fl_first_nianhao", GetDisplayOnlyField(detail, "c_fl_ey_nh_code"));
+        SetValue("fl_first_nianhao_year", GetRawField(detail, "c_fl_ey_nh_year"));
         SetValue("fl_first_notes", GetRawField(detail, "c_fl_ey_notes"));
         SetValue("fl_last_year", GetRawField(detail, "c_fl_latest_year"));
-        SetValue("fl_last_nianhao", JoinDisplay(GetDisplayOnlyField(detail, "c_fl_ly_nh_code"), GetRawField(detail, "c_fl_ly_nh_year")));
+        SetValue("fl_last_nianhao", GetDisplayOnlyField(detail, "c_fl_ly_nh_code"));
+        SetValue("fl_last_nianhao_year", GetRawField(detail, "c_fl_ly_nh_year"));
         SetValue("fl_last_notes", GetRawField(detail, "c_fl_ly_notes"));
 
         SetValue("choronym", GetDisplayOnlyField(detail, "c_choronym_code"));
@@ -344,10 +378,12 @@ public partial class PersonBrowserWindow {
                 "death_age_range" => "\u6642\u9650",
                 "fl_group" => "\u5728\u4E16\u5E74\u4EFD",
                 "fl_first_year" => "\u5728\u4E16\u59CB\u5E74",
-                "fl_first_nianhao" => "\u5E74\u865F\u5E74",
+                "fl_first_nianhao" => "\u5E74\u865F",
+                "fl_first_nianhao_year" => "\u5E74\u865F\u5E74",
                 "fl_first_notes" => "\u6CE8\u91CB",
                 "fl_last_year" => "\u5728\u4E16\u7D42\u5E74",
-                "fl_last_nianhao" => "\u5E74\u865F\u5E74",
+                "fl_last_nianhao" => "\u5E74\u865F",
+                "fl_last_nianhao_year" => "\u5E74\u865F\u5E74",
                 "fl_last_notes" => "\u6CE8\u91CB",
                 "identity_group" => "\u8EAB\u4EFD\u8207\u6B78\u5C6C",
                 "choronym" => "\u90E1\u671B",
@@ -385,10 +421,12 @@ public partial class PersonBrowserWindow {
                 "death_age_range" => "\u65F6\u9650",
                 "fl_group" => "\u5728\u4E16\u5E74\u4EFD",
                 "fl_first_year" => "\u5728\u4E16\u59CB\u5E74",
-                "fl_first_nianhao" => "\u5E74\u53F7\u5E74",
+                "fl_first_nianhao" => "\u5E74\u53F7",
+                "fl_first_nianhao_year" => "\u5E74\u53F7\u5E74",
                 "fl_first_notes" => "\u6CE8\u91CA",
                 "fl_last_year" => "\u5728\u4E16\u7EC8\u5E74",
-                "fl_last_nianhao" => "\u5E74\u53F7\u5E74",
+                "fl_last_nianhao" => "\u5E74\u53F7",
+                "fl_last_nianhao_year" => "\u5E74\u53F7\u5E74",
                 "fl_last_notes" => "\u6CE8\u91CA",
                 "identity_group" => "\u8EAB\u4EFD\u4E0E\u5F52\u5C5E",
                 "choronym" => "\u90E1\u671B",
@@ -426,10 +464,12 @@ public partial class PersonBrowserWindow {
                 "death_age_range" => "Age Range",
                 "fl_group" => "Years Alive",
                 "fl_first_year" => "Earliest Living Year",
-                "fl_first_nianhao" => "Reign Year",
+                "fl_first_nianhao" => "Reign Title",
+                "fl_first_nianhao_year" => "Reign Year",
                 "fl_first_notes" => "Notes",
                 "fl_last_year" => "Latest Living Year",
-                "fl_last_nianhao" => "Reign Year",
+                "fl_last_nianhao" => "Reign Title",
+                "fl_last_nianhao_year" => "Reign Year",
                 "fl_last_notes" => "Notes",
                 "identity_group" => "Identity and Origin",
                 "choronym" => "Choronym",
