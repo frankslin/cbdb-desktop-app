@@ -1,0 +1,28 @@
+<Application
+    x:Class="Cbdb.App.Avalonia.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Application.Styles>
+    <FluentTheme />
+
+    <Style Selector="Window">
+      <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+    </Style>
+
+    <Style Selector="Button">
+      <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+    </Style>
+
+    <Style Selector="TextBlock">
+      <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+    </Style>
+
+    <Style Selector="TextBox">
+      <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+    </Style>
+  </Application.Styles>
+
+  <Application.Resources>
+    <FontFamily x:Key="AppFontFamily">PingFang TC, Microsoft JhengHei UI, sans-serif</FontFamily>
+  </Application.Resources>
+</Application>

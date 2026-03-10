@@ -5,10 +5,15 @@ This subdirectory contains a new Windows desktop app workspace for CBDB SQLite b
 ## Projects
 
 - `Cbdb.App.Desktop`: WPF desktop shell
+- `Cbdb.App.Avalonia`: cross-platform desktop shell for macOS/Windows migration
 - `Cbdb.App.Core`: shared interfaces/models
 - `Cbdb.App.Data`: SQLite data access services
 
 ## Build Instructions
+
+Detailed cross-platform build and test steps:
+
+- `BUILD_GUIDE.md`
 
 ### Prerequisites
 
@@ -27,10 +32,16 @@ dotnet restore
 dotnet build Cbdb.WindowsApp.sln -c Debug
 ```
 
-### Run
+### Run Windows WPF App
 
 ```powershell
 dotnet run --project .\Cbdb.App.Desktop\Cbdb.App.Desktop.csproj
+```
+
+### Run Cross-Platform Avalonia App
+
+```bash
+dotnet run --project ./Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj
 ```
 
 ### Open in Visual Studio
@@ -69,12 +80,24 @@ Supported languages in scaffold:
 
 Main window texts are key-driven via localization service.
 
+## Avalonia Migration Bootstrap
+
+- `Cbdb.App.Avalonia` provides a first cross-platform shell for macOS work.
+- Current ported features:
+  - main navigation window
+  - English / Traditional Chinese / Simplified Chinese switch
+  - SQLite file picker using cross-platform storage APIs
+  - SQLite health check using shared data services
+  - external link / user-guide open actions
+- Not yet ported:
+  - person browser window
+  - query module windows
+  - CSV export and related data grids
+
 ## Next Implementation Steps
 
 1. Add Browser page (person search + detail tabs)
 2. Implement LookAt query framework
 3. Add export flows (CSV/HTML)
 4. Add secondary feature: address rank editing + index address rebuild
-
-
 

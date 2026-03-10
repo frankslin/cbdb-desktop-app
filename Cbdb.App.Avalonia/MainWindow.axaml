@@ -1,0 +1,87 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="NAVIGATION_PANE"
+    Width="1000"
+    Height="780"
+    MinWidth="920"
+    MinHeight="680"
+    Background="#F2F2F2">
+  <Grid Margin="14" ColumnDefinitions="*,150" RowDefinitions="Auto,*,Auto">
+    <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,Auto">
+      <Border Grid.Column="0"
+              HorizontalAlignment="Center"
+              Background="#133FB5"
+              Padding="16,4">
+        <TextBlock x:Name="TxtHeaderMain"
+                   FontSize="34"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   Text="中國歷代人物傳記資料庫" />
+      </Border>
+
+      <StackPanel Grid.Column="1"
+                  Orientation="Horizontal"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Top">
+        <Button x:Name="BtnLangEn" Width="40" Height="28" Margin="4,0,0,0" Click="BtnLangEn_Click" Content="EN" />
+        <Button x:Name="BtnLangZhHant" Width="40" Height="28" Margin="4,0,0,0" Click="BtnLangZhHant_Click" Content="繁" />
+        <Button x:Name="BtnLangZhHans" Width="40" Height="28" Margin="4,0,0,0" Click="BtnLangZhHans_Click" Content="简" />
+      </StackPanel>
+    </Grid>
+
+    <Border Grid.Row="1"
+            Grid.Column="0"
+            Margin="4,12,14,0"
+            Padding="20,16"
+            BorderBrush="Black"
+            BorderThickness="1"
+            Background="#F9F9F9">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+          <Button x:Name="BtnModuleBrowser" Grid.Row="0" Grid.Column="0" Margin="0,0,12,12" Height="74" Click="ModuleButton_Click" Tag="module.browser" />
+          <Button x:Name="BtnModuleEntry" Grid.Row="0" Grid.Column="1" Margin="0,0,0,12" Height="74" Click="ModuleButton_Click" Tag="module.entry" />
+          <Button x:Name="BtnModuleOffice" Grid.Row="1" Grid.Column="0" Margin="0,0,12,12" Height="74" Click="ModuleButton_Click" Tag="module.office" />
+          <Button x:Name="BtnModuleKinship" Grid.Row="1" Grid.Column="1" Margin="0,0,0,12" Height="74" Click="ModuleButton_Click" Tag="module.kinship" />
+          <Button x:Name="BtnModuleAssociations" Grid.Row="2" Grid.Column="0" Margin="0,0,12,12" Height="74" Click="ModuleButton_Click" Tag="module.associations" />
+          <Button x:Name="BtnModuleNetworks" Grid.Row="2" Grid.Column="1" Margin="0,0,0,12" Height="74" Click="ModuleButton_Click" Tag="module.networks" />
+          <Button x:Name="BtnModuleAssociationPairs" Grid.Row="3" Grid.Column="0" Margin="0,0,12,12" Height="74" Click="ModuleButton_Click" Tag="module.association_pairs" />
+          <Button x:Name="BtnModulePlace" Grid.Row="3" Grid.Column="1" Margin="0,0,0,12" Height="74" Click="ModuleButton_Click" Tag="module.place" />
+          <Button x:Name="BtnModuleStatus" Grid.Row="4" Grid.Column="0" Margin="0,0,12,0" Height="74" Click="ModuleButton_Click" Tag="module.status" />
+          <Button x:Name="BtnModuleTexts" Grid.Row="4" Grid.Column="1" Height="74" Click="ModuleButton_Click" Tag="module.texts" />
+        </Grid>
+      </ScrollViewer>
+    </Border>
+
+    <StackPanel Grid.Row="1"
+                Grid.Column="1"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,10">
+      <Button x:Name="BtnReportError" Height="46" Margin="0,0,0,10" Click="BtnReportError_Click" />
+      <Button x:Name="BtnRelinkTables" Height="46" Margin="0,0,0,10" Click="BtnRelinkTables_Click" />
+      <Button x:Name="BtnChangeIndexAddress" Height="46" Margin="0,0,0,10" Click="BtnChangeIndexAddress_Click" />
+      <Button x:Name="BtnUsersGuide" Height="46" Margin="0,0,0,10" Click="BtnUsersGuide_Click" />
+      <Button x:Name="BtnExit" Height="36" Click="BtnExit_Click" />
+    </StackPanel>
+
+    <Border Grid.Row="2"
+            Grid.ColumnSpan="2"
+            Margin="0,12,0,0"
+            Padding="8"
+            BorderBrush="#D0D0D0"
+            BorderThickness="1"
+            Background="White">
+      <StackPanel>
+        <TextBlock x:Name="TxtStatus" FontWeight="SemiBold" Text="Ready" />
+        <TextBox x:Name="TxtOutput"
+                 Margin="0,6,0,0"
+                 IsReadOnly="True"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 MinHeight="86"
+                 MaxHeight="120" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>
