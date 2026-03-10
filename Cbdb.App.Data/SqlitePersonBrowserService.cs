@@ -229,7 +229,7 @@ LIMIT 1;";
             indexYearType = JoinDisplay(
                 reader.IsDBNull(13) ? null : reader.GetString(13),
                 reader.IsDBNull(14) ? null : reader.GetString(14),
-                " ({0})"
+                " / {0}"
             );
             indexYearSource = reader.IsDBNull(16) ? (reader.IsDBNull(15) ? null : Convert.ToString(reader.GetValue(15))) : reader.GetString(16);
             dynasty = reader.IsDBNull(17) ? null : reader.GetString(17);

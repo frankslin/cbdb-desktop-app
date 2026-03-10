@@ -10,6 +10,19 @@
         MinHeight="680"
         MinWidth="920"
         Background="#F2F2F2">
+    <Window.Resources>
+        <Style x:Key="ModuleTileButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="74" />
+            <Setter Property="Margin" Value="0,0,12,12" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="Background" Value="#F4F4F4" />
+            <Setter Property="BorderBrush" Value="#8E8E8E" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </Window.Resources>
     <Grid Margin="14">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -53,18 +66,18 @@
                 BorderThickness="1"
                 Background="#F9F9F9">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <Button Name="BtnModuleBrowser" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.browser" />
-                    <Button Name="BtnModuleEntry" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.entry" />
-                    <Button Name="BtnModuleOffice" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.office" />
-                    <Button Name="BtnModuleKinship" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.kinship" />
-                    <Button Name="BtnModuleAssociations" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.associations" />
-                    <Button Name="BtnModuleNetworks" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.networks" />
-                    <Button Name="BtnModuleAssociationPairs" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.association_pairs" />
-                    <Button Name="BtnModulePlace" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.place" />
-                    <Button Name="BtnModuleStatus" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.status" />
-                    <Button Name="BtnModuleTexts" Height="40" Margin="0,4" Click="ModuleButton_Click" Tag="module.texts" />
-                </StackPanel>
+                <UniformGrid Columns="2">
+                    <Button Name="BtnModuleBrowser" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.browser" />
+                    <Button Name="BtnModuleEntry" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.entry" />
+                    <Button Name="BtnModuleOffice" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.office" />
+                    <Button Name="BtnModuleKinship" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.kinship" />
+                    <Button Name="BtnModuleAssociations" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.associations" />
+                    <Button Name="BtnModuleNetworks" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.networks" />
+                    <Button Name="BtnModuleAssociationPairs" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.association_pairs" />
+                    <Button Name="BtnModulePlace" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.place" />
+                    <Button Name="BtnModuleStatus" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.status" />
+                    <Button Name="BtnModuleTexts" Style="{StaticResource ModuleTileButtonStyle}" Click="ModuleButton_Click" Tag="module.texts" Margin="0,0,12,0" />
+                </UniformGrid>
             </ScrollViewer>
         </Border>
 

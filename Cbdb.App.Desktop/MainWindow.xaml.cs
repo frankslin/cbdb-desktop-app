@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,16 +31,16 @@ public partial class MainWindow : Window {
         Title = T("window.title");
         TxtHeaderMain.Text = T("header.main");
 
-        BtnModuleBrowser.Content = T("module.browser");
-        BtnModuleEntry.Content = T("module.entry");
-        BtnModuleOffice.Content = T("module.office");
-        BtnModuleKinship.Content = T("module.kinship");
-        BtnModuleAssociations.Content = T("module.associations");
-        BtnModuleNetworks.Content = T("module.networks");
-        BtnModuleAssociationPairs.Content = T("module.association_pairs");
-        BtnModulePlace.Content = T("module.place");
-        BtnModuleStatus.Content = T("module.status");
-        BtnModuleTexts.Content = T("module.texts");
+        SetModuleButtonContent(BtnModuleBrowser, "module.browser", "◎");
+        SetModuleButtonContent(BtnModuleEntry, "module.entry", "◇");
+        SetModuleButtonContent(BtnModuleOffice, "module.office", "▣");
+        SetModuleButtonContent(BtnModuleKinship, "module.kinship", "◌");
+        SetModuleButtonContent(BtnModuleAssociations, "module.associations", "△");
+        SetModuleButtonContent(BtnModuleNetworks, "module.networks", "⌘");
+        SetModuleButtonContent(BtnModuleAssociationPairs, "module.association_pairs", "◫");
+        SetModuleButtonContent(BtnModulePlace, "module.place", "◈");
+        SetModuleButtonContent(BtnModuleStatus, "module.status", "≡");
+        SetModuleButtonContent(BtnModuleTexts, "module.texts", "✦");
 
         BtnReportError.Content = T("button.report_error");
         BtnChangeIndexAddress.Content = T("button.change_index_address");
@@ -56,6 +56,33 @@ public partial class MainWindow : Window {
         HighlightLanguageButton();
     }
 
+
+    private void SetModuleButtonContent(Button button, string key, string icon) {
+        var panel = new StackPanel {
+            Orientation = Orientation.Horizontal,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        panel.Children.Add(new TextBlock {
+            Text = icon,
+            FontSize = 22,
+            Width = 28,
+            Margin = new Thickness(0, 0, 10, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
+            Foreground = System.Windows.Media.Brushes.MidnightBlue
+        });
+
+        panel.Children.Add(new TextBlock {
+            Text = T(key),
+            FontSize = 14,
+            TextWrapping = TextWrapping.Wrap,
+            VerticalAlignment = VerticalAlignment.Center,
+            Foreground = System.Windows.Media.Brushes.MidnightBlue
+        });
+
+        button.Content = panel;
+    }
     private void HighlightLanguageButton() {
         BtnLangEn.FontWeight = FontWeights.Normal;
         BtnLangZhHant.FontWeight = FontWeights.Normal;

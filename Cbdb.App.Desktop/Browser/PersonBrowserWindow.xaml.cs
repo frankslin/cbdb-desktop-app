@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -468,10 +468,10 @@ public partial class PersonBrowserWindow : Window {
                 "birth_year" => "出生年",
                 "death_year" => "卒年",
                 "index_year" => "索引年",
-                "index_year_type" => "類型",
+                "index_year_type" => "規則類型",
                 "index_year_source" => "來源",
                 "index_address" => "索引地址",
-                "index_address_type" => "類型",
+                "index_address_type" => "規則類型",
                 "dynasty" => "朝代",
                 "notes" => "備註",
                 "tab_birth_death" => "基本資料",
@@ -525,10 +525,10 @@ public partial class PersonBrowserWindow : Window {
                 "birth_year" => "出生年",
                 "death_year" => "卒年",
                 "index_year" => "索引年",
-                "index_year_type" => "类型",
+                "index_year_type" => "规则类型",
                 "index_year_source" => "来源",
                 "index_address" => "索引地址",
-                "index_address_type" => "类型",
+                "index_address_type" => "规则类型",
                 "dynasty" => "朝代",
                 "notes" => "备注",
                 "tab_birth_death" => "基本资料",
@@ -582,10 +582,10 @@ public partial class PersonBrowserWindow : Window {
                 "birth_year" => "Birth Year",
                 "death_year" => "Death Year",
                 "index_year" => "Index Year",
-                "index_year_type" => "Type",
+                "index_year_type" => "Rule Type",
                 "index_year_source" => "Source",
                 "index_address" => "Index Address",
-                "index_address_type" => "Type",
+                "index_address_type" => "Rule Type",
                 "dynasty" => "Dynasty",
                 "notes" => "Notes",
                 "tab_birth_death" => "Basic Information",
