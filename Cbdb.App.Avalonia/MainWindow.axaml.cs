@@ -47,12 +47,9 @@ public partial class MainWindow : Window {
         _localizationService.LanguageChanged += (_, _) => ApplyLocalization();
         _localizationService.ApplyCurrentLanguage();
 
-        _sqlitePath = GuessDefaultSqlitePath();
-        if (!string.IsNullOrWhiteSpace(_sqlitePath)) {
-            _txtOutput.Text = _sqlitePath;
-        }
-
         ApplyLocalization();
+
+        Opened += async (_, _) => await InitializeSqlitePathAsync();
     }
 
     private void ApplyLocalization() {
@@ -180,6 +177,10 @@ public partial class MainWindow : Window {
             _txtOutput.Text = result.Success
                 ? $"{result.Message}{Environment.NewLine}{_sqlitePath}"
                 : result.Message;
+
+            if (result.Success) {
+                await AppSettingsStore.SaveLastSqlitePathAsync(_sqlitePath);
+            }
         } catch (Exception ex) {
             _txtStatus.Text = T("status.failed");
             _txtOutput.Text = ex.Message;
@@ -269,6 +270,49 @@ public partial class MainWindow : Window {
         }
 
         return path.Trim().Trim((char)34);
+    }
+
+    private async Task InitializeSqlitePathAsync() {
+        var restoredPath = NormalizeSqlitePath(await AppSettingsStore.TryGetLastSqlitePathAsync() ?? string.Empty);
+        if (!string.IsNullOrWhiteSpace(restoredPath) && await TryUseSqlitePathAsync(restoredPath, persistOnSuccess: false)) {
+            return;
+        }
+
+        var guessedPath = GuessDefaultSqlitePath();
+        if (!string.IsNullOrWhiteSpace(guessedPath)) {
+            await TryUseSqlitePathAsync(guessedPath, persistOnSuccess: true);
+        }
+    }
+
+    private async Task<bool> TryUseSqlitePathAsync(string sqlitePath, bool persistOnSuccess) {
+        var normalizedPath = NormalizeSqlitePath(sqlitePath);
+        if (string.IsNullOrWhiteSpace(normalizedPath) || !File.Exists(normalizedPath)) {
+            return false;
+        }
+
+        try {
+            _txtStatus.Text = T("status.checking");
+            var result = await _databaseHealthService.CheckAsync(normalizedPath);
+            if (!result.Success) {
+                _txtStatus.Text = T("status.failed");
+                _txtOutput.Text = result.Message;
+                return false;
+            }
+
+            _sqlitePath = normalizedPath;
+            _txtStatus.Text = T("status.connected");
+            _txtOutput.Text = $"{result.Message}{Environment.NewLine}{_sqlitePath}";
+
+            if (persistOnSuccess) {
+                await AppSettingsStore.SaveLastSqlitePathAsync(_sqlitePath);
+            }
+
+            return true;
+        } catch (Exception ex) {
+            _txtStatus.Text = T("status.failed");
+            _txtOutput.Text = ex.Message;
+            return false;
+        }
     }
 
     private static string GuessDefaultSqlitePath() {

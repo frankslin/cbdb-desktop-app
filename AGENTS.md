@@ -66,6 +66,7 @@
 - Earliest/latest living year layout was refined so each of earliest and latest uses:
   - one row for Gregorian year, reign title, and reign year
   - one separate notes row using a multiline control
+- The Avalonia shell now remembers the last successfully loaded SQLite file path using the platform-local app-data directory, and restores it on next launch only if the health check still succeeds.
 - Addresses tab now renders each address record as a repeated form rather than a generic grid.
 - Addresses tab currently includes:
   - sequence
@@ -84,6 +85,7 @@
 - The person browser still needs closer alignment with the Access UI and field semantics.
 - Code-field display rules are only partially normalized; more Access-like display behavior is still needed.
 - Related-tab load performance is noticeably slower than tab-count queries and needs optimization.
+- Lazy-loaded Avalonia tabs reduce the initial person-selection stall, but the remaining heavy tabs still need careful loading strategy once they are ported.
 - The Addresses tab is only partially aligned with Access.
   - First/last year content is still collapsed into summary strings instead of discrete Access-style controls for Gregorian year, reign title, reign year, month, intercalary, day, ganzhi, and range.
   - Address card layout is only approximate and does not yet mirror `BIOG_ADDR_DATA_2 Subform`.

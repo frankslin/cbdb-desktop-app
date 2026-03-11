@@ -56,6 +56,13 @@ Preferred bundled path:
 
 Fallback logic also searches nearby `data/` folders from the app base directory and current working directory.
 
+The Avalonia app also remembers the last successfully opened SQLite path using the platform's local app-data directory:
+
+- Windows: `%LocalAppData%/CbdbApp/settings.json`
+- macOS: `~/Library/Application Support/CbdbApp/settings.json`
+
+On startup, it first tries that remembered path. If that path is missing or no longer passes the health check, it falls back to the bundled `data/` auto-detection logic.
+
 ## macOS Guide
 
 ### What You Can Test on macOS
