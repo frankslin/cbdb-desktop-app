@@ -71,6 +71,16 @@
   - It can open Avalonia windows without a human in the loop.
   - It supports fixture-backed UI tests for deterministic person-browser coverage.
   - It can emit screenshot and JSON artifacts under `artifacts/ui-tests/`.
+- The following person-browser tabs now render repeated-form cards instead of placeholders:
+  - Alt. Names
+  - Writings
+  - Entry
+  - Events
+  - Status
+  - Kinship
+  - Possessions
+  - Sources
+  - Institutions
 - Addresses tab now renders each address record as a repeated form rather than a generic grid.
 - Addresses tab currently includes:
   - sequence
@@ -92,7 +102,16 @@
 - Lazy-loaded Avalonia tabs reduce the initial person-selection stall, but the remaining heavy tabs still need careful loading strategy once they are ported.
 - Headless UI coverage is still minimal.
   - Current automated coverage is only an initial person-browser path with fixture data.
+  - The fixture-backed lazy-load path now covers:
+    - Addresses
+    - Alt. Names
+    - Entry
+    - Events
+    - Status
+    - Kinship
+    - Possessions
   - Real-database UI scenarios and screenshot baseline diffing are not wired yet.
+- The newly ported `Entry`, `Events`, `Status`, `Kinship`, and `Possessions` tabs are stable repeated-form summaries, but they are not yet field-for-field Access-equivalent layouts.
 - The Addresses tab is only partially aligned with Access.
   - First/last year content is still collapsed into summary strings instead of discrete Access-style controls for Gregorian year, reign title, reign year, month, intercalary, day, ganzhi, and range.
   - Address card layout is only approximate and does not yet mirror `BIOG_ADDR_DATA_2 Subform`.

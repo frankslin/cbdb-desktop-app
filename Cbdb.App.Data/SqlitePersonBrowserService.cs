@@ -559,6 +559,383 @@ ORDER BY btd.c_year, btd.c_textid, btd.c_role_id;";
         return items;
     }
 
+    public async Task<IReadOnlyList<PersonEntryItem>> GetEntriesAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+            return Array.Empty<PersonEntryItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = SqliteOpenMode.ReadOnly };
+        var items = new List<PersonEntryItem>();
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    ed.c_sequence,
+    ec.c_entry_desc_chn,
+    ec.c_entry_desc,
+    ed.c_exam_rank,
+    ed.c_year,
+    nh.c_nianhao_chn,
+    nh.c_nianhao_pin,
+    ed.c_entry_nh_year,
+    yr.c_range_chn,
+    yr.c_range,
+    ed.c_age,
+    kc.c_kinrel_chn,
+    kc.c_kinrel,
+    kin.c_name_chn,
+    kin.c_name,
+    ac.c_assoc_desc_chn,
+    ac.c_assoc_desc,
+    assoc.c_name_chn,
+    assoc.c_name,
+    sinc.c_inst_name_hz,
+    sinc.c_inst_name_py,
+    addr.c_name_chn,
+    addr.c_name,
+    psc.c_parental_status_desc_chn,
+    psc.c_parental_status_desc,
+    src.c_title_chn,
+    src.c_title,
+    ed.c_pages,
+    ed.c_notes,
+    ed.c_posting_notes
+FROM ENTRY_DATA ed
+LEFT JOIN ENTRY_CODES ec ON ec.c_entry_code = ed.c_entry_code
+LEFT JOIN NIAN_HAO nh ON nh.c_nianhao_id = ed.c_entry_nh_id
+LEFT JOIN YEAR_RANGE_CODES yr ON yr.c_range_code = ed.c_entry_range
+LEFT JOIN KINSHIP_CODES kc ON kc.c_kincode = ed.c_kin_code
+LEFT JOIN BIOG_MAIN kin ON kin.c_personid = ed.c_kin_id
+LEFT JOIN ASSOC_CODES ac ON ac.c_assoc_code = ed.c_assoc_code
+LEFT JOIN BIOG_MAIN assoc ON assoc.c_personid = ed.c_assoc_id
+LEFT JOIN SOCIAL_INSTITUTION_NAME_CODES sinc ON sinc.c_inst_name_code = ed.c_inst_name_code
+LEFT JOIN ADDR_CODES addr ON addr.c_addr_id = ed.c_entry_addr_id
+LEFT JOIN PARENTAL_STATUS_CODES psc ON psc.c_parental_status_code = ed.c_parental_status_code
+LEFT JOIN TEXT_CODES src ON src.c_textid = ed.c_source
+WHERE ed.c_personid = $personId
+ORDER BY ed.c_year, ed.c_sequence, ed.c_entry_code;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            items.Add(new PersonEntryItem(
+                Sequence: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                EntryMethod: JoinDisplay(reader.IsDBNull(1) ? null : reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)),
+                ExamRank: reader.IsDBNull(3) ? null : reader.GetString(3),
+                Year: reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                Nianhao: JoinDisplay(reader.IsDBNull(5) ? null : reader.GetString(5), reader.IsDBNull(6) ? null : reader.GetString(6)),
+                NianhaoYear: reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                Dynasty: null,
+                Range: JoinDisplay(reader.IsDBNull(8) ? null : reader.GetString(8), reader.IsDBNull(9) ? null : reader.GetString(9)),
+                Age: reader.IsDBNull(10) ? null : reader.GetInt32(10),
+                Kinship: JoinDisplay(reader.IsDBNull(11) ? null : reader.GetString(11), reader.IsDBNull(12) ? null : reader.GetString(12)),
+                KinNameChn: reader.IsDBNull(13) ? null : reader.GetString(13),
+                KinName: reader.IsDBNull(14) ? null : reader.GetString(14),
+                Association: JoinDisplay(reader.IsDBNull(15) ? null : reader.GetString(15), reader.IsDBNull(16) ? null : reader.GetString(16)),
+                AssociateNameChn: reader.IsDBNull(17) ? null : reader.GetString(17),
+                AssociateName: reader.IsDBNull(18) ? null : reader.GetString(18),
+                InstitutionNameChn: reader.IsDBNull(19) ? null : reader.GetString(19),
+                InstitutionName: reader.IsDBNull(20) ? null : reader.GetString(20),
+                EntryAddressChn: reader.IsDBNull(21) ? null : reader.GetString(21),
+                EntryAddress: reader.IsDBNull(22) ? null : reader.GetString(22),
+                ParentalStatus: JoinDisplay(reader.IsDBNull(23) ? null : reader.GetString(23), reader.IsDBNull(24) ? null : reader.GetString(24)),
+                Source: JoinDisplay(reader.IsDBNull(25) ? null : reader.GetString(25), reader.IsDBNull(26) ? null : reader.GetString(26)),
+                Pages: reader.IsDBNull(27) ? null : reader.GetString(27),
+                Notes: reader.IsDBNull(28) ? null : reader.GetString(28),
+                PostingNotes: reader.IsDBNull(29) ? null : reader.GetString(29)
+            ));
+        }
+
+        return items;
+    }
+
+    public async Task<IReadOnlyList<PersonStatusItem>> GetStatusesAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+            return Array.Empty<PersonStatusItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = SqliteOpenMode.ReadOnly };
+        var items = new List<PersonStatusItem>();
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    sd.c_sequence,
+    sc.c_status_desc_chn,
+    sc.c_status_desc,
+    sd.c_firstyear,
+    fy_nh.c_nianhao_chn,
+    fy_nh.c_nianhao_pin,
+    sd.c_fy_nh_year,
+    fy_range.c_range_chn,
+    fy_range.c_range,
+    sd.c_lastyear,
+    ly_nh.c_nianhao_chn,
+    ly_nh.c_nianhao_pin,
+    sd.c_ly_nh_year,
+    ly_range.c_range_chn,
+    ly_range.c_range,
+    src.c_title_chn,
+    src.c_title,
+    sd.c_pages,
+    sd.c_notes
+FROM STATUS_DATA sd
+LEFT JOIN STATUS_CODES sc ON sc.c_status_code = sd.c_status_code
+LEFT JOIN NIAN_HAO fy_nh ON fy_nh.c_nianhao_id = sd.c_fy_nh_code
+LEFT JOIN YEAR_RANGE_CODES fy_range ON fy_range.c_range_code = sd.c_fy_range
+LEFT JOIN NIAN_HAO ly_nh ON ly_nh.c_nianhao_id = sd.c_ly_nh_code
+LEFT JOIN YEAR_RANGE_CODES ly_range ON ly_range.c_range_code = sd.c_ly_range
+LEFT JOIN TEXT_CODES src ON src.c_textid = sd.c_source
+WHERE sd.c_personid = $personId
+ORDER BY sd.c_sequence, sd.c_status_code;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            items.Add(new PersonStatusItem(
+                Sequence: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                Status: JoinDisplay(reader.IsDBNull(1) ? null : reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)),
+                FirstYear: reader.IsDBNull(3) ? null : reader.GetInt32(3),
+                FirstNianhao: JoinDisplay(reader.IsDBNull(4) ? null : reader.GetString(4), reader.IsDBNull(5) ? null : reader.GetString(5)),
+                FirstNianhaoYear: reader.IsDBNull(6) ? null : reader.GetInt32(6),
+                FirstRange: JoinDisplay(reader.IsDBNull(7) ? null : reader.GetString(7), reader.IsDBNull(8) ? null : reader.GetString(8)),
+                LastYear: reader.IsDBNull(9) ? null : reader.GetInt32(9),
+                LastNianhao: JoinDisplay(reader.IsDBNull(10) ? null : reader.GetString(10), reader.IsDBNull(11) ? null : reader.GetString(11)),
+                LastNianhaoYear: reader.IsDBNull(12) ? null : reader.GetInt32(12),
+                LastRange: JoinDisplay(reader.IsDBNull(13) ? null : reader.GetString(13), reader.IsDBNull(14) ? null : reader.GetString(14)),
+                Source: JoinDisplay(reader.IsDBNull(15) ? null : reader.GetString(15), reader.IsDBNull(16) ? null : reader.GetString(16)),
+                Pages: reader.IsDBNull(17) ? null : reader.GetString(17),
+                Notes: reader.IsDBNull(18) ? null : reader.GetString(18)
+            ));
+        }
+
+        return items;
+    }
+
+    public async Task<IReadOnlyList<PersonPossessionItem>> GetPossessionsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+            return Array.Empty<PersonPossessionItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = SqliteOpenMode.ReadOnly };
+        var items = new List<PersonPossessionItem>();
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    pd.c_possession_record_id,
+    pd.c_sequence,
+    pd.c_possession_desc_chn,
+    pd.c_possession_desc,
+    pac.c_possession_act_desc_chn,
+    pac.c_possession_act_desc,
+    pd.c_quantity,
+    mc.c_measure_desc_chn,
+    mc.c_measure_desc,
+    pd.c_possession_yr,
+    nh.c_nianhao_chn,
+    nh.c_nianhao_pin,
+    pd.c_possession_nh_yr,
+    yr.c_range_chn,
+    yr.c_range,
+    addr.c_name_chn,
+    addr.c_name,
+    src.c_title_chn,
+    src.c_title,
+    pd.c_pages,
+    pd.c_notes
+FROM POSSESSION_DATA pd
+LEFT JOIN POSSESSION_ACT_CODES pac ON pac.c_possession_act_code = pd.c_possession_act_code
+LEFT JOIN MEASURE_CODES mc ON mc.c_measure_code = pd.c_measure_code
+LEFT JOIN NIAN_HAO nh ON nh.c_nianhao_id = pd.c_possession_nh_code
+LEFT JOIN YEAR_RANGE_CODES yr ON yr.c_range_code = pd.c_possession_yr_range
+LEFT JOIN ADDR_CODES addr ON addr.c_addr_id = pd.c_addr_id
+LEFT JOIN TEXT_CODES src ON src.c_textid = pd.c_source
+WHERE pd.c_personid = $personId
+ORDER BY pd.c_sequence, pd.c_possession_record_id;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            items.Add(new PersonPossessionItem(
+                RecordId: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                Sequence: reader.IsDBNull(1) ? null : reader.GetInt32(1),
+                Possession: JoinDisplay(reader.IsDBNull(2) ? null : reader.GetString(2), reader.IsDBNull(3) ? null : reader.GetString(3)),
+                PossessionAction: JoinDisplay(reader.IsDBNull(4) ? null : reader.GetString(4), reader.IsDBNull(5) ? null : reader.GetString(5)),
+                Quantity: reader.IsDBNull(6) ? null : reader.GetString(6),
+                Measure: JoinDisplay(reader.IsDBNull(7) ? null : reader.GetString(7), reader.IsDBNull(8) ? null : reader.GetString(8)),
+                Year: reader.IsDBNull(9) ? null : reader.GetInt32(9),
+                Nianhao: JoinDisplay(reader.IsDBNull(10) ? null : reader.GetString(10), reader.IsDBNull(11) ? null : reader.GetString(11)),
+                NianhaoYear: reader.IsDBNull(12) ? null : reader.GetInt32(12),
+                Range: JoinDisplay(reader.IsDBNull(13) ? null : reader.GetString(13), reader.IsDBNull(14) ? null : reader.GetString(14)),
+                AddressNameChn: reader.IsDBNull(15) ? null : reader.GetString(15),
+                AddressName: reader.IsDBNull(16) ? null : reader.GetString(16),
+                Source: JoinDisplay(reader.IsDBNull(17) ? null : reader.GetString(17), reader.IsDBNull(18) ? null : reader.GetString(18)),
+                Pages: reader.IsDBNull(19) ? null : reader.GetString(19),
+                Notes: reader.IsDBNull(20) ? null : reader.GetString(20)
+            ));
+        }
+
+        return items;
+    }
+
+    public async Task<IReadOnlyList<PersonEventItem>> GetEventsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+            return Array.Empty<PersonEventItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = SqliteOpenMode.ReadOnly };
+        var items = new List<PersonEventItem>();
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    ed.c_sequence,
+    ec.c_event_name_chn,
+    ec.c_event_name,
+    ed.c_role,
+    ed.c_year,
+    nh.c_nianhao_chn,
+    nh.c_nianhao_pin,
+    ed.c_nh_year,
+    ed.c_month,
+    ed.c_intercalary,
+    ed.c_day,
+    gz.c_ganzhi_chn,
+    gz.c_ganzhi_py,
+    yr.c_range_chn,
+    yr.c_range,
+    addr.c_name_chn,
+    addr.c_name,
+    src.c_title_chn,
+    src.c_title,
+    ed.c_pages,
+    ed.c_event,
+    ed.c_notes
+FROM EVENTS_DATA ed
+LEFT JOIN EVENT_CODES ec ON ec.c_event_code = ed.c_event_code
+LEFT JOIN NIAN_HAO nh ON nh.c_nianhao_id = ed.c_nh_code
+LEFT JOIN GANZHI_CODES gz ON gz.c_ganzhi_code = ed.c_day_ganzhi
+LEFT JOIN YEAR_RANGE_CODES yr ON yr.c_range_code = ed.c_yr_range
+LEFT JOIN ADDR_CODES addr ON addr.c_addr_id = ed.c_addr_id
+LEFT JOIN TEXT_CODES src ON src.c_textid = ed.c_source
+WHERE ed.c_personid = $personId
+ORDER BY ed.c_year, ed.c_sequence, ed.c_event_code;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            items.Add(new PersonEventItem(
+                Sequence: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                EventName: JoinDisplay(reader.IsDBNull(1) ? null : reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)),
+                Role: reader.IsDBNull(3) ? null : reader.GetString(3),
+                Year: reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                Nianhao: JoinDisplay(reader.IsDBNull(5) ? null : reader.GetString(5), reader.IsDBNull(6) ? null : reader.GetString(6)),
+                NianhaoYear: reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                Month: reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                Intercalary: reader.IsDBNull(9) ? null : reader.GetInt32(9) == 1,
+                Day: reader.IsDBNull(10) ? null : reader.GetInt32(10),
+                Ganzhi: JoinDisplay(reader.IsDBNull(11) ? null : reader.GetString(11), reader.IsDBNull(12) ? null : reader.GetString(12)),
+                Range: JoinDisplay(reader.IsDBNull(13) ? null : reader.GetString(13), reader.IsDBNull(14) ? null : reader.GetString(14)),
+                AddressNameChn: reader.IsDBNull(15) ? null : reader.GetString(15),
+                AddressName: reader.IsDBNull(16) ? null : reader.GetString(16),
+                Source: JoinDisplay(reader.IsDBNull(17) ? null : reader.GetString(17), reader.IsDBNull(18) ? null : reader.GetString(18)),
+                Pages: reader.IsDBNull(19) ? null : reader.GetString(19),
+                EventText: reader.IsDBNull(20) ? null : reader.GetString(20),
+                Notes: reader.IsDBNull(21) ? null : reader.GetString(21)
+            ));
+        }
+
+        return items;
+    }
+
+    public async Task<IReadOnlyList<PersonKinshipItem>> GetKinshipsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+            return Array.Empty<PersonKinshipItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = SqliteOpenMode.ReadOnly };
+        var items = new List<PersonKinshipItem>();
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    kd.c_kin_id,
+    kc.c_kinrel_chn,
+    kc.c_kinrel,
+    kin.c_name_chn,
+    kin.c_name,
+    kc.c_upstep,
+    kc.c_dwnstep,
+    kc.c_marstep,
+    kc.c_colstep,
+    src.c_title_chn,
+    src.c_title,
+    kd.c_pages,
+    kd.c_notes
+FROM KIN_DATA kd
+LEFT JOIN KINSHIP_CODES kc ON kc.c_kincode = kd.c_kin_code
+LEFT JOIN BIOG_MAIN kin ON kin.c_personid = kd.c_kin_id
+LEFT JOIN TEXT_CODES src ON src.c_textid = kd.c_source
+WHERE kd.c_personid = $personId
+ORDER BY kd.c_kin_id, kd.c_kin_code;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            items.Add(new PersonKinshipItem(
+                KinPersonId: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                Kinship: JoinDisplay(reader.IsDBNull(1) ? null : reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)),
+                KinNameChn: reader.IsDBNull(3) ? null : reader.GetString(3),
+                KinName: reader.IsDBNull(4) ? null : reader.GetString(4),
+                UpStep: reader.IsDBNull(5) ? null : reader.GetInt32(5),
+                DownStep: reader.IsDBNull(6) ? null : reader.GetInt32(6),
+                MarriageStep: reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                CollateralStep: reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                Source: JoinDisplay(reader.IsDBNull(9) ? null : reader.GetString(9), reader.IsDBNull(10) ? null : reader.GetString(10)),
+                Pages: reader.IsDBNull(11) ? null : reader.GetString(11),
+                Notes: reader.IsDBNull(12) ? null : reader.GetString(12)
+            ));
+        }
+
+        return items;
+    }
+
     public async Task<IReadOnlyList<PersonSourceItem>> GetSourcesAsync(
         string sqlitePath,
         int personId,

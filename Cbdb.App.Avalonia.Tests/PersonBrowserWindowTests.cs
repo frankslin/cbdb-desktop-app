@@ -41,6 +41,11 @@ public sealed class PersonBrowserWindowTests {
         var mainTabs = AvaloniaUiTestHelper.FindRequiredControl<TabControl>(window, "MainTabs");
         var tabAddresses = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabAddresses");
         var tabAltNames = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabAltNames");
+        var tabEntry = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabEntry");
+        var tabEvents = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabEvents");
+        var tabStatus = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabStatus");
+        var tabKinship = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabKinship");
+        var tabPossessions = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabPossessions");
 
         mainTabs.SelectedItem = tabAddresses;
         await AvaloniaUiTestHelper.WaitUntilAsync(
@@ -56,6 +61,41 @@ public sealed class PersonBrowserWindowTests {
             "Alt names tab did not render any records."
         );
 
+        mainTabs.SelectedItem = tabEntry;
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "EntryPanel").Children.Count > 0,
+            TimeSpan.FromSeconds(5),
+            "Entry tab did not render any records."
+        );
+
+        mainTabs.SelectedItem = tabEvents;
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "EventsPanel").Children.Count > 0,
+            TimeSpan.FromSeconds(5),
+            "Events tab did not render any records."
+        );
+
+        mainTabs.SelectedItem = tabStatus;
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "StatusPanel").Children.Count > 0,
+            TimeSpan.FromSeconds(5),
+            "Status tab did not render any records."
+        );
+
+        mainTabs.SelectedItem = tabKinship;
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "KinshipPanel").Children.Count > 0,
+            TimeSpan.FromSeconds(5),
+            "Kinship tab did not render any records."
+        );
+
+        mainTabs.SelectedItem = tabPossessions;
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "PossessionsPanel").Children.Count > 0,
+            TimeSpan.FromSeconds(5),
+            "Possessions tab did not render any records."
+        );
+
         var summaryPath = AvaloniaUiTestHelper.WriteJsonArtifact(
             testName,
             "summary.json",
@@ -64,7 +104,12 @@ public sealed class PersonBrowserWindowTests {
                 Gender = valGender.Text,
                 BirthYear = valBirthYear.Text,
                 AddressCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AddressesPanel").Children.Count,
-                AltNameCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AltNamesPanel").Children.Count
+                AltNameCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AltNamesPanel").Children.Count,
+                EntryCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "EntryPanel").Children.Count,
+                EventCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "EventsPanel").Children.Count,
+                StatusCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "StatusPanel").Children.Count,
+                KinshipCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "KinshipPanel").Children.Count,
+                PossessionCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "PossessionsPanel").Children.Count
             }
         );
 

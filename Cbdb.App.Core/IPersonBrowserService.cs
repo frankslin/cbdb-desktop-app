@@ -35,6 +35,36 @@ public interface IPersonBrowserService {
         CancellationToken cancellationToken = default
     );
 
+    Task<IReadOnlyList<PersonEntryItem>> GetEntriesAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<IReadOnlyList<PersonStatusItem>> GetStatusesAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<IReadOnlyList<PersonPossessionItem>> GetPossessionsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<IReadOnlyList<PersonEventItem>> GetEventsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<IReadOnlyList<PersonKinshipItem>> GetKinshipsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
     Task<IReadOnlyList<PersonSourceItem>> GetSourcesAsync(
         string sqlitePath,
         int personId,

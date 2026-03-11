@@ -34,14 +34,14 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
         "Native place",
         1,
         1,
-        0,
-        0,
-        0,
-        0,
+        1,
         0,
         0,
         1,
-        0,
+        1,
+        1,
+        1,
+        1,
         1,
         1,
         new[] {
@@ -122,6 +122,69 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
         new PersonWritingItem(101, "東坡集", "Collected Works of Dongpo", "Author", 1090, "元祐", 5, "Exact", "宋史", "25", "Sample writing note")
     };
 
+    private static readonly IReadOnlyList<PersonEntryItem> Entries = new[] {
+        new PersonEntryItem(
+            1,
+            "進士 / Presented Scholar",
+            "第一甲",
+            1057,
+            "嘉祐",
+            2,
+            "宋 / Song",
+            "Exact",
+            21,
+            "父 / Father",
+            "蘇洵",
+            "Su Xun",
+            "薦舉 / Recommendation",
+            "歐陽修",
+            "Ouyang Xiu",
+            "國子監",
+            "Directorate of Education",
+            "開封",
+            "Kaifeng",
+            "官戶 / Official household",
+            "宋史",
+            "40-41",
+            "Sample entry note",
+            "Sample posting note"
+        )
+    };
+
+    private static readonly IReadOnlyList<PersonEventItem> Events = new[] {
+        new PersonEventItem(
+            1,
+            "赴任 / Departure for Office",
+            "主角 / Principal",
+            1061,
+            "嘉祐",
+            6,
+            3,
+            false,
+            12,
+            "辛卯",
+            "Exact",
+            "鳳翔",
+            "Fengxiang",
+            "宋史",
+            "60-61",
+            "Left for office in Fengxiang.",
+            "Sample event note"
+        )
+    };
+
+    private static readonly IReadOnlyList<PersonKinshipItem> Kinships = new[] {
+        new PersonKinshipItem(3, "兄 / Elder Brother", "蘇轍", "Su Zhe", 0, 0, 0, 1, "宋史", "20", "Sample kinship note")
+    };
+
+    private static readonly IReadOnlyList<PersonStatusItem> Statuses = new[] {
+        new PersonStatusItem(1, "士大夫 / Literati Official", 1060, "嘉祐", 5, "Exact", 1100, "元符", 3, "Exact", "宋史", "55", "Sample status note")
+    };
+
+    private static readonly IReadOnlyList<PersonPossessionItem> Possessions = new[] {
+        new PersonPossessionItem(501, 1, "田產 / Landholding", "受賜 / Granted", "120", "畝 / mu", 1085, "元豐", 8, "Exact", "常州", "Changzhou", "宋史", "78", "Sample possession note")
+    };
+
     private static readonly IReadOnlyList<PersonSourceItem> Sources = new[] {
         new PersonSourceItem("宋史", "History of Song", "12-14", "Sample source note", true, false, "https://example.invalid/source")
     };
@@ -155,6 +218,26 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
 
     public Task<IReadOnlyList<PersonWritingItem>> GetWritingsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
         return Task.FromResult(personId == Detail.PersonId ? Writings : Array.Empty<PersonWritingItem>());
+    }
+
+    public Task<IReadOnlyList<PersonEntryItem>> GetEntriesAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
+        return Task.FromResult(personId == Detail.PersonId ? Entries : Array.Empty<PersonEntryItem>());
+    }
+
+    public Task<IReadOnlyList<PersonEventItem>> GetEventsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
+        return Task.FromResult(personId == Detail.PersonId ? Events : Array.Empty<PersonEventItem>());
+    }
+
+    public Task<IReadOnlyList<PersonKinshipItem>> GetKinshipsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
+        return Task.FromResult(personId == Detail.PersonId ? Kinships : Array.Empty<PersonKinshipItem>());
+    }
+
+    public Task<IReadOnlyList<PersonStatusItem>> GetStatusesAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
+        return Task.FromResult(personId == Detail.PersonId ? Statuses : Array.Empty<PersonStatusItem>());
+    }
+
+    public Task<IReadOnlyList<PersonPossessionItem>> GetPossessionsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
+        return Task.FromResult(personId == Detail.PersonId ? Possessions : Array.Empty<PersonPossessionItem>());
     }
 
     public Task<IReadOnlyList<PersonSourceItem>> GetSourcesAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {

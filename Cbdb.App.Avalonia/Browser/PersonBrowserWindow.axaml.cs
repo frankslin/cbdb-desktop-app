@@ -106,12 +106,17 @@ public partial class PersonBrowserWindow : Window {
     private TextBlock _txtWritingsEmpty = null!;
     private StackPanel _writingsPanel = null!;
     private TextBlock _txtTabPostingsPlaceholder = null!;
-    private TextBlock _txtTabEntryPlaceholder = null!;
-    private TextBlock _txtTabEventsPlaceholder = null!;
-    private TextBlock _txtTabStatusPlaceholder = null!;
-    private TextBlock _txtTabKinshipPlaceholder = null!;
+    private TextBlock _txtEntryEmpty = null!;
+    private StackPanel _entryPanel = null!;
+    private TextBlock _txtEventsEmpty = null!;
+    private StackPanel _eventsPanel = null!;
+    private TextBlock _txtStatusEmpty = null!;
+    private StackPanel _statusPanel = null!;
+    private TextBlock _txtKinshipEmpty = null!;
+    private StackPanel _kinshipPanel = null!;
     private TextBlock _txtTabAssociationsPlaceholder = null!;
-    private TextBlock _txtTabPossessionsPlaceholder = null!;
+    private TextBlock _txtPossessionsEmpty = null!;
+    private StackPanel _possessionsPanel = null!;
     private TextBlock _txtSourcesEmpty = null!;
     private StackPanel _sourcesPanel = null!;
     private TextBlock _txtInstitutionsEmpty = null!;
@@ -129,6 +134,11 @@ public partial class PersonBrowserWindow : Window {
     private IReadOnlyList<PersonAddressItem> _currentAddresses = Array.Empty<PersonAddressItem>();
     private IReadOnlyList<PersonAltNameItem> _currentAltNames = Array.Empty<PersonAltNameItem>();
     private IReadOnlyList<PersonWritingItem> _currentWritings = Array.Empty<PersonWritingItem>();
+    private IReadOnlyList<PersonEntryItem> _currentEntries = Array.Empty<PersonEntryItem>();
+    private IReadOnlyList<PersonEventItem> _currentEvents = Array.Empty<PersonEventItem>();
+    private IReadOnlyList<PersonStatusItem> _currentStatuses = Array.Empty<PersonStatusItem>();
+    private IReadOnlyList<PersonKinshipItem> _currentKinships = Array.Empty<PersonKinshipItem>();
+    private IReadOnlyList<PersonPossessionItem> _currentPossessions = Array.Empty<PersonPossessionItem>();
     private IReadOnlyList<PersonSourceItem> _currentSources = Array.Empty<PersonSourceItem>();
     private IReadOnlyList<PersonInstitutionItem> _currentInstitutions = Array.Empty<PersonInstitutionItem>();
     private readonly HashSet<string> _loadedPersonTabs = new(StringComparer.OrdinalIgnoreCase);
@@ -210,12 +220,17 @@ public partial class PersonBrowserWindow : Window {
         _txtWritingsEmpty.Text = _currentWritings.Count == 0 ? T("browser.writings_none") : string.Empty;
         RenderWritings();
         _txtTabPostingsPlaceholder.Text = placeholder;
-        _txtTabEntryPlaceholder.Text = placeholder;
-        _txtTabEventsPlaceholder.Text = placeholder;
-        _txtTabStatusPlaceholder.Text = placeholder;
-        _txtTabKinshipPlaceholder.Text = placeholder;
+        _txtEntryEmpty.Text = _currentEntries.Count == 0 ? T("browser.entry_none") : string.Empty;
+        RenderEntries();
+        _txtEventsEmpty.Text = _currentEvents.Count == 0 ? T("browser.events_none") : string.Empty;
+        RenderEvents();
+        _txtStatusEmpty.Text = _currentStatuses.Count == 0 ? T("browser.status_none") : string.Empty;
+        RenderStatuses();
+        _txtKinshipEmpty.Text = _currentKinships.Count == 0 ? T("browser.kinship_none") : string.Empty;
+        RenderKinships();
         _txtTabAssociationsPlaceholder.Text = placeholder;
-        _txtTabPossessionsPlaceholder.Text = placeholder;
+        _txtPossessionsEmpty.Text = _currentPossessions.Count == 0 ? T("browser.possessions_none") : string.Empty;
+        RenderPossessions();
         _txtSourcesEmpty.Text = _currentSources.Count == 0 ? T("browser.sources_none") : string.Empty;
         RenderSources();
         _txtInstitutionsEmpty.Text = _currentInstitutions.Count == 0 ? T("browser.institutions_none") : string.Empty;
@@ -491,6 +506,66 @@ public partial class PersonBrowserWindow : Window {
         RenderWritings();
     }
 
+    private async Task LoadEntriesAsync(int personId) {
+        try {
+            _currentEntries = await _personBrowserService.GetEntriesAsync(_sqlitePath, personId);
+        } catch (Exception ex) {
+            _currentEntries = Array.Empty<PersonEntryItem>();
+            _txtFooter.Text = ex.Message;
+        }
+
+        _txtEntryEmpty.Text = _currentEntries.Count == 0 ? T("browser.entry_none") : string.Empty;
+        RenderEntries();
+    }
+
+    private async Task LoadStatusesAsync(int personId) {
+        try {
+            _currentStatuses = await _personBrowserService.GetStatusesAsync(_sqlitePath, personId);
+        } catch (Exception ex) {
+            _currentStatuses = Array.Empty<PersonStatusItem>();
+            _txtFooter.Text = ex.Message;
+        }
+
+        _txtStatusEmpty.Text = _currentStatuses.Count == 0 ? T("browser.status_none") : string.Empty;
+        RenderStatuses();
+    }
+
+    private async Task LoadEventsAsync(int personId) {
+        try {
+            _currentEvents = await _personBrowserService.GetEventsAsync(_sqlitePath, personId);
+        } catch (Exception ex) {
+            _currentEvents = Array.Empty<PersonEventItem>();
+            _txtFooter.Text = ex.Message;
+        }
+
+        _txtEventsEmpty.Text = _currentEvents.Count == 0 ? T("browser.events_none") : string.Empty;
+        RenderEvents();
+    }
+
+    private async Task LoadKinshipsAsync(int personId) {
+        try {
+            _currentKinships = await _personBrowserService.GetKinshipsAsync(_sqlitePath, personId);
+        } catch (Exception ex) {
+            _currentKinships = Array.Empty<PersonKinshipItem>();
+            _txtFooter.Text = ex.Message;
+        }
+
+        _txtKinshipEmpty.Text = _currentKinships.Count == 0 ? T("browser.kinship_none") : string.Empty;
+        RenderKinships();
+    }
+
+    private async Task LoadPossessionsAsync(int personId) {
+        try {
+            _currentPossessions = await _personBrowserService.GetPossessionsAsync(_sqlitePath, personId);
+        } catch (Exception ex) {
+            _currentPossessions = Array.Empty<PersonPossessionItem>();
+            _txtFooter.Text = ex.Message;
+        }
+
+        _txtPossessionsEmpty.Text = _currentPossessions.Count == 0 ? T("browser.possessions_none") : string.Empty;
+        RenderPossessions();
+    }
+
     private async Task LoadSourcesAsync(int personId) {
         try {
             _currentSources = await _personBrowserService.GetSourcesAsync(_sqlitePath, personId);
@@ -545,6 +620,21 @@ public partial class PersonBrowserWindow : Window {
             case "writings":
                 await LoadWritingsAsync(_selectedPersonId.Value);
                 break;
+            case "entry":
+                await LoadEntriesAsync(_selectedPersonId.Value);
+                break;
+            case "events":
+                await LoadEventsAsync(_selectedPersonId.Value);
+                break;
+            case "status":
+                await LoadStatusesAsync(_selectedPersonId.Value);
+                break;
+            case "kinship":
+                await LoadKinshipsAsync(_selectedPersonId.Value);
+                break;
+            case "possessions":
+                await LoadPossessionsAsync(_selectedPersonId.Value);
+                break;
             case "sources":
                 await LoadSourcesAsync(_selectedPersonId.Value);
                 break;
@@ -564,18 +654,33 @@ public partial class PersonBrowserWindow : Window {
         _currentAddresses = Array.Empty<PersonAddressItem>();
         _currentAltNames = Array.Empty<PersonAltNameItem>();
         _currentWritings = Array.Empty<PersonWritingItem>();
+        _currentEntries = Array.Empty<PersonEntryItem>();
+        _currentEvents = Array.Empty<PersonEventItem>();
+        _currentStatuses = Array.Empty<PersonStatusItem>();
+        _currentKinships = Array.Empty<PersonKinshipItem>();
+        _currentPossessions = Array.Empty<PersonPossessionItem>();
         _currentSources = Array.Empty<PersonSourceItem>();
         _currentInstitutions = Array.Empty<PersonInstitutionItem>();
 
         _addressesPanel.Children.Clear();
         _altNamesPanel.Children.Clear();
         _writingsPanel.Children.Clear();
+        _entryPanel.Children.Clear();
+        _eventsPanel.Children.Clear();
+        _statusPanel.Children.Clear();
+        _kinshipPanel.Children.Clear();
+        _possessionsPanel.Children.Clear();
         _sourcesPanel.Children.Clear();
         _institutionsPanel.Children.Clear();
 
         _txtAddressesEmpty.Text = T("browser.addresses_none");
         _txtAltNamesEmpty.Text = T("browser.alt_names_none");
         _txtWritingsEmpty.Text = T("browser.writings_none");
+        _txtEntryEmpty.Text = T("browser.entry_none");
+        _txtEventsEmpty.Text = T("browser.events_none");
+        _txtStatusEmpty.Text = T("browser.status_none");
+        _txtKinshipEmpty.Text = T("browser.kinship_none");
+        _txtPossessionsEmpty.Text = T("browser.possessions_none");
         _txtSourcesEmpty.Text = T("browser.sources_none");
         _txtInstitutionsEmpty.Text = T("browser.institutions_none");
     }
@@ -592,6 +697,21 @@ public partial class PersonBrowserWindow : Window {
         }
         if (ReferenceEquals(tab, _tabWritings)) {
             return "writings";
+        }
+        if (ReferenceEquals(tab, _tabEntry)) {
+            return "entry";
+        }
+        if (ReferenceEquals(tab, _tabEvents)) {
+            return "events";
+        }
+        if (ReferenceEquals(tab, _tabStatus)) {
+            return "status";
+        }
+        if (ReferenceEquals(tab, _tabKinship)) {
+            return "kinship";
+        }
+        if (ReferenceEquals(tab, _tabPossessions)) {
+            return "possessions";
         }
         if (ReferenceEquals(tab, _tabSources)) {
             return "sources";
@@ -633,6 +753,61 @@ public partial class PersonBrowserWindow : Window {
         _writingsPanel.Children.Clear();
         foreach (var item in _currentWritings) {
             _writingsPanel.Children.Add(BuildWritingCard(item));
+        }
+    }
+
+    private void RenderEntries() {
+        if (_entryPanel is null) {
+            return;
+        }
+
+        _entryPanel.Children.Clear();
+        foreach (var item in _currentEntries) {
+            _entryPanel.Children.Add(BuildEntryCard(item));
+        }
+    }
+
+    private void RenderEvents() {
+        if (_eventsPanel is null) {
+            return;
+        }
+
+        _eventsPanel.Children.Clear();
+        foreach (var item in _currentEvents) {
+            _eventsPanel.Children.Add(BuildEventCard(item));
+        }
+    }
+
+    private void RenderStatuses() {
+        if (_statusPanel is null) {
+            return;
+        }
+
+        _statusPanel.Children.Clear();
+        foreach (var item in _currentStatuses) {
+            _statusPanel.Children.Add(BuildStatusCard(item));
+        }
+    }
+
+    private void RenderKinships() {
+        if (_kinshipPanel is null) {
+            return;
+        }
+
+        _kinshipPanel.Children.Clear();
+        foreach (var item in _currentKinships) {
+            _kinshipPanel.Children.Add(BuildKinshipCard(item));
+        }
+    }
+
+    private void RenderPossessions() {
+        if (_possessionsPanel is null) {
+            return;
+        }
+
+        _possessionsPanel.Children.Clear();
+        foreach (var item in _currentPossessions) {
+            _possessionsPanel.Children.Add(BuildPossessionCard(item));
         }
     }
 
@@ -736,6 +911,126 @@ public partial class PersonBrowserWindow : Window {
         stack.Children.Add(notesGrid);
 
         return WrapCard(stack);
+    }
+
+    private Control BuildEntryCard(PersonEntryItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,200,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
+        AddReadOnlyField(grid, 0, 2, T("browser.entry_method"), item.EntryMethod);
+        AddReadOnlyField(grid, 1, 0, T("browser.entry_year"), item.Year?.ToString());
+        AddReadOnlyField(grid, 1, 2, T("browser.entry_nianhao"), JoinCompactDate(item.Nianhao, item.NianhaoYear, item.Range, null));
+        AddReadOnlyField(grid, 2, 0, T("browser.entry_exam_rank"), item.ExamRank);
+        AddReadOnlyField(grid, 2, 2, T("browser.entry_age"), item.Age?.ToString());
+        AddReadOnlyField(grid, 3, 0, T("browser.entry_dynasty"), item.Dynasty);
+        AddReadOnlyField(grid, 3, 2, T("browser.entry_parental_status"), item.ParentalStatus);
+        AddReadOnlyField(grid, 4, 0, T("browser.entry_kinship"), item.Kinship);
+        AddReadOnlyField(grid, 4, 2, T("browser.entry_kin_person"), JoinDisplay(item.KinNameChn, item.KinName));
+        AddReadOnlyField(grid, 5, 0, T("browser.entry_association"), item.Association);
+        AddReadOnlyField(grid, 5, 2, T("browser.entry_associate_person"), JoinDisplay(item.AssociateNameChn, item.AssociateName));
+
+        var lowerGrid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,200,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto"),
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        AddReadOnlyField(lowerGrid, 0, 0, T("browser.entry_institution"), JoinDisplay(item.InstitutionNameChn, item.InstitutionName));
+        AddReadOnlyField(lowerGrid, 0, 2, T("browser.entry_address"), JoinDisplay(item.EntryAddressChn, item.EntryAddress));
+        AddReadOnlyField(lowerGrid, 1, 0, T("browser.address_source"), item.Source, 1, 28, false);
+        AddReadOnlyField(lowerGrid, 1, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(lowerGrid, 2, 0, T("browser.entry_posting_notes"), item.PostingNotes, 3, 64, true);
+        AddReadOnlyField(lowerGrid, 3, 0, T("browser.address_notes"), item.Notes, 3, 64, true);
+
+        var stack = new StackPanel();
+        stack.Children.Add(grid);
+        stack.Children.Add(lowerGrid);
+
+        return WrapCard(stack);
+    }
+
+    private Control BuildEventCard(PersonEventItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
+        AddReadOnlyField(grid, 0, 2, T("browser.event_name"), item.EventName);
+        AddReadOnlyField(grid, 1, 0, T("browser.event_role"), item.Role);
+        AddReadOnlyField(grid, 1, 2, T("browser.event_date"), FormatEventDate(item));
+        AddReadOnlyField(grid, 2, 0, T("browser.event_address"), JoinDisplay(item.AddressNameChn, item.AddressName), 3, 28, false);
+        AddReadOnlyField(grid, 3, 0, T("browser.address_source"), item.Source, 1, 28, false);
+        AddReadOnlyField(grid, 3, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(grid, 4, 0, T("browser.event_text"), item.EventText, 3, 64, true);
+
+        var notesGrid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto"),
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        AddReadOnlyField(notesGrid, 0, 0, T("browser.address_notes"), item.Notes, 1, 64, true);
+
+        var stack = new StackPanel();
+        stack.Children.Add(grid);
+        stack.Children.Add(notesGrid);
+
+        return WrapCard(stack);
+    }
+
+    private Control BuildStatusCard(PersonStatusItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
+        AddReadOnlyField(grid, 0, 2, T("browser.status_name"), item.Status);
+        AddReadOnlyField(grid, 1, 0, T("browser.address_first"), JoinCompactDate(item.FirstNianhao, item.FirstNianhaoYear, item.FirstRange, item.FirstYear));
+        AddReadOnlyField(grid, 1, 2, T("browser.address_last"), JoinCompactDate(item.LastNianhao, item.LastNianhaoYear, item.LastRange, item.LastYear));
+        AddReadOnlyField(grid, 2, 0, T("browser.address_source"), item.Source, 1, 28, false);
+        AddReadOnlyField(grid, 2, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(grid, 3, 0, T("browser.address_notes"), item.Notes, 3, 64, true);
+
+        return WrapCard(grid);
+    }
+
+    private Control BuildKinshipCard(PersonKinshipItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.kinship_relation"), item.Kinship);
+        AddReadOnlyField(grid, 0, 2, T("browser.kinship_person"), JoinDisplay(item.KinNameChn, item.KinName));
+        AddReadOnlyField(grid, 1, 0, T("browser.person_id"), item.KinPersonId.ToString());
+        AddReadOnlyField(grid, 1, 2, T("browser.kinship_steps"), FormatKinshipSteps(item));
+        AddReadOnlyField(grid, 2, 0, T("browser.address_source"), item.Source, 1, 28, false);
+        AddReadOnlyField(grid, 2, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(grid, 3, 0, T("browser.address_notes"), item.Notes, 3, 64, true);
+
+        return WrapCard(grid);
+    }
+
+    private Control BuildPossessionCard(PersonPossessionItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,200,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence?.ToString());
+        AddReadOnlyField(grid, 0, 2, T("browser.possession_name"), item.Possession);
+        AddReadOnlyField(grid, 1, 0, T("browser.possession_action"), item.PossessionAction);
+        AddReadOnlyField(grid, 1, 2, T("browser.possession_quantity"), JoinDisplay(item.Quantity, item.Measure));
+        AddReadOnlyField(grid, 2, 0, T("browser.possession_date"), JoinCompactDate(item.Nianhao, item.NianhaoYear, item.Range, item.Year));
+        AddReadOnlyField(grid, 2, 2, T("browser.possession_address"), JoinDisplay(item.AddressNameChn, item.AddressName));
+        AddReadOnlyField(grid, 3, 0, T("browser.address_source"), item.Source, 1, 28, false);
+        AddReadOnlyField(grid, 3, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(grid, 4, 0, T("browser.address_notes"), item.Notes, 3, 64, true);
+
+        return WrapCard(grid);
     }
 
     private Control BuildSourceCard(PersonSourceItem item) {
@@ -948,6 +1243,58 @@ public partial class PersonBrowserWindow : Window {
         }
         if (!string.IsNullOrWhiteSpace(range)) {
             parts.Add(range);
+        }
+
+        return parts.Count == 0 ? string.Empty : string.Join(" / ", parts);
+    }
+
+    private string FormatEventDate(PersonEventItem item) {
+        var parts = new List<string>();
+        if (item.Year.HasValue) {
+            parts.Add(item.Year.Value.ToString());
+        }
+        if (!string.IsNullOrWhiteSpace(item.Nianhao)) {
+            parts.Add(item.Nianhao);
+        }
+        if (item.NianhaoYear.HasValue) {
+            parts.Add(item.NianhaoYear.Value.ToString());
+        }
+        if (item.Month.HasValue) {
+            parts.Add(item.Month.Value.ToString());
+        }
+        if (item.Intercalary == true) {
+            parts.Add(T("browser.address_intercalary"));
+        }
+        if (item.Day.HasValue) {
+            parts.Add(item.Day.Value.ToString());
+        }
+        if (!string.IsNullOrWhiteSpace(item.Ganzhi)) {
+            parts.Add(item.Ganzhi);
+        }
+        if (!string.IsNullOrWhiteSpace(item.Range)) {
+            parts.Add(item.Range);
+        }
+
+        return parts.Count == 0 ? string.Empty : string.Join(" / ", parts);
+    }
+
+    private string FormatKinshipSteps(PersonKinshipItem item) {
+        var parts = new List<string>();
+        var upStep = item.UpStep.GetValueOrDefault();
+        if (upStep > 0) {
+            parts.Add($"{T("browser.kinship_up")} {upStep}");
+        }
+        var downStep = item.DownStep.GetValueOrDefault();
+        if (downStep > 0) {
+            parts.Add($"{T("browser.kinship_down")} {downStep}");
+        }
+        var marriageStep = item.MarriageStep.GetValueOrDefault();
+        if (marriageStep > 0) {
+            parts.Add($"{T("browser.kinship_marriage")} {marriageStep}");
+        }
+        var collateralStep = item.CollateralStep.GetValueOrDefault();
+        if (collateralStep > 0) {
+            parts.Add($"{T("browser.kinship_collateral")} {collateralStep}");
         }
 
         return parts.Count == 0 ? string.Empty : string.Join(" / ", parts);
@@ -1479,12 +1826,17 @@ public partial class PersonBrowserWindow : Window {
         _txtWritingsEmpty = this.FindControl<TextBlock>("TxtWritingsEmpty") ?? throw new InvalidOperationException("TxtWritingsEmpty not found.");
         _writingsPanel = this.FindControl<StackPanel>("WritingsPanel") ?? throw new InvalidOperationException("WritingsPanel not found.");
         _txtTabPostingsPlaceholder = this.FindControl<TextBlock>("TxtTabPostingsPlaceholder") ?? throw new InvalidOperationException("TxtTabPostingsPlaceholder not found.");
-        _txtTabEntryPlaceholder = this.FindControl<TextBlock>("TxtTabEntryPlaceholder") ?? throw new InvalidOperationException("TxtTabEntryPlaceholder not found.");
-        _txtTabEventsPlaceholder = this.FindControl<TextBlock>("TxtTabEventsPlaceholder") ?? throw new InvalidOperationException("TxtTabEventsPlaceholder not found.");
-        _txtTabStatusPlaceholder = this.FindControl<TextBlock>("TxtTabStatusPlaceholder") ?? throw new InvalidOperationException("TxtTabStatusPlaceholder not found.");
-        _txtTabKinshipPlaceholder = this.FindControl<TextBlock>("TxtTabKinshipPlaceholder") ?? throw new InvalidOperationException("TxtTabKinshipPlaceholder not found.");
+        _txtEntryEmpty = this.FindControl<TextBlock>("TxtEntryEmpty") ?? throw new InvalidOperationException("TxtEntryEmpty not found.");
+        _entryPanel = this.FindControl<StackPanel>("EntryPanel") ?? throw new InvalidOperationException("EntryPanel not found.");
+        _txtEventsEmpty = this.FindControl<TextBlock>("TxtEventsEmpty") ?? throw new InvalidOperationException("TxtEventsEmpty not found.");
+        _eventsPanel = this.FindControl<StackPanel>("EventsPanel") ?? throw new InvalidOperationException("EventsPanel not found.");
+        _txtStatusEmpty = this.FindControl<TextBlock>("TxtStatusEmpty") ?? throw new InvalidOperationException("TxtStatusEmpty not found.");
+        _statusPanel = this.FindControl<StackPanel>("StatusPanel") ?? throw new InvalidOperationException("StatusPanel not found.");
+        _txtKinshipEmpty = this.FindControl<TextBlock>("TxtKinshipEmpty") ?? throw new InvalidOperationException("TxtKinshipEmpty not found.");
+        _kinshipPanel = this.FindControl<StackPanel>("KinshipPanel") ?? throw new InvalidOperationException("KinshipPanel not found.");
         _txtTabAssociationsPlaceholder = this.FindControl<TextBlock>("TxtTabAssociationsPlaceholder") ?? throw new InvalidOperationException("TxtTabAssociationsPlaceholder not found.");
-        _txtTabPossessionsPlaceholder = this.FindControl<TextBlock>("TxtTabPossessionsPlaceholder") ?? throw new InvalidOperationException("TxtTabPossessionsPlaceholder not found.");
+        _txtPossessionsEmpty = this.FindControl<TextBlock>("TxtPossessionsEmpty") ?? throw new InvalidOperationException("TxtPossessionsEmpty not found.");
+        _possessionsPanel = this.FindControl<StackPanel>("PossessionsPanel") ?? throw new InvalidOperationException("PossessionsPanel not found.");
         _txtSourcesEmpty = this.FindControl<TextBlock>("TxtSourcesEmpty") ?? throw new InvalidOperationException("TxtSourcesEmpty not found.");
         _sourcesPanel = this.FindControl<StackPanel>("SourcesPanel") ?? throw new InvalidOperationException("SourcesPanel not found.");
         _txtInstitutionsEmpty = this.FindControl<TextBlock>("TxtInstitutionsEmpty") ?? throw new InvalidOperationException("TxtInstitutionsEmpty not found.");
