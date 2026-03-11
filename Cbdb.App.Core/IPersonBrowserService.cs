@@ -23,6 +23,30 @@ public interface IPersonBrowserService {
         CancellationToken cancellationToken = default
     );
 
+    Task<IReadOnlyList<PersonAltNameItem>> GetAltNamesAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<IReadOnlyList<PersonWritingItem>> GetWritingsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<IReadOnlyList<PersonSourceItem>> GetSourcesAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<IReadOnlyList<PersonInstitutionItem>> GetInstitutionsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
     Task<DataTable> GetRelatedItemsAsync(
         string sqlitePath,
         int personId,
