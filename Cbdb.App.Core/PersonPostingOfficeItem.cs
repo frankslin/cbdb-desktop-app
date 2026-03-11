@@ -1,0 +1,32 @@
+namespace Cbdb.App.Core;
+
+public sealed record PersonPostingOfficeItem(
+    int OfficeId,
+    int Sequence,
+    string? OfficeNameChn,
+    string? OfficeName,
+    string? AppointmentType,
+    string? AssumeOffice,
+    string? Category,
+    int? FirstYear,
+    string? FirstNianhao,
+    int? FirstNianhaoYear,
+    string? FirstRange,
+    int? FirstMonth,
+    bool? FirstIntercalary,
+    int? FirstDay,
+    string? FirstGanzhi,
+    int? LastYear,
+    string? LastNianhao,
+    int? LastNianhaoYear,
+    string? LastRange,
+    int? LastMonth,
+    bool? LastIntercalary,
+    int? LastDay,
+    string? LastGanzhi,
+    string? Dynasty,
+    string? Source,
+    string? Pages,
+    string? Notes,
+    IReadOnlyList<PersonPostingAddressItem> Addresses
+);

@@ -41,6 +41,7 @@ public sealed class PersonBrowserWindowTests {
         var mainTabs = AvaloniaUiTestHelper.FindRequiredControl<TabControl>(window, "MainTabs");
         var tabAddresses = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabAddresses");
         var tabAltNames = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabAltNames");
+        var tabPostings = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabPostings");
         var tabEntry = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabEntry");
         var tabEvents = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabEvents");
         var tabStatus = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabStatus");
@@ -59,6 +60,13 @@ public sealed class PersonBrowserWindowTests {
             () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AltNamesPanel").Children.Count > 0,
             TimeSpan.FromSeconds(5),
             "Alt names tab did not render any records."
+        );
+
+        mainTabs.SelectedItem = tabPostings;
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "PostingsPanel").Children.Count > 0,
+            TimeSpan.FromSeconds(5),
+            "Postings tab did not render any records."
         );
 
         mainTabs.SelectedItem = tabEntry;
@@ -105,6 +113,7 @@ public sealed class PersonBrowserWindowTests {
                 BirthYear = valBirthYear.Text,
                 AddressCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AddressesPanel").Children.Count,
                 AltNameCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AltNamesPanel").Children.Count,
+                PostingCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "PostingsPanel").Children.Count,
                 EntryCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "EntryPanel").Children.Count,
                 EventCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "EventsPanel").Children.Count,
                 StatusCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "StatusPanel").Children.Count,

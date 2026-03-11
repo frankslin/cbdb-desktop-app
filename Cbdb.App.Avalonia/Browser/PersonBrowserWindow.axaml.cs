@@ -105,7 +105,8 @@ public partial class PersonBrowserWindow : Window {
     private StackPanel _altNamesPanel = null!;
     private TextBlock _txtWritingsEmpty = null!;
     private StackPanel _writingsPanel = null!;
-    private TextBlock _txtTabPostingsPlaceholder = null!;
+    private TextBlock _txtPostingsEmpty = null!;
+    private StackPanel _postingsPanel = null!;
     private TextBlock _txtEntryEmpty = null!;
     private StackPanel _entryPanel = null!;
     private TextBlock _txtEventsEmpty = null!;
@@ -134,6 +135,7 @@ public partial class PersonBrowserWindow : Window {
     private IReadOnlyList<PersonAddressItem> _currentAddresses = Array.Empty<PersonAddressItem>();
     private IReadOnlyList<PersonAltNameItem> _currentAltNames = Array.Empty<PersonAltNameItem>();
     private IReadOnlyList<PersonWritingItem> _currentWritings = Array.Empty<PersonWritingItem>();
+    private IReadOnlyList<PersonPostingItem> _currentPostings = Array.Empty<PersonPostingItem>();
     private IReadOnlyList<PersonEntryItem> _currentEntries = Array.Empty<PersonEntryItem>();
     private IReadOnlyList<PersonEventItem> _currentEvents = Array.Empty<PersonEventItem>();
     private IReadOnlyList<PersonStatusItem> _currentStatuses = Array.Empty<PersonStatusItem>();
@@ -219,7 +221,8 @@ public partial class PersonBrowserWindow : Window {
         var placeholder = T("browser.tab_placeholder");
         _txtWritingsEmpty.Text = _currentWritings.Count == 0 ? T("browser.writings_none") : string.Empty;
         RenderWritings();
-        _txtTabPostingsPlaceholder.Text = placeholder;
+        _txtPostingsEmpty.Text = _currentPostings.Count == 0 ? T("browser.postings_none") : string.Empty;
+        RenderPostings();
         _txtEntryEmpty.Text = _currentEntries.Count == 0 ? T("browser.entry_none") : string.Empty;
         RenderEntries();
         _txtEventsEmpty.Text = _currentEvents.Count == 0 ? T("browser.events_none") : string.Empty;
@@ -506,6 +509,18 @@ public partial class PersonBrowserWindow : Window {
         RenderWritings();
     }
 
+    private async Task LoadPostingsAsync(int personId) {
+        try {
+            _currentPostings = await _personBrowserService.GetPostingsAsync(_sqlitePath, personId);
+        } catch (Exception ex) {
+            _currentPostings = Array.Empty<PersonPostingItem>();
+            _txtFooter.Text = ex.Message;
+        }
+
+        _txtPostingsEmpty.Text = _currentPostings.Count == 0 ? T("browser.postings_none") : string.Empty;
+        RenderPostings();
+    }
+
     private async Task LoadEntriesAsync(int personId) {
         try {
             _currentEntries = await _personBrowserService.GetEntriesAsync(_sqlitePath, personId);
@@ -620,6 +635,9 @@ public partial class PersonBrowserWindow : Window {
             case "writings":
                 await LoadWritingsAsync(_selectedPersonId.Value);
                 break;
+            case "postings":
+                await LoadPostingsAsync(_selectedPersonId.Value);
+                break;
             case "entry":
                 await LoadEntriesAsync(_selectedPersonId.Value);
                 break;
@@ -654,6 +672,7 @@ public partial class PersonBrowserWindow : Window {
         _currentAddresses = Array.Empty<PersonAddressItem>();
         _currentAltNames = Array.Empty<PersonAltNameItem>();
         _currentWritings = Array.Empty<PersonWritingItem>();
+        _currentPostings = Array.Empty<PersonPostingItem>();
         _currentEntries = Array.Empty<PersonEntryItem>();
         _currentEvents = Array.Empty<PersonEventItem>();
         _currentStatuses = Array.Empty<PersonStatusItem>();
@@ -665,6 +684,7 @@ public partial class PersonBrowserWindow : Window {
         _addressesPanel.Children.Clear();
         _altNamesPanel.Children.Clear();
         _writingsPanel.Children.Clear();
+        _postingsPanel.Children.Clear();
         _entryPanel.Children.Clear();
         _eventsPanel.Children.Clear();
         _statusPanel.Children.Clear();
@@ -676,6 +696,7 @@ public partial class PersonBrowserWindow : Window {
         _txtAddressesEmpty.Text = T("browser.addresses_none");
         _txtAltNamesEmpty.Text = T("browser.alt_names_none");
         _txtWritingsEmpty.Text = T("browser.writings_none");
+        _txtPostingsEmpty.Text = T("browser.postings_none");
         _txtEntryEmpty.Text = T("browser.entry_none");
         _txtEventsEmpty.Text = T("browser.events_none");
         _txtStatusEmpty.Text = T("browser.status_none");
@@ -697,6 +718,9 @@ public partial class PersonBrowserWindow : Window {
         }
         if (ReferenceEquals(tab, _tabWritings)) {
             return "writings";
+        }
+        if (ReferenceEquals(tab, _tabPostings)) {
+            return "postings";
         }
         if (ReferenceEquals(tab, _tabEntry)) {
             return "entry";
@@ -753,6 +777,17 @@ public partial class PersonBrowserWindow : Window {
         _writingsPanel.Children.Clear();
         foreach (var item in _currentWritings) {
             _writingsPanel.Children.Add(BuildWritingCard(item));
+        }
+    }
+
+    private void RenderPostings() {
+        if (_postingsPanel is null) {
+            return;
+        }
+
+        _postingsPanel.Children.Clear();
+        foreach (var item in _currentPostings) {
+            _postingsPanel.Children.Add(BuildPostingCard(item));
         }
     }
 
@@ -911,6 +946,78 @@ public partial class PersonBrowserWindow : Window {
         stack.Children.Add(notesGrid);
 
         return WrapCard(stack);
+    }
+
+    private Control BuildPostingCard(PersonPostingItem item) {
+        var stack = new StackPanel {
+            Spacing = 8
+        };
+
+        var header = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,120,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto")
+        };
+        AddReadOnlyField(header, 0, 0, T("browser.posting_id"), item.PostingId.ToString());
+        AddReadOnlyField(header, 0, 2, T("browser.posting_office_count"), item.Offices.Count.ToString());
+        stack.Children.Add(header);
+
+        foreach (var office in item.Offices) {
+            stack.Children.Add(BuildPostingOfficeCard(office));
+        }
+
+        if (!string.IsNullOrWhiteSpace(item.CreatedBy) ||
+            !string.IsNullOrWhiteSpace(item.CreatedDate) ||
+            !string.IsNullOrWhiteSpace(item.ModifiedBy) ||
+            !string.IsNullOrWhiteSpace(item.ModifiedDate)) {
+            var audit = new Grid {
+                ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+                RowDefinitions = new RowDefinitions("Auto,Auto"),
+                Margin = new Thickness(0, 4, 0, 0)
+            };
+            AddReadOnlyField(audit, 0, 0, T("browser.posting_created"), JoinDisplay(item.CreatedDate, item.CreatedBy));
+            AddReadOnlyField(audit, 0, 2, T("browser.posting_modified"), JoinDisplay(item.ModifiedDate, item.ModifiedBy));
+            stack.Children.Add(audit);
+        }
+
+        return WrapCard(stack);
+    }
+
+    private Control BuildPostingOfficeCard(PersonPostingOfficeItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
+        AddReadOnlyField(grid, 0, 2, T("browser.posting_office"), JoinDisplay(item.OfficeNameChn, item.OfficeName));
+        AddReadOnlyField(grid, 1, 0, T("browser.posting_appointment"), item.AppointmentType);
+        AddReadOnlyField(grid, 1, 2, T("browser.posting_assume_office"), item.AssumeOffice);
+        AddReadOnlyField(grid, 2, 0, T("browser.posting_category"), item.Category);
+        AddReadOnlyField(grid, 2, 2, T("browser.entry_dynasty"), item.Dynasty);
+        AddReadOnlyField(grid, 3, 0, T("browser.address_first"), FormatPostingDate(item, true), 1, 28, false);
+        AddReadOnlyField(grid, 3, 2, T("browser.address_last"), FormatPostingDate(item, false), 1, 28, false);
+        AddReadOnlyField(grid, 4, 0, T("browser.posting_addresses"), JoinPostingAddresses(item), 3, 28, false);
+
+        var notesGrid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto"),
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        AddReadOnlyField(notesGrid, 0, 0, T("browser.address_source"), item.Source, 1, 28, false);
+        AddReadOnlyField(notesGrid, 0, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(notesGrid, 1, 0, T("browser.address_notes"), item.Notes, 3, 64, true);
+
+        var stack = new StackPanel();
+        stack.Children.Add(grid);
+        stack.Children.Add(notesGrid);
+
+        return new Border {
+            BorderBrush = Brush.Parse("#DDDDDD"),
+            BorderThickness = new Thickness(1),
+            Background = Brush.Parse("#FFFFFF"),
+            Padding = new Thickness(10),
+            Child = stack
+        };
     }
 
     private Control BuildEntryCard(PersonEntryItem item) {
@@ -1276,6 +1383,55 @@ public partial class PersonBrowserWindow : Window {
         }
 
         return parts.Count == 0 ? string.Empty : string.Join(" / ", parts);
+    }
+
+    private string FormatPostingDate(PersonPostingOfficeItem item, bool first) {
+        var parts = new List<string>();
+        var year = first ? item.FirstYear : item.LastYear;
+        var nianhao = first ? item.FirstNianhao : item.LastNianhao;
+        var nianhaoYear = first ? item.FirstNianhaoYear : item.LastNianhaoYear;
+        var month = first ? item.FirstMonth : item.LastMonth;
+        var intercalary = first ? item.FirstIntercalary : item.LastIntercalary;
+        var day = first ? item.FirstDay : item.LastDay;
+        var ganzhi = first ? item.FirstGanzhi : item.LastGanzhi;
+        var range = first ? item.FirstRange : item.LastRange;
+
+        if (year.HasValue) {
+            parts.Add(year.Value.ToString());
+        }
+        if (!string.IsNullOrWhiteSpace(nianhao)) {
+            parts.Add(nianhao);
+        }
+        if (nianhaoYear.HasValue) {
+            parts.Add(nianhaoYear.Value.ToString());
+        }
+        if (month.HasValue) {
+            parts.Add(month.Value.ToString());
+        }
+        if (intercalary == true) {
+            parts.Add(T("browser.address_intercalary"));
+        }
+        if (day.HasValue) {
+            parts.Add(day.Value.ToString());
+        }
+        if (!string.IsNullOrWhiteSpace(ganzhi)) {
+            parts.Add(ganzhi);
+        }
+        if (!string.IsNullOrWhiteSpace(range)) {
+            parts.Add(range);
+        }
+
+        return parts.Count == 0 ? string.Empty : string.Join(" / ", parts);
+    }
+
+    private static string JoinPostingAddresses(PersonPostingOfficeItem item) {
+        if (item.Addresses.Count == 0) {
+            return string.Empty;
+        }
+
+        return string.Join(" ; ", item.Addresses
+            .Select(address => JoinDisplay(address.AddressNameChn, address.AddressName))
+            .Where(value => !string.IsNullOrWhiteSpace(value)));
     }
 
     private string FormatKinshipSteps(PersonKinshipItem item) {
@@ -1825,7 +1981,8 @@ public partial class PersonBrowserWindow : Window {
         _altNamesPanel = this.FindControl<StackPanel>("AltNamesPanel") ?? throw new InvalidOperationException("AltNamesPanel not found.");
         _txtWritingsEmpty = this.FindControl<TextBlock>("TxtWritingsEmpty") ?? throw new InvalidOperationException("TxtWritingsEmpty not found.");
         _writingsPanel = this.FindControl<StackPanel>("WritingsPanel") ?? throw new InvalidOperationException("WritingsPanel not found.");
-        _txtTabPostingsPlaceholder = this.FindControl<TextBlock>("TxtTabPostingsPlaceholder") ?? throw new InvalidOperationException("TxtTabPostingsPlaceholder not found.");
+        _txtPostingsEmpty = this.FindControl<TextBlock>("TxtPostingsEmpty") ?? throw new InvalidOperationException("TxtPostingsEmpty not found.");
+        _postingsPanel = this.FindControl<StackPanel>("PostingsPanel") ?? throw new InvalidOperationException("PostingsPanel not found.");
         _txtEntryEmpty = this.FindControl<TextBlock>("TxtEntryEmpty") ?? throw new InvalidOperationException("TxtEntryEmpty not found.");
         _entryPanel = this.FindControl<StackPanel>("EntryPanel") ?? throw new InvalidOperationException("EntryPanel not found.");
         _txtEventsEmpty = this.FindControl<TextBlock>("TxtEventsEmpty") ?? throw new InvalidOperationException("TxtEventsEmpty not found.");

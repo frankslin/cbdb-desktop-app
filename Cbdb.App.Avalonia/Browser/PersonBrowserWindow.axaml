@@ -289,7 +289,14 @@
                 </StackPanel>
               </ScrollViewer>
             </TabItem>
-            <TabItem x:Name="TabPostings"><TextBlock x:Name="TxtTabPostingsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabPostings">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8" Spacing="8">
+                  <TextBlock x:Name="TxtPostingsEmpty" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="PostingsPanel" Spacing="8" />
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
             <TabItem x:Name="TabEntry">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="8" Spacing="8">

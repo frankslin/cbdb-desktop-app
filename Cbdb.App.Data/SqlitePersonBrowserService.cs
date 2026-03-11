@@ -559,6 +559,267 @@ ORDER BY btd.c_year, btd.c_textid, btd.c_role_id;";
         return items;
     }
 
+    public async Task<IReadOnlyList<PersonPostingItem>> GetPostingsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+            return Array.Empty<PersonPostingItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = SqliteOpenMode.ReadOnly };
+        var postings = new List<PersonPostingItem>();
+        var postingMap = new Dictionary<int, List<PostingOfficeAccumulator>>();
+        var postingOrder = new List<int>();
+        var postingMeta = new Dictionary<int, (string? CreatedBy, string? CreatedDate, string? ModifiedBy, string? ModifiedDate)>();
+        var officeMap = new Dictionary<(int PostingId, int OfficeId), PostingOfficeAccumulator>();
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    pd.c_posting_id,
+    pd.c_created_by,
+    pd.c_created_date,
+    pd.c_modified_by,
+    pd.c_modified_date,
+    pto.c_office_id,
+    pto.c_sequence,
+    oc.c_office_chn,
+    oc.c_office_pinyin,
+    appt.c_appt_desc_chn,
+    appt.c_appt_desc,
+    assume_office.c_assume_office_desc_chn,
+    assume_office.c_assume_office_desc,
+    cat.c_category_desc_chn,
+    cat.c_category_desc,
+    pto.c_firstyear,
+    fy_nh.c_nianhao_chn,
+    fy_nh.c_nianhao_pin,
+    pto.c_fy_nh_year,
+    fy_range.c_range_chn,
+    fy_range.c_range,
+    pto.c_fy_month,
+    pto.c_fy_intercalary,
+    pto.c_fy_day,
+    fy_gz.c_ganzhi_chn,
+    fy_gz.c_ganzhi_py,
+    pto.c_lastyear,
+    ly_nh.c_nianhao_chn,
+    ly_nh.c_nianhao_pin,
+    pto.c_ly_nh_year,
+    ly_range.c_range_chn,
+    ly_range.c_range,
+    pto.c_ly_month,
+    pto.c_ly_intercalary,
+    pto.c_ly_day,
+    ly_gz.c_ganzhi_chn,
+    ly_gz.c_ganzhi_py,
+    dy.c_dynasty_chn,
+    dy.c_dynasty,
+    src.c_title_chn,
+    src.c_title,
+    pto.c_pages,
+    pto.c_notes,
+    office_addr.c_addr_id,
+    office_addr.c_name_chn,
+    office_addr.c_name
+FROM POSTING_DATA pd
+LEFT JOIN POSTED_TO_OFFICE_DATA pto
+    ON pto.c_posting_id = pd.c_posting_id
+   AND pto.c_personid = pd.c_personid
+LEFT JOIN POSTED_TO_ADDR_DATA pta
+    ON pta.c_posting_id = pto.c_posting_id
+   AND pta.c_office_id = pto.c_office_id
+   AND pta.c_personid = pto.c_personid
+LEFT JOIN OFFICE_CODES oc ON oc.c_office_id = pto.c_office_id
+LEFT JOIN APPOINTMENT_CODES appt ON appt.c_appt_code = pto.c_appt_type_code
+LEFT JOIN ASSUME_OFFICE_CODES assume_office ON assume_office.c_assume_office_code = pto.c_assume_office_code
+LEFT JOIN OFFICE_CATEGORIES cat ON cat.c_office_category_id = pto.c_office_category_id
+LEFT JOIN NIAN_HAO fy_nh ON fy_nh.c_nianhao_id = pto.c_fy_nh_code
+LEFT JOIN YEAR_RANGE_CODES fy_range ON fy_range.c_range_code = pto.c_fy_range
+LEFT JOIN GANZHI_CODES fy_gz ON fy_gz.c_ganzhi_code = pto.c_fy_day_gz
+LEFT JOIN NIAN_HAO ly_nh ON ly_nh.c_nianhao_id = pto.c_ly_nh_code
+LEFT JOIN YEAR_RANGE_CODES ly_range ON ly_range.c_range_code = pto.c_ly_range
+LEFT JOIN GANZHI_CODES ly_gz ON ly_gz.c_ganzhi_code = pto.c_ly_day_gz
+LEFT JOIN DYNASTIES dy ON dy.c_dy = pto.c_dy
+LEFT JOIN TEXT_CODES src ON src.c_textid = pto.c_source
+LEFT JOIN ADDR_CODES office_addr ON office_addr.c_addr_id = pta.c_addr_id
+WHERE pd.c_personid = $personId
+ORDER BY pd.c_posting_id, pto.c_sequence, pto.c_office_id, office_addr.c_addr_id;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            var postingId = reader.GetInt32(0);
+            if (!postingMap.ContainsKey(postingId)) {
+                postingMap[postingId] = new List<PostingOfficeAccumulator>();
+                postingOrder.Add(postingId);
+                postingMeta[postingId] = (
+                    reader.IsDBNull(1) ? null : reader.GetString(1),
+                    reader.IsDBNull(2) ? null : reader.GetString(2),
+                    reader.IsDBNull(3) ? null : reader.GetString(3),
+                    reader.IsDBNull(4) ? null : reader.GetString(4)
+                );
+            }
+
+            if (reader.IsDBNull(5)) {
+                continue;
+            }
+
+            var officeId = reader.GetInt32(5);
+            var officeKey = (PostingId: postingId, OfficeId: officeId);
+            if (!officeMap.TryGetValue(officeKey, out var office)) {
+                office = new PostingOfficeAccumulator(
+                    officeId,
+                    reader.IsDBNull(6) ? 0 : reader.GetInt32(6),
+                    reader.IsDBNull(7) ? null : reader.GetString(7),
+                    reader.IsDBNull(8) ? null : reader.GetString(8),
+                    JoinDisplay(reader.IsDBNull(9) ? null : reader.GetString(9), reader.IsDBNull(10) ? null : reader.GetString(10)),
+                    JoinDisplay(reader.IsDBNull(11) ? null : reader.GetString(11), reader.IsDBNull(12) ? null : reader.GetString(12)),
+                    JoinDisplay(reader.IsDBNull(13) ? null : reader.GetString(13), reader.IsDBNull(14) ? null : reader.GetString(14)),
+                    reader.IsDBNull(15) ? null : reader.GetInt32(15),
+                    JoinDisplay(reader.IsDBNull(16) ? null : reader.GetString(16), reader.IsDBNull(17) ? null : reader.GetString(17)),
+                    reader.IsDBNull(18) ? null : reader.GetInt32(18),
+                    JoinDisplay(reader.IsDBNull(19) ? null : reader.GetString(19), reader.IsDBNull(20) ? null : reader.GetString(20)),
+                    reader.IsDBNull(21) ? null : reader.GetInt32(21),
+                    reader.IsDBNull(22) ? null : reader.GetInt32(22) != 0,
+                    reader.IsDBNull(23) ? null : reader.GetInt32(23),
+                    JoinDisplay(reader.IsDBNull(24) ? null : reader.GetString(24), reader.IsDBNull(25) ? null : reader.GetString(25)),
+                    reader.IsDBNull(26) ? null : reader.GetInt32(26),
+                    JoinDisplay(reader.IsDBNull(27) ? null : reader.GetString(27), reader.IsDBNull(28) ? null : reader.GetString(28)),
+                    reader.IsDBNull(29) ? null : reader.GetInt32(29),
+                    JoinDisplay(reader.IsDBNull(30) ? null : reader.GetString(30), reader.IsDBNull(31) ? null : reader.GetString(31)),
+                    reader.IsDBNull(32) ? null : reader.GetInt32(32),
+                    reader.IsDBNull(33) ? null : reader.GetInt32(33) != 0,
+                    reader.IsDBNull(34) ? null : reader.GetInt32(34),
+                    JoinDisplay(reader.IsDBNull(35) ? null : reader.GetString(35), reader.IsDBNull(36) ? null : reader.GetString(36)),
+                    JoinDisplay(reader.IsDBNull(37) ? null : reader.GetString(37), reader.IsDBNull(38) ? null : reader.GetString(38)),
+                    JoinDisplay(reader.IsDBNull(39) ? null : reader.GetString(39), reader.IsDBNull(40) ? null : reader.GetString(40)),
+                    reader.IsDBNull(41) ? null : reader.GetString(41),
+                    reader.IsDBNull(42) ? null : reader.GetString(42)
+                );
+                officeMap[officeKey] = office;
+                postingMap[postingId].Add(office);
+            }
+
+            if (!reader.IsDBNull(43)) {
+                office.Addresses.Add(new PersonPostingAddressItem(
+                    AddressId: reader.GetInt32(43),
+                    AddressNameChn: reader.IsDBNull(44) ? null : reader.GetString(44),
+                    AddressName: reader.IsDBNull(45) ? null : reader.GetString(45)
+                ));
+            }
+        }
+
+        foreach (var postingId in postingOrder) {
+            var meta = postingMeta[postingId];
+            postings.Add(new PersonPostingItem(
+                PostingId: postingId,
+                CreatedBy: meta.CreatedBy,
+                CreatedDate: meta.CreatedDate,
+                ModifiedBy: meta.ModifiedBy,
+                ModifiedDate: meta.ModifiedDate,
+                Offices: postingMap[postingId]
+                    .Select(office => new PersonPostingOfficeItem(
+                        OfficeId: office.OfficeId,
+                        Sequence: office.Sequence,
+                        OfficeNameChn: office.OfficeNameChn,
+                        OfficeName: office.OfficeName,
+                        AppointmentType: office.AppointmentType,
+                        AssumeOffice: office.AssumeOffice,
+                        Category: office.Category,
+                        FirstYear: office.FirstYear,
+                        FirstNianhao: office.FirstNianhao,
+                        FirstNianhaoYear: office.FirstNianhaoYear,
+                        FirstRange: office.FirstRange,
+                        FirstMonth: office.FirstMonth,
+                        FirstIntercalary: office.FirstIntercalary,
+                        FirstDay: office.FirstDay,
+                        FirstGanzhi: office.FirstGanzhi,
+                        LastYear: office.LastYear,
+                        LastNianhao: office.LastNianhao,
+                        LastNianhaoYear: office.LastNianhaoYear,
+                        LastRange: office.LastRange,
+                        LastMonth: office.LastMonth,
+                        LastIntercalary: office.LastIntercalary,
+                        LastDay: office.LastDay,
+                        LastGanzhi: office.LastGanzhi,
+                        Dynasty: office.Dynasty,
+                        Source: office.Source,
+                        Pages: office.Pages,
+                        Notes: office.Notes,
+                        Addresses: office.Addresses
+                    ))
+                    .ToArray()
+            ));
+        }
+
+        return postings;
+    }
+
+    private sealed class PostingOfficeAccumulator(
+        int officeId,
+        int sequence,
+        string? officeNameChn,
+        string? officeName,
+        string? appointmentType,
+        string? assumeOffice,
+        string? category,
+        int? firstYear,
+        string? firstNianhao,
+        int? firstNianhaoYear,
+        string? firstRange,
+        int? firstMonth,
+        bool? firstIntercalary,
+        int? firstDay,
+        string? firstGanzhi,
+        int? lastYear,
+        string? lastNianhao,
+        int? lastNianhaoYear,
+        string? lastRange,
+        int? lastMonth,
+        bool? lastIntercalary,
+        int? lastDay,
+        string? lastGanzhi,
+        string? dynasty,
+        string? source,
+        string? pages,
+        string? notes
+    ) {
+        public int OfficeId { get; } = officeId;
+        public int Sequence { get; } = sequence;
+        public string? OfficeNameChn { get; } = officeNameChn;
+        public string? OfficeName { get; } = officeName;
+        public string? AppointmentType { get; } = appointmentType;
+        public string? AssumeOffice { get; } = assumeOffice;
+        public string? Category { get; } = category;
+        public int? FirstYear { get; } = firstYear;
+        public string? FirstNianhao { get; } = firstNianhao;
+        public int? FirstNianhaoYear { get; } = firstNianhaoYear;
+        public string? FirstRange { get; } = firstRange;
+        public int? FirstMonth { get; } = firstMonth;
+        public bool? FirstIntercalary { get; } = firstIntercalary;
+        public int? FirstDay { get; } = firstDay;
+        public string? FirstGanzhi { get; } = firstGanzhi;
+        public int? LastYear { get; } = lastYear;
+        public string? LastNianhao { get; } = lastNianhao;
+        public int? LastNianhaoYear { get; } = lastNianhaoYear;
+        public string? LastRange { get; } = lastRange;
+        public int? LastMonth { get; } = lastMonth;
+        public bool? LastIntercalary { get; } = lastIntercalary;
+        public int? LastDay { get; } = lastDay;
+        public string? LastGanzhi { get; } = lastGanzhi;
+        public string? Dynasty { get; } = dynasty;
+        public string? Source { get; } = source;
+        public string? Pages { get; } = pages;
+        public string? Notes { get; } = notes;
+        public List<PersonPostingAddressItem> Addresses { get; } = new();
+    }
+
     public async Task<IReadOnlyList<PersonEntryItem>> GetEntriesAsync(
         string sqlitePath,
         int personId,

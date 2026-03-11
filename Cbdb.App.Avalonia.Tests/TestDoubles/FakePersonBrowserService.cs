@@ -122,6 +122,51 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
         new PersonWritingItem(101, "東坡集", "Collected Works of Dongpo", "Author", 1090, "元祐", 5, "Exact", "宋史", "25", "Sample writing note")
     };
 
+    private static readonly IReadOnlyList<PersonPostingItem> Postings = new[] {
+        new PersonPostingItem(
+            2305,
+            "fixture",
+            "2026-03-01",
+            "fixture",
+            "2026-03-02",
+            new[] {
+                new PersonPostingOfficeItem(
+                    8001,
+                    1,
+                    "轉運司判官",
+                    "Zhuan Yun Si Pan Guan",
+                    "差遣 / Appointment",
+                    "就任 / Assumed Office",
+                    "地方官 / Local Office",
+                    1085,
+                    "元豐",
+                    8,
+                    "Exact",
+                    3,
+                    false,
+                    12,
+                    "甲子",
+                    1086,
+                    "元祐",
+                    1,
+                    "Exact",
+                    4,
+                    false,
+                    15,
+                    "乙丑",
+                    "宋 / Song",
+                    "宋史",
+                    "88-89",
+                    "Sample posting note",
+                    new[] {
+                        new PersonPostingAddressItem(9001, "開封", "Kaifeng"),
+                        new PersonPostingAddressItem(9002, "常州", "Changzhou")
+                    }
+                )
+            }
+        )
+    };
+
     private static readonly IReadOnlyList<PersonEntryItem> Entries = new[] {
         new PersonEntryItem(
             1,
@@ -218,6 +263,10 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
 
     public Task<IReadOnlyList<PersonWritingItem>> GetWritingsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
         return Task.FromResult(personId == Detail.PersonId ? Writings : Array.Empty<PersonWritingItem>());
+    }
+
+    public Task<IReadOnlyList<PersonPostingItem>> GetPostingsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
+        return Task.FromResult(personId == Detail.PersonId ? Postings : Array.Empty<PersonPostingItem>());
     }
 
     public Task<IReadOnlyList<PersonEntryItem>> GetEntriesAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {

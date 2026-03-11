@@ -35,6 +35,12 @@ public interface IPersonBrowserService {
         CancellationToken cancellationToken = default
     );
 
+    Task<IReadOnlyList<PersonPostingItem>> GetPostingsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    );
+
     Task<IReadOnlyList<PersonEntryItem>> GetEntriesAsync(
         string sqlitePath,
         int personId,
