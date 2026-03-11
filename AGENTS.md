@@ -66,6 +66,17 @@
 - Earliest/latest living year layout was refined so each of earliest and latest uses:
   - one row for Gregorian year, reign title, and reign year
   - one separate notes row using a multiline control
+- Addresses tab now renders each address record as a repeated form rather than a generic grid.
+- Addresses tab currently includes:
+  - sequence
+  - address type
+  - address name
+  - `BIOG_ADDR_DATA.c_natal` shown using the inherited Access-style `Maternal` label
+  - first/last year summary rows
+  - source
+  - pages
+  - notes
+- In the current Avalonia address tab, all read-only fields except `Notes` are intentionally single-line.
 
 ## What Is Not Stable Yet
 - Person browser data enrichment still relies on a generic lookup pipeline and is not fully Access-like yet.
@@ -73,6 +84,11 @@
 - The person browser still needs closer alignment with the Access UI and field semantics.
 - Code-field display rules are only partially normalized; more Access-like display behavior is still needed.
 - Related-tab load performance is noticeably slower than tab-count queries and needs optimization.
+- The Addresses tab is only partially aligned with Access.
+  - First/last year content is still collapsed into summary strings instead of discrete Access-style controls for Gregorian year, reign title, reign year, month, intercalary, day, ganzhi, and range.
+  - Address card layout is only approximate and does not yet mirror `BIOG_ADDR_DATA_2 Subform`.
+  - The `Maternal` label is inherited from Access form naming, but the underlying database field is `BIOG_ADDR_DATA.c_natal`; the final user-facing label is still not fully settled.
+  - Source display is currently simplified into a merged text value rather than a full Access-like field arrangement.
 
 ## Known Pitfalls
 - Do not casually rewrite files that contain Chinese string literals using PowerShell text replacement.
@@ -98,6 +114,8 @@
 - Before editing that file, diff against a known-good commit if any Chinese UI text looks suspicious.
 - For code-field display changes, prefer data-layer lookup fixes in `Cbdb.App.Data/SqlitePersonBrowserService.cs` over UI-layer string hacks.
 - For Basic Information tab work, prefer incremental changes and compile after each small step.
+- For Addresses tab work, do not switch back to a `DataGrid`.
+- Continue using repeated form cards for addresses, and align them gradually with the Access subform instead of collapsing date fields into convenience strings permanently.
 - When adding or changing person-detail SQL, verify both:
   - query column order
   - matching `reader.Get*` indexes
