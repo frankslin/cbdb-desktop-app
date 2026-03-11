@@ -77,36 +77,71 @@
               Padding="6">
         <Grid RowDefinitions="Auto,*">
           <Border BorderBrush="#C7C7C7" BorderThickness="1" Background="#F7F7F7" Padding="10">
-            <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-              <TextBlock x:Name="LblPersonId" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" />
-              <TextBox x:Name="ValPersonId" Grid.Row="0" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
-              <TextBlock x:Name="LblGender" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" />
-              <TextBox x:Name="ValGender" Grid.Row="0" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+              <Grid ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
+                <TextBlock x:Name="LblSurnameChnField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValSurnameChn" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBlock x:Name="LblMingziChnField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValMingziChn" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBlock x:Name="LblNameChnField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValNameChn" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
+                <TextBlock x:Name="LblPersonId" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                <TextBox x:Name="ValPersonId" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
+              </Grid>
 
-              <TextBlock x:Name="LblNameChn" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" />
-              <TextBox x:Name="ValNameChn" Grid.Row="1" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
-              <TextBlock x:Name="LblName" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" />
-              <TextBox x:Name="ValName" Grid.Row="1" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+              <Grid Grid.Row="1" Margin="0,6,0,0" ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
+                <TextBlock x:Name="LblSurnameField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValSurname" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBlock x:Name="LblMingziField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValMingzi" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBlock x:Name="LblNameField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValName" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
+                <TextBlock x:Name="LblGenderSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                <TextBox x:Name="ValGender" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="80" IsReadOnly="True" />
+              </Grid>
 
-              <TextBlock x:Name="LblBirthYear" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" />
-              <TextBox x:Name="ValBirthYear" Grid.Row="2" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
-              <TextBlock x:Name="LblDeathYear" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" />
-              <TextBox x:Name="ValDeathYear" Grid.Row="2" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+              <Grid Grid.Row="2" Margin="0,6,0,0" ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
+                <TextBlock x:Name="LblSurnameProperField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValSurnameProper" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBlock x:Name="LblMingziProperField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValMingziProper" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBlock x:Name="LblNameProperField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValNameProper" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
+                <TextBlock x:Name="LblBirthYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                <TextBox x:Name="ValBirthYear" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
+              </Grid>
 
-              <TextBlock x:Name="LblDynasty" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" />
-              <TextBox x:Name="ValDynasty" Grid.Row="3" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
-              <TextBlock x:Name="LblIndexYear" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" />
-              <TextBox x:Name="ValIndexYear" Grid.Row="3" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+              <Grid Grid.Row="3" Margin="0,6,0,0" ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
+                <TextBlock x:Name="LblSurnameRmField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValSurnameRm" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBlock x:Name="LblMingziRmField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValMingziRm" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBlock x:Name="LblNameRmField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" />
+                <TextBox x:Name="ValNameRm" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
+                <TextBlock x:Name="LblDeathYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
+                <TextBox x:Name="ValDeathYear" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="90" IsReadOnly="True" />
+              </Grid>
 
-              <TextBlock x:Name="LblIndexYearType" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" />
-              <TextBox x:Name="ValIndexYearType" Grid.Row="4" Grid.Column="1" Margin="6,0,12,6" IsReadOnly="True" />
-              <TextBlock x:Name="LblIndexAddressType" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" />
-              <TextBox x:Name="ValIndexAddressType" Grid.Row="4" Grid.Column="3" Margin="6,0,0,6" IsReadOnly="True" />
+              <Grid Grid.Row="4" Margin="0,8,0,0" ColumnDefinitions="Auto,*">
+                <TextBlock x:Name="LblDynastySummary" Grid.Column="0" VerticalAlignment="Center" />
+                <TextBox x:Name="ValDynasty" Grid.Column="1" Height="24" Margin="6,0,0,0" IsReadOnly="True" />
+              </Grid>
 
-              <TextBlock x:Name="LblIndexYearSource" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" />
-              <TextBox x:Name="ValIndexYearSource" Grid.Row="5" Grid.Column="1" Margin="6,0,12,0" IsReadOnly="True" />
-              <TextBlock x:Name="LblIndexAddress" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" />
-              <TextBox x:Name="ValIndexAddress" Grid.Row="5" Grid.Column="3" Margin="6,0,0,0" IsReadOnly="True" />
+              <Grid Grid.Row="5" Margin="0,6,0,0" ColumnDefinitions="Auto,0.8*,Auto,1.1*,Auto,1.4*">
+                <TextBlock x:Name="LblIndexYearSummary" Grid.Column="0" VerticalAlignment="Center" />
+                <TextBox x:Name="ValIndexYear" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBlock x:Name="LblIndexYearTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
+                <TextBox x:Name="ValIndexYearType" Grid.Column="3" Height="24" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBlock x:Name="LblIndexYearSourceSummary" Grid.Column="4" VerticalAlignment="Center" />
+                <TextBox x:Name="ValIndexYearSource" Grid.Column="5" Height="24" Margin="6,0,0,0" IsReadOnly="True" />
+              </Grid>
+
+              <Grid Grid.Row="6" Margin="0,6,0,0" ColumnDefinitions="Auto,1.5*,Auto,1*">
+                <TextBlock x:Name="LblIndexAddressSummary" Grid.Column="0" VerticalAlignment="Center" />
+                <TextBox x:Name="ValIndexAddress" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBlock x:Name="LblIndexAddressTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
+                <TextBox x:Name="ValIndexAddressType" Grid.Column="3" Height="24" Margin="6,0,0,0" IsReadOnly="True" />
+              </Grid>
             </Grid>
           </Border>
 
@@ -114,24 +149,125 @@
             <TabItem x:Name="TabBasic">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="8">
-                  <TextBlock x:Name="LblAllFieldsHeader" FontSize="16" FontWeight="Bold" Foreground="#333" />
                   <TextBlock x:Name="TxtNoSelection" Margin="0,8,0,8" Foreground="#666" />
-                  <ItemsControl x:Name="ItemsBasicFields">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="core:PersonFieldValue">
-                        <Border Margin="0,0,0,10" Padding="8" BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA">
-                          <StackPanel>
-                            <TextBlock FontWeight="SemiBold" Foreground="#4A4A4A" Text="{Binding FieldName}" />
-                            <TextBox Margin="0,6,0,0"
-                                     IsReadOnly="True"
-                                     TextWrapping="Wrap"
-                                     AcceptsReturn="True"
-                                     Text="{Binding Value}" />
-                          </StackPanel>
-                        </Border>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
+                  <StackPanel Margin="0,0,0,10">
+                    <TextBlock x:Name="HdrBasic_birth_group" FontWeight="Bold" Margin="0,0,0,6" />
+                    <Border BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA" Padding="8">
+                    <Grid ColumnDefinitions="Auto,180,Auto,180,Auto,*" RowDefinitions="Auto,Auto,Auto">
+                      <TextBlock x:Name="LblBasic_birth_gregorian" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_birth_year" Grid.Row="0" Grid.Column="1" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_birth_nianhao" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_birth_nianhao" Grid.Row="0" Grid.Column="3" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_birth_nianhao_year" Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_birth_nianhao_year" Grid.Row="0" Grid.Column="5" Margin="0,0,0,6" IsReadOnly="True" />
+
+                      <TextBlock x:Name="LblBasic_birth_month" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_birth_month" Grid.Row="1" Grid.Column="1" Margin="0,0,12,6" IsReadOnly="True" />
+                      <CheckBox x:Name="ChkBasic_birth_intercalary" Grid.Row="1" Grid.Column="3" Margin="0,0,12,6" IsEnabled="False" />
+                      <TextBlock x:Name="LblBasic_birth_day" Grid.Row="1" Grid.Column="4" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_birth_day" Grid.Row="1" Grid.Column="5" Margin="0,0,0,6" IsReadOnly="True" />
+
+                      <TextBlock x:Name="LblBasic_birth_ganzhi" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_birth_ganzhi" Grid.Row="2" Grid.Column="1" Margin="0,0,12,0" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_birth_range" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_birth_range" Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="3" IsReadOnly="True" />
+                    </Grid>
+                    </Border>
+                  </StackPanel>
+
+                  <StackPanel Margin="0,0,0,10">
+                    <TextBlock x:Name="HdrBasic_death_group" FontWeight="Bold" Margin="0,0,0,6" />
+                    <Border BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA" Padding="8">
+                    <Grid ColumnDefinitions="Auto,180,Auto,180,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                      <TextBlock x:Name="LblBasic_death_gregorian" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_year" Grid.Row="0" Grid.Column="1" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_death_nianhao" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_nianhao" Grid.Row="0" Grid.Column="3" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_death_nianhao_year" Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_nianhao_year" Grid.Row="0" Grid.Column="5" Margin="0,0,0,6" IsReadOnly="True" />
+
+                      <TextBlock x:Name="LblBasic_death_month" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_month" Grid.Row="1" Grid.Column="1" Margin="0,0,12,6" IsReadOnly="True" />
+                      <CheckBox x:Name="ChkBasic_death_intercalary" Grid.Row="1" Grid.Column="3" Margin="0,0,12,6" IsEnabled="False" />
+                      <TextBlock x:Name="LblBasic_death_day" Grid.Row="1" Grid.Column="4" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_day" Grid.Row="1" Grid.Column="5" Margin="0,0,0,6" IsReadOnly="True" />
+
+                      <TextBlock x:Name="LblBasic_death_ganzhi" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_ganzhi" Grid.Row="2" Grid.Column="1" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_death_range" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_range" Grid.Row="2" Grid.Column="3" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_death_age" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_age" Grid.Row="3" Grid.Column="1" Margin="0,0,12,0" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_death_age_range" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_death_age_range" Grid.Row="3" Grid.Column="3" IsReadOnly="True" />
+                    </Grid>
+                    </Border>
+                  </StackPanel>
+
+                  <StackPanel Margin="0,0,0,10">
+                    <TextBlock x:Name="HdrBasic_fl_group" FontWeight="Bold" Margin="0,0,0,6" />
+                    <Border BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA" Padding="8">
+                    <Grid ColumnDefinitions="Auto,120,Auto,220,Auto,100,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                      <TextBlock x:Name="LblBasic_fl_first_year" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_fl_first_year" Grid.Row="0" Grid.Column="1" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_fl_first_nianhao" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_fl_first_nianhao" Grid.Row="0" Grid.Column="3" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_fl_first_nianhao_year" Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_fl_first_nianhao_year" Grid.Row="0" Grid.Column="5" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_fl_first_notes" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" />
+                      <TextBox x:Name="ValBasic_fl_first_notes" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7" Margin="0,0,0,6" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="44" />
+
+                      <TextBlock x:Name="LblBasic_fl_last_year" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_fl_last_year" Grid.Row="2" Grid.Column="1" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_fl_last_nianhao" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_fl_last_nianhao" Grid.Row="2" Grid.Column="3" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_fl_last_nianhao_year" Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_fl_last_nianhao_year" Grid.Row="2" Grid.Column="5" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_fl_last_notes" Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" />
+                      <TextBox x:Name="ValBasic_fl_last_notes" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="7" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="44" />
+                    </Grid>
+                    </Border>
+                  </StackPanel>
+
+                  <StackPanel Margin="0,0,0,10">
+                    <TextBlock x:Name="HdrBasic_identity_group" FontWeight="Bold" Margin="0,0,0,6" />
+                    <Border BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA" Padding="8">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+                      <TextBlock x:Name="LblBasic_choronym" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_choronym" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_household" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_household" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_ethnicity_tribe" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_ethnicity_tribe" Grid.Row="2" Grid.Column="1" IsReadOnly="True" />
+                    </Grid>
+                    </Border>
+                  </StackPanel>
+
+                  <StackPanel Margin="0,0,0,10">
+                    <TextBlock x:Name="HdrBasic_notes_group" FontWeight="Bold" Margin="0,0,0,6" />
+                    <Border BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA" Padding="8">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <TextBlock x:Name="LblBasic_notes" Grid.Column="0" VerticalAlignment="Top" />
+                      <TextBox x:Name="ValBasic_notes" Grid.Column="1" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="70" />
+                    </Grid>
+                    </Border>
+                  </StackPanel>
+
+                  <StackPanel Margin="0,0,0,10">
+                    <TextBlock x:Name="HdrBasic_audit_group" FontWeight="Bold" Margin="0,0,0,6" />
+                    <Border BorderBrush="#CFCFCF" BorderThickness="1" Background="#FAFAFA" Padding="8">
+                    <Grid ColumnDefinitions="Auto,160,Auto,180" RowDefinitions="Auto,Auto">
+                      <TextBlock x:Name="LblBasic_created_by" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_created_by" Grid.Row="0" Grid.Column="1" Margin="0,0,12,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_created_date" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_created_date" Grid.Row="0" Grid.Column="3" Margin="0,0,0,6" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_modified_by" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_modified_by" Grid.Row="1" Grid.Column="1" Margin="0,0,12,0" IsReadOnly="True" />
+                      <TextBlock x:Name="LblBasic_modified_date" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" />
+                      <TextBox x:Name="ValBasic_modified_date" Grid.Row="1" Grid.Column="3" IsReadOnly="True" />
+                    </Grid>
+                    </Border>
+                  </StackPanel>
                 </StackPanel>
               </ScrollViewer>
             </TabItem>
