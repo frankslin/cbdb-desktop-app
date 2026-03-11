@@ -82,12 +82,31 @@ public partial class PersonBrowserWindow : Window {
     private TextBox _valIndexAddress = null!;
     private TextBox _valIndexAddressType = null!;
     private TabItem _tabBasic = null!;
-    private TabItem _tabRelated = null!;
+    private TabItem _tabAddresses = null!;
+    private TabItem _tabAltNames = null!;
+    private TabItem _tabWritings = null!;
+    private TabItem _tabPostings = null!;
+    private TabItem _tabEntry = null!;
+    private TabItem _tabEvents = null!;
+    private TabItem _tabStatus = null!;
+    private TabItem _tabKinship = null!;
+    private TabItem _tabAssociations = null!;
+    private TabItem _tabPossessions = null!;
+    private TabItem _tabSources = null!;
+    private TabItem _tabInstitutions = null!;
     private TextBlock _txtNoSelection = null!;
-    private TextBlock _txtRelatedCounts = null!;
-    private TextBlock _txtRelatedCountsMore = null!;
-    private TextBlock _txtRelatedCountsTail = null!;
-    private TextBlock _txtRelatedPlaceholder = null!;
+    private TextBlock _txtTabAddressesPlaceholder = null!;
+    private TextBlock _txtTabAltNamesPlaceholder = null!;
+    private TextBlock _txtTabWritingsPlaceholder = null!;
+    private TextBlock _txtTabPostingsPlaceholder = null!;
+    private TextBlock _txtTabEntryPlaceholder = null!;
+    private TextBlock _txtTabEventsPlaceholder = null!;
+    private TextBlock _txtTabStatusPlaceholder = null!;
+    private TextBlock _txtTabKinshipPlaceholder = null!;
+    private TextBlock _txtTabAssociationsPlaceholder = null!;
+    private TextBlock _txtTabPossessionsPlaceholder = null!;
+    private TextBlock _txtTabSourcesPlaceholder = null!;
+    private TextBlock _txtTabInstitutionsPlaceholder = null!;
     private TextBlock _txtFooter = null!;
     private readonly List<ScrollViewer> _peopleScrollViewers = new();
 
@@ -124,7 +143,7 @@ public partial class PersonBrowserWindow : Window {
     private void OnLanguageChanged(object? sender, EventArgs e) {
         ApplyLocalization();
         UpdateRecordText();
-        UpdateRelatedSummary();
+        UpdateTabHeaders(_currentDetail);
     }
 
     private void ApplyLocalization() {
@@ -165,9 +184,21 @@ public partial class PersonBrowserWindow : Window {
         _lblIndexAddressTypeSummary.Text = B("index_address_type");
 
         _tabBasic.Header = T("browser.tab_basic");
-        _tabRelated.Header = T("browser.tab_related");
+        UpdateTabHeaders(_currentDetail);
         _txtNoSelection.Text = _currentDetail is null ? T("browser.no_selection") : string.Empty;
-        _txtRelatedPlaceholder.Text = T("browser.related_placeholder");
+        var placeholder = T("browser.tab_placeholder");
+        _txtTabAddressesPlaceholder.Text = placeholder;
+        _txtTabAltNamesPlaceholder.Text = placeholder;
+        _txtTabWritingsPlaceholder.Text = placeholder;
+        _txtTabPostingsPlaceholder.Text = placeholder;
+        _txtTabEntryPlaceholder.Text = placeholder;
+        _txtTabEventsPlaceholder.Text = placeholder;
+        _txtTabStatusPlaceholder.Text = placeholder;
+        _txtTabKinshipPlaceholder.Text = placeholder;
+        _txtTabAssociationsPlaceholder.Text = placeholder;
+        _txtTabPossessionsPlaceholder.Text = placeholder;
+        _txtTabSourcesPlaceholder.Text = placeholder;
+        _txtTabInstitutionsPlaceholder.Text = placeholder;
         ApplyBasicInfoLocalization();
 
         if (string.IsNullOrWhiteSpace(_txtFooter.Text) || _txtFooter.Text == "Ready" || _txtFooter.Text == "就緒" || _txtFooter.Text == "就绪") {
@@ -296,7 +327,7 @@ public partial class PersonBrowserWindow : Window {
 
             PopulateBasicInfo(detail);
             _txtNoSelection.Text = string.Empty;
-            UpdateRelatedSummary();
+            UpdateTabHeaders(detail);
             _txtFooter.Text = string.Format(T("browser.search_result_count"), _people.Count);
         } catch (Exception ex) {
             _txtFooter.Text = ex.Message;
@@ -430,7 +461,7 @@ public partial class PersonBrowserWindow : Window {
 
         ClearBasicInfo();
         _txtNoSelection.Text = T("browser.no_selection");
-        UpdateRelatedSummary();
+        UpdateTabHeaders(null);
         UpdateRecordText();
     }
 
@@ -439,35 +470,23 @@ public partial class PersonBrowserWindow : Window {
         _txtFooter.Text = string.Format(T("browser.search_result_count"), _people.Count);
     }
 
-    private void UpdateRelatedSummary() {
-        if (_currentDetail is null) {
-            _txtRelatedCounts.Text = string.Empty;
-            _txtRelatedCountsMore.Text = string.Empty;
-            _txtRelatedCountsTail.Text = string.Empty;
-            return;
-        }
+    private void UpdateTabHeaders(PersonDetail? detail) {
+        _tabAddresses.Header = WithCount(T("browser.tab_addresses"), detail?.AddressCount);
+        _tabAltNames.Header = WithCount(T("browser.tab_alt_names"), detail?.AltNameCount);
+        _tabWritings.Header = WithCount(T("browser.tab_writings"), detail?.TextCount);
+        _tabPostings.Header = WithCount(T("browser.tab_postings"), detail?.OfficeCount);
+        _tabEntry.Header = WithCount(T("browser.tab_entry"), detail?.EntryCount);
+        _tabEvents.Header = WithCount(T("browser.tab_events"), detail?.EventCount);
+        _tabStatus.Header = WithCount(T("browser.tab_status"), detail?.StatusCount);
+        _tabKinship.Header = WithCount(T("browser.tab_kinship"), detail?.KinCount);
+        _tabAssociations.Header = WithCount(T("browser.tab_associations"), detail?.AssocCount);
+        _tabPossessions.Header = WithCount(T("browser.tab_possessions"), detail?.PossessionCount);
+        _tabSources.Header = WithCount(T("browser.tab_sources"), detail?.SourceCount);
+        _tabInstitutions.Header = WithCount(T("browser.tab_institutions"), detail?.InstitutionCount);
+    }
 
-        _txtRelatedCounts.Text = string.Format(
-            T("browser.related_counts"),
-            _currentDetail.AddressCount,
-            _currentDetail.AltNameCount,
-            _currentDetail.KinCount,
-            _currentDetail.AssocCount
-        );
-        _txtRelatedCountsMore.Text = string.Format(
-            T("browser.related_counts_more"),
-            _currentDetail.OfficeCount,
-            _currentDetail.EntryCount,
-            _currentDetail.EventCount,
-            _currentDetail.StatusCount,
-            _currentDetail.TextCount
-        );
-        _txtRelatedCountsTail.Text = string.Format(
-            T("browser.related_counts_tail"),
-            _currentDetail.PossessionCount,
-            _currentDetail.SourceCount,
-            _currentDetail.InstitutionCount
-        );
+    private static string WithCount(string label, int? count) {
+        return count.HasValue ? $"{label} ({count.Value:N0})" : label;
     }
 
     private static string EscapeCsv(string? value) {
@@ -892,12 +911,31 @@ public partial class PersonBrowserWindow : Window {
         _valIndexAddress = this.FindControl<TextBox>("ValIndexAddress") ?? throw new InvalidOperationException("ValIndexAddress not found.");
         _valIndexAddressType = this.FindControl<TextBox>("ValIndexAddressType") ?? throw new InvalidOperationException("ValIndexAddressType not found.");
         _tabBasic = this.FindControl<TabItem>("TabBasic") ?? throw new InvalidOperationException("TabBasic not found.");
-        _tabRelated = this.FindControl<TabItem>("TabRelated") ?? throw new InvalidOperationException("TabRelated not found.");
+        _tabAddresses = this.FindControl<TabItem>("TabAddresses") ?? throw new InvalidOperationException("TabAddresses not found.");
+        _tabAltNames = this.FindControl<TabItem>("TabAltNames") ?? throw new InvalidOperationException("TabAltNames not found.");
+        _tabWritings = this.FindControl<TabItem>("TabWritings") ?? throw new InvalidOperationException("TabWritings not found.");
+        _tabPostings = this.FindControl<TabItem>("TabPostings") ?? throw new InvalidOperationException("TabPostings not found.");
+        _tabEntry = this.FindControl<TabItem>("TabEntry") ?? throw new InvalidOperationException("TabEntry not found.");
+        _tabEvents = this.FindControl<TabItem>("TabEvents") ?? throw new InvalidOperationException("TabEvents not found.");
+        _tabStatus = this.FindControl<TabItem>("TabStatus") ?? throw new InvalidOperationException("TabStatus not found.");
+        _tabKinship = this.FindControl<TabItem>("TabKinship") ?? throw new InvalidOperationException("TabKinship not found.");
+        _tabAssociations = this.FindControl<TabItem>("TabAssociations") ?? throw new InvalidOperationException("TabAssociations not found.");
+        _tabPossessions = this.FindControl<TabItem>("TabPossessions") ?? throw new InvalidOperationException("TabPossessions not found.");
+        _tabSources = this.FindControl<TabItem>("TabSources") ?? throw new InvalidOperationException("TabSources not found.");
+        _tabInstitutions = this.FindControl<TabItem>("TabInstitutions") ?? throw new InvalidOperationException("TabInstitutions not found.");
         _txtNoSelection = this.FindControl<TextBlock>("TxtNoSelection") ?? throw new InvalidOperationException("TxtNoSelection not found.");
-        _txtRelatedCounts = this.FindControl<TextBlock>("TxtRelatedCounts") ?? throw new InvalidOperationException("TxtRelatedCounts not found.");
-        _txtRelatedCountsMore = this.FindControl<TextBlock>("TxtRelatedCountsMore") ?? throw new InvalidOperationException("TxtRelatedCountsMore not found.");
-        _txtRelatedCountsTail = this.FindControl<TextBlock>("TxtRelatedCountsTail") ?? throw new InvalidOperationException("TxtRelatedCountsTail not found.");
-        _txtRelatedPlaceholder = this.FindControl<TextBlock>("TxtRelatedPlaceholder") ?? throw new InvalidOperationException("TxtRelatedPlaceholder not found.");
+        _txtTabAddressesPlaceholder = this.FindControl<TextBlock>("TxtTabAddressesPlaceholder") ?? throw new InvalidOperationException("TxtTabAddressesPlaceholder not found.");
+        _txtTabAltNamesPlaceholder = this.FindControl<TextBlock>("TxtTabAltNamesPlaceholder") ?? throw new InvalidOperationException("TxtTabAltNamesPlaceholder not found.");
+        _txtTabWritingsPlaceholder = this.FindControl<TextBlock>("TxtTabWritingsPlaceholder") ?? throw new InvalidOperationException("TxtTabWritingsPlaceholder not found.");
+        _txtTabPostingsPlaceholder = this.FindControl<TextBlock>("TxtTabPostingsPlaceholder") ?? throw new InvalidOperationException("TxtTabPostingsPlaceholder not found.");
+        _txtTabEntryPlaceholder = this.FindControl<TextBlock>("TxtTabEntryPlaceholder") ?? throw new InvalidOperationException("TxtTabEntryPlaceholder not found.");
+        _txtTabEventsPlaceholder = this.FindControl<TextBlock>("TxtTabEventsPlaceholder") ?? throw new InvalidOperationException("TxtTabEventsPlaceholder not found.");
+        _txtTabStatusPlaceholder = this.FindControl<TextBlock>("TxtTabStatusPlaceholder") ?? throw new InvalidOperationException("TxtTabStatusPlaceholder not found.");
+        _txtTabKinshipPlaceholder = this.FindControl<TextBlock>("TxtTabKinshipPlaceholder") ?? throw new InvalidOperationException("TxtTabKinshipPlaceholder not found.");
+        _txtTabAssociationsPlaceholder = this.FindControl<TextBlock>("TxtTabAssociationsPlaceholder") ?? throw new InvalidOperationException("TxtTabAssociationsPlaceholder not found.");
+        _txtTabPossessionsPlaceholder = this.FindControl<TextBlock>("TxtTabPossessionsPlaceholder") ?? throw new InvalidOperationException("TxtTabPossessionsPlaceholder not found.");
+        _txtTabSourcesPlaceholder = this.FindControl<TextBlock>("TxtTabSourcesPlaceholder") ?? throw new InvalidOperationException("TxtTabSourcesPlaceholder not found.");
+        _txtTabInstitutionsPlaceholder = this.FindControl<TextBlock>("TxtTabInstitutionsPlaceholder") ?? throw new InvalidOperationException("TxtTabInstitutionsPlaceholder not found.");
         _txtFooter = this.FindControl<TextBlock>("TxtFooter") ?? throw new InvalidOperationException("TxtFooter not found.");
 
         _basicGroupHeaders["birth_group"] = this.FindControl<TextBlock>("HdrBasic_birth_group") ?? throw new InvalidOperationException("HdrBasic_birth_group not found.");

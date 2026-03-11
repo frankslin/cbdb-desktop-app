@@ -265,14 +265,18 @@
               </ScrollViewer>
             </TabItem>
 
-            <TabItem x:Name="TabRelated">
-              <StackPanel Margin="12">
-                <TextBlock x:Name="TxtRelatedCounts" TextWrapping="Wrap" />
-                <TextBlock x:Name="TxtRelatedCountsMore" Margin="0,6,0,0" TextWrapping="Wrap" />
-                <TextBlock x:Name="TxtRelatedCountsTail" Margin="0,6,0,0" TextWrapping="Wrap" />
-                <TextBlock x:Name="TxtRelatedPlaceholder" Margin="0,14,0,0" Foreground="#666" TextWrapping="Wrap" />
-              </StackPanel>
-            </TabItem>
+            <TabItem x:Name="TabAddresses"><TextBlock x:Name="TxtTabAddressesPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabAltNames"><TextBlock x:Name="TxtTabAltNamesPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabWritings"><TextBlock x:Name="TxtTabWritingsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabPostings"><TextBlock x:Name="TxtTabPostingsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabEntry"><TextBlock x:Name="TxtTabEntryPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabEvents"><TextBlock x:Name="TxtTabEventsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabStatus"><TextBlock x:Name="TxtTabStatusPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabKinship"><TextBlock x:Name="TxtTabKinshipPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabAssociations"><TextBlock x:Name="TxtTabAssociationsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabPossessions"><TextBlock x:Name="TxtTabPossessionsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabSources"><TextBlock x:Name="TxtTabSourcesPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabInstitutions"><TextBlock x:Name="TxtTabInstitutionsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
           </TabControl>
         </Grid>
       </Border>

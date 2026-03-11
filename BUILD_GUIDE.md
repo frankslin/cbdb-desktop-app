@@ -3,7 +3,7 @@
 This repository currently contains two desktop shells with different platform targets:
 
 - `Cbdb.App.Desktop`: WPF, Windows only
-- `Cbdb.App.Avalonia`: Avalonia, cross-platform shell for macOS and Windows
+- `Cbdb.App.Avalonia`: Avalonia, cross-platform shell for macOS and Windows, and the current Windows CI publish target
 
 Shared libraries:
 
@@ -161,14 +161,14 @@ For WPF:
 ### Expected Windows Result
 
 - Both Avalonia and WPF apps should build.
-- Avalonia currently provides only the navigation shell.
-- WPF remains the more complete implementation.
+- Windows CI publishes the Avalonia app as the packaged `win-x64` artifact.
+- WPF remains available for local comparison and migration reference.
 
 ## Known Issues and Boundaries
 
 - `Cbdb.App.Desktop` is Windows-only because it uses WPF and targets `net8.0-windows`.
-- `Cbdb.App.Avalonia` is intentionally partial at this stage. It ports the navigation shell first, not the full browser/query feature set.
-- The `Person Browser` and `Query Module` windows have not been ported to Avalonia yet.
+- `Cbdb.App.Avalonia` is still partial at this stage.
+- The `Person Browser` shell has been ported, but related-tab content and query-module windows are still incomplete.
 - If `data/cbdb_20260304.sqlite3` is missing, the app will require manual file selection.
 
 ## Troubleshooting
