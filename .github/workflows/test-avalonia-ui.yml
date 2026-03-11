@@ -20,8 +20,8 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore solution
-        run: dotnet restore Cbdb.WindowsApp.sln --configfile NuGet.Config
+      - name: Restore headless UI test project
+        run: dotnet restore Cbdb.App.Avalonia.Tests/Cbdb.App.Avalonia.Tests.csproj --configfile NuGet.Config
 
       - name: Run headless Avalonia UI tests
         run: >
