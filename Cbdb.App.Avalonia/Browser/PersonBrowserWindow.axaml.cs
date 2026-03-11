@@ -5,6 +5,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Core;
 using Cbdb.App.Data;
@@ -28,12 +30,12 @@ public partial class PersonBrowserWindow : Window {
     private Button _btnClear = null!;
     private Button _btnSaveToFile = null!;
     private TextBlock _lblSearchByName = null!;
-    private TextBlock _hdrPersonId = null!;
-    private TextBlock _hdrNameChn = null!;
-    private TextBlock _hdrNameRm = null!;
-    private TextBlock _hdrIndexYear = null!;
-    private TextBlock _hdrIndexAddress = null!;
-    private ListBox _listPeople = null!;
+    private DataGrid _gridPeople = null!;
+    private DataGridTextColumn _colPersonId = null!;
+    private DataGridTextColumn _colNameChn = null!;
+    private DataGridTextColumn _colNameRm = null!;
+    private DataGridTextColumn _colIndexYear = null!;
+    private DataGridTextColumn _colIndexAddress = null!;
     private TextBlock _txtRecord = null!;
     private TextBlock _lblSurnameChnField = null!;
     private TextBlock _lblMingziChnField = null!;
@@ -87,7 +89,13 @@ public partial class PersonBrowserWindow : Window {
     private TextBlock _txtRelatedCountsTail = null!;
     private TextBlock _txtRelatedPlaceholder = null!;
     private TextBlock _txtFooter = null!;
+    private readonly List<ScrollViewer> _peopleScrollViewers = new();
 
+    private string? _currentKeyword;
+    private int _nextOffset;
+    private bool _hasMore;
+    private bool _isLoadingPage;
+    private bool _pendingLoadMore;
     private int? _selectedPersonId;
     private PersonDetail? _currentDetail;
 
@@ -101,12 +109,15 @@ public partial class PersonBrowserWindow : Window {
         InitializeComponent();
         InitializeControls();
 
-        _listPeople.ItemsSource = _people;
+        _gridPeople.ItemsSource = _people;
 
         _localizationService.LanguageChanged += OnLanguageChanged;
         ApplyLocalization();
 
-        Opened += async (_, _) => await SearchAsync();
+        Opened += async (_, _) => {
+            Dispatcher.UIThread.Post(AttachPeopleScrollMonitor, DispatcherPriority.Loaded);
+            await SearchAsync();
+        };
         Closed += (_, _) => _localizationService.LanguageChanged -= OnLanguageChanged;
     }
 
@@ -124,11 +135,11 @@ public partial class PersonBrowserWindow : Window {
         _lblSearchByName.Text = T("browser.keyword_tooltip");
         _txtKeyword.Watermark = T("browser.keyword_tooltip");
 
-        _hdrPersonId.Text = T("browser.grid_person_id");
-        _hdrNameChn.Text = T("browser.grid_name_chn");
-        _hdrNameRm.Text = T("browser.grid_name_rm");
-        _hdrIndexYear.Text = T("browser.grid_index_year");
-        _hdrIndexAddress.Text = T("browser.grid_index_address");
+        _colPersonId.Header = T("browser.grid_person_id");
+        _colNameChn.Header = T("browser.grid_name_chn");
+        _colNameRm.Header = T("browser.grid_name_rm");
+        _colIndexYear.Header = T("browser.grid_index_year");
+        _colIndexAddress.Header = T("browser.grid_index_address");
 
         _lblSurnameChnField.Text = B("field_surname_chn");
         _lblMingziChnField.Text = B("field_mingzi_chn");
@@ -190,26 +201,18 @@ public partial class PersonBrowserWindow : Window {
             return;
         }
 
+        _currentKeyword = string.IsNullOrWhiteSpace(_txtKeyword.Text) ? null : _txtKeyword.Text.Trim();
+        _nextOffset = 0;
+        _hasMore = true;
+
         try {
             _btnSearch.IsEnabled = false;
             _btnClear.IsEnabled = false;
             _txtFooter.Text = T("status.checking");
 
-            var keyword = string.IsNullOrWhiteSpace(_txtKeyword.Text) ? null : _txtKeyword.Text.Trim();
-            var rows = await _personBrowserService.SearchAsync(_sqlitePath, keyword, PageSize, 0);
-
             _people.Clear();
-            foreach (var row in rows) {
-                _people.Add(row);
-            }
-
-            UpdateRecordText();
-
-            if (_people.Count > 0) {
-                _listPeople.SelectedIndex = 0;
-            } else {
-                ClearDetail();
-            }
+            ClearDetail();
+            await LoadNextPageAsync(selectFirstRowWhenAvailable: true);
         } catch (Exception ex) {
             _txtFooter.Text = ex.Message;
         } finally {
@@ -218,8 +221,37 @@ public partial class PersonBrowserWindow : Window {
         }
     }
 
-    private async void ListPeople_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
-        if (_listPeople.SelectedItem is not PersonListItem selected) {
+    private async Task LoadNextPageAsync(bool selectFirstRowWhenAvailable = false) {
+        if (_isLoadingPage || !_hasMore) {
+            return;
+        }
+
+        try {
+            _isLoadingPage = true;
+            _txtFooter.Text = T("status.checking");
+
+            var rows = await _personBrowserService.SearchAsync(_sqlitePath, _currentKeyword, PageSize, _nextOffset);
+            foreach (var row in rows) {
+                _people.Add(row);
+            }
+
+            _nextOffset += rows.Count;
+            _hasMore = rows.Count == PageSize;
+
+            UpdateRecordText();
+
+            if (selectFirstRowWhenAvailable && _people.Count > 0) {
+                _gridPeople.SelectedIndex = 0;
+            }
+        } catch (Exception ex) {
+            _txtFooter.Text = ex.Message;
+        } finally {
+            _isLoadingPage = false;
+        }
+    }
+
+    private async void GridPeople_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
+        if (_gridPeople.SelectedItem is not PersonListItem selected) {
             ClearDetail();
             return;
         }
@@ -269,6 +301,56 @@ public partial class PersonBrowserWindow : Window {
         } catch (Exception ex) {
             _txtFooter.Text = ex.Message;
         }
+    }
+
+    private void AttachPeopleScrollMonitor() {
+        foreach (var viewer in _peopleScrollViewers) {
+            viewer.ScrollChanged -= PeopleScrollViewer_ScrollChanged;
+        }
+
+        _peopleScrollViewers.Clear();
+
+        foreach (var viewer in _gridPeople.GetVisualDescendants().OfType<ScrollViewer>()) {
+            viewer.ScrollChanged += PeopleScrollViewer_ScrollChanged;
+            _peopleScrollViewers.Add(viewer);
+        }
+    }
+
+    private async void PeopleScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e) {
+        if (sender is not ScrollViewer viewer || !_hasMore || _isLoadingPage) {
+            return;
+        }
+
+        if (viewer.Extent.Height <= viewer.Viewport.Height) {
+            return;
+        }
+
+        var remaining = viewer.Extent.Height - (viewer.Offset.Y + viewer.Viewport.Height);
+        if (remaining <= 120) {
+            await LoadNextPageAsync();
+        }
+    }
+
+    private void GridPeople_LoadingRow(object? sender, DataGridRowEventArgs e) {
+        if (!_hasMore || _isLoadingPage || _pendingLoadMore) {
+            return;
+        }
+
+        if (e.Row.Index < _people.Count - 20) {
+            return;
+        }
+
+        _pendingLoadMore = true;
+        Dispatcher.UIThread.Post(
+            async () => {
+                try {
+                    await LoadNextPageAsync();
+                } finally {
+                    _pendingLoadMore = false;
+                }
+            },
+            DispatcherPriority.Background
+        );
     }
 
     private async void BtnSaveToFile_Click(object? sender, RoutedEventArgs e) {
@@ -354,9 +436,7 @@ public partial class PersonBrowserWindow : Window {
 
     private void UpdateRecordText() {
         _txtRecord.Text = string.Format(T("browser.search_result_count"), _people.Count);
-        if (_currentDetail is null && _people.Count == 0) {
-            _txtFooter.Text = string.Format(T("browser.search_result_count"), 0);
-        }
+        _txtFooter.Text = string.Format(T("browser.search_result_count"), _people.Count);
     }
 
     private void UpdateRelatedSummary() {
@@ -756,12 +836,16 @@ public partial class PersonBrowserWindow : Window {
         _btnClear = this.FindControl<Button>("BtnClear") ?? throw new InvalidOperationException("BtnClear not found.");
         _btnSaveToFile = this.FindControl<Button>("BtnSaveToFile") ?? throw new InvalidOperationException("BtnSaveToFile not found.");
         _lblSearchByName = this.FindControl<TextBlock>("LblSearchByName") ?? throw new InvalidOperationException("LblSearchByName not found.");
-        _hdrPersonId = this.FindControl<TextBlock>("HdrPersonId") ?? throw new InvalidOperationException("HdrPersonId not found.");
-        _hdrNameChn = this.FindControl<TextBlock>("HdrNameChn") ?? throw new InvalidOperationException("HdrNameChn not found.");
-        _hdrNameRm = this.FindControl<TextBlock>("HdrNameRm") ?? throw new InvalidOperationException("HdrNameRm not found.");
-        _hdrIndexYear = this.FindControl<TextBlock>("HdrIndexYear") ?? throw new InvalidOperationException("HdrIndexYear not found.");
-        _hdrIndexAddress = this.FindControl<TextBlock>("HdrIndexAddress") ?? throw new InvalidOperationException("HdrIndexAddress not found.");
-        _listPeople = this.FindControl<ListBox>("ListPeople") ?? throw new InvalidOperationException("ListPeople not found.");
+        _gridPeople = this.FindControl<DataGrid>("GridPeople") ?? throw new InvalidOperationException("GridPeople not found.");
+        if (_gridPeople.Columns.Count < 5) {
+            throw new InvalidOperationException("GridPeople columns are not initialized.");
+        }
+
+        _colPersonId = (DataGridTextColumn)_gridPeople.Columns[0];
+        _colNameChn = (DataGridTextColumn)_gridPeople.Columns[1];
+        _colNameRm = (DataGridTextColumn)_gridPeople.Columns[2];
+        _colIndexYear = (DataGridTextColumn)_gridPeople.Columns[3];
+        _colIndexAddress = (DataGridTextColumn)_gridPeople.Columns[4];
         _txtRecord = this.FindControl<TextBlock>("TxtRecord") ?? throw new InvalidOperationException("TxtRecord not found.");
         _lblSurnameChnField = this.FindControl<TextBlock>("LblSurnameChnField") ?? throw new InvalidOperationException("LblSurnameChnField not found.");
         _lblMingziChnField = this.FindControl<TextBlock>("LblMingziChnField") ?? throw new InvalidOperationException("LblMingziChnField not found.");
