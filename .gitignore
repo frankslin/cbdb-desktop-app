@@ -17,3 +17,6 @@
 data/*.sqlite
 data/*.sqlite3
 data/*.db
+
+# Generated headless UI test artifacts
+artifacts/ui-tests/

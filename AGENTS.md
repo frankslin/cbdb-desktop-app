@@ -67,6 +67,10 @@
   - one row for Gregorian year, reign title, and reign year
   - one separate notes row using a multiline control
 - The Avalonia shell now remembers the last successfully loaded SQLite file path using the platform-local app-data directory, and restores it on next launch only if the health check still succeeds.
+- A headless Avalonia UI test harness now exists in `Cbdb.App.Avalonia.Tests`.
+  - It can open Avalonia windows without a human in the loop.
+  - It supports fixture-backed UI tests for deterministic person-browser coverage.
+  - It can emit screenshot and JSON artifacts under `artifacts/ui-tests/`.
 - Addresses tab now renders each address record as a repeated form rather than a generic grid.
 - Addresses tab currently includes:
   - sequence
@@ -86,6 +90,9 @@
 - Code-field display rules are only partially normalized; more Access-like display behavior is still needed.
 - Related-tab load performance is noticeably slower than tab-count queries and needs optimization.
 - Lazy-loaded Avalonia tabs reduce the initial person-selection stall, but the remaining heavy tabs still need careful loading strategy once they are ported.
+- Headless UI coverage is still minimal.
+  - Current automated coverage is only an initial person-browser path with fixture data.
+  - Real-database UI scenarios and screenshot baseline diffing are not wired yet.
 - The Addresses tab is only partially aligned with Access.
   - First/last year content is still collapsed into summary strings instead of discrete Access-style controls for Gregorian year, reign title, reign year, month, intercalary, day, ganzhi, and range.
   - Address card layout is only approximate and does not yet mirror `BIOG_ADDR_DATA_2 Subform`.
@@ -110,6 +117,9 @@
   - enrich many cells one-by-one via lookup queries
 - Generic per-cell lookup is workable for correctness but not for performance.
   - The long-term fix is per-tab SQL with joins, or at minimum column-level/batch caching.
+- Headless UI tests currently work best with injected fake services.
+  - The production `PersonBrowserWindow` still guards on `sqlitePath` existence before searching.
+  - If adding more headless tests, either pass a real test database path or create a temporary placeholder file when using fake services.
 
 ## Recommended Working Rules For Future Changes
 - Treat `Cbdb.App.Desktop/Browser/PersonBrowserWindow.xaml.cs` as a high-risk file for encoding damage.
@@ -123,10 +133,18 @@
   - matching `reader.Get*` indexes
 - If Chinese text appears garbled, stop feature work and repair encoding first.
 - Avoid introducing duplicate representations of the same field in both the summary panel and Basic Information tab unless that duplication is explicitly intended.
+- For Avalonia UI regression work, prefer extending `Cbdb.App.Avalonia.Tests` instead of relying on manual visual checks.
+- When adding UI tests, produce both:
+  - structure assertions against named controls
+  - visual artifacts when layout regression risk matters
+- Keep headless UI tests deterministic.
+  - Prefer fixture-backed fake services for layout and interaction checks.
+  - Use real SQLite-backed tests only when the goal is data integration rather than UI shape.
 
 ## High-Priority Next Steps
 - Finish populating the remaining Basic Information fields so the structured form is fully backed by real data.
 - Continue improving code-field display to match the Access app more closely.
 - Optimize related-tab loading by replacing the generic per-cell lookup path for the heaviest tabs with dedicated SQL.
 - Continue aligning the remaining query modules with the Access manual and screenshots.
+- Expand the headless Avalonia UI test suite beyond the initial person-browser scenario.
 - Commit this `AGENTS.md` into the repository so future contributors get the current project state directly after clone.

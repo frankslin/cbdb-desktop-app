@@ -1,0 +1,41 @@
+name: Test Avalonia UI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  test-avalonia-ui:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore solution
+        run: dotnet restore Cbdb.WindowsApp.sln --configfile NuGet.Config
+
+      - name: Run headless Avalonia UI tests
+        run: >
+          dotnet test Cbdb.App.Avalonia.Tests/Cbdb.App.Avalonia.Tests.csproj
+          -c Debug
+          --no-restore
+          -p:UseSharedCompilation=false
+          -maxcpucount:1
+          -nodeReuse:false
+
+      - name: Upload UI test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avalonia-ui-test-artifacts
+          path: artifacts/ui-tests
+          if-no-files-found: ignore

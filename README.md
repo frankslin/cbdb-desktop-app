@@ -14,6 +14,7 @@ This repository contains the CBDB desktop app workspace for SQLite browsing.
 Detailed cross-platform build and test steps:
 
 - `BUILD_GUIDE.md`
+- `UI_TEST_GUIDE.md`
 
 ### Prerequisites
 
@@ -37,6 +38,16 @@ dotnet build Cbdb.WindowsApp.sln -c Debug
 ```bash
 dotnet run --project ./Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj
 ```
+
+### Run Headless UI Tests
+
+```bash
+DOTNET_CLI_HOME=/tmp dotnet test ./Cbdb.App.Avalonia.Tests/Cbdb.App.Avalonia.Tests.csproj -c Debug -p:UseSharedCompilation=false -maxcpucount:1 -nodeReuse:false
+```
+
+Headless UI test artifacts are written under:
+
+- `artifacts/ui-tests/`
 
 ### Run Windows WPF App
 
@@ -83,6 +94,7 @@ Main window texts are key-driven via localization service.
 ## Avalonia Migration Bootstrap
 
 - `Cbdb.App.Avalonia` is now the primary desktop shell and the Windows CI publish target.
+- `Cbdb.App.Avalonia.Tests` provides a headless Avalonia UI test harness for deterministic window rendering, tab interaction, screenshot capture, and structured test artifacts.
 - Current ported features:
   - main navigation window
   - English / Traditional Chinese / Simplified Chinese switch
@@ -90,6 +102,7 @@ Main window texts are key-driven via localization service.
   - SQLite health check using shared data services
   - external link / user-guide open actions
   - person browser search, summary, Basic Information, and counted tab shell
+  - initial headless UI coverage for the Avalonia person browser using fixture-backed fake services
 - Not yet ported:
   - query module windows
   - full related-tab content implementations

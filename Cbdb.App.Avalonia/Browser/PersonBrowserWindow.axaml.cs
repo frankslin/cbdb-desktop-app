@@ -20,7 +20,7 @@ public partial class PersonBrowserWindow : Window {
     private const int PageSize = 300;
 
     private readonly AppLocalizationService _localizationService;
-    private readonly IPersonBrowserService _personBrowserService = new SqlitePersonBrowserService();
+    private readonly IPersonBrowserService _personBrowserService;
     private readonly ObservableCollection<PersonListItem> _people = new();
     private readonly string _sqlitePath;
     private readonly Dictionary<string, TextBlock> _basicGroupHeaders = new();
@@ -136,9 +136,10 @@ public partial class PersonBrowserWindow : Window {
     public PersonBrowserWindow() : this(string.Empty, new AppLocalizationService()) {
     }
 
-    public PersonBrowserWindow(string sqlitePath, AppLocalizationService localizationService) {
+    public PersonBrowserWindow(string sqlitePath, AppLocalizationService localizationService, IPersonBrowserService? personBrowserService = null) {
         _sqlitePath = NormalizeSqlitePath(sqlitePath);
         _localizationService = localizationService;
+        _personBrowserService = personBrowserService ?? new SqlitePersonBrowserService();
 
         InitializeComponent();
         InitializeControls();
