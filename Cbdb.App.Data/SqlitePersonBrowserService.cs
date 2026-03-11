@@ -311,6 +311,131 @@ LIMIT 1;";
         );
     }
 
+    public async Task<IReadOnlyList<PersonAddressItem>> GetAddressesAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+            return Array.Empty<PersonAddressItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder {
+            DataSource = sqlitePath,
+            Mode = SqliteOpenMode.ReadOnly
+        };
+
+        var items = new List<PersonAddressItem>();
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    bad.c_sequence,
+    bad.c_natal,
+    bac.c_addr_desc,
+    bac.c_addr_desc_chn,
+    ac.c_name,
+    ac.c_name_chn,
+    bad.c_firstyear,
+    fy_nh.c_nianhao_pin,
+    fy_nh.c_nianhao_chn,
+    bad.c_fy_nh_year,
+    bad.c_fy_month,
+    bad.c_fy_intercalary,
+    bad.c_fy_day,
+    fy_gz.c_ganzhi_py,
+    fy_gz.c_ganzhi_chn,
+    fy_range.c_range,
+    fy_range.c_range_chn,
+    bad.c_lastyear,
+    ly_nh.c_nianhao_pin,
+    ly_nh.c_nianhao_chn,
+    bad.c_ly_nh_year,
+    bad.c_ly_month,
+    bad.c_ly_intercalary,
+    bad.c_ly_day,
+    ly_gz.c_ganzhi_py,
+    ly_gz.c_ganzhi_chn,
+    ly_range.c_range,
+    ly_range.c_range_chn,
+    src.c_title,
+    src.c_title_chn,
+    bad.c_pages,
+    bad.c_notes
+FROM BIOG_ADDR_DATA bad
+LEFT JOIN BIOG_ADDR_CODES bac ON bac.c_addr_type = bad.c_addr_type
+LEFT JOIN ADDR_CODES ac ON ac.c_addr_id = bad.c_addr_id
+LEFT JOIN NIAN_HAO fy_nh ON fy_nh.c_nianhao_id = bad.c_fy_nh_code
+LEFT JOIN NIAN_HAO ly_nh ON ly_nh.c_nianhao_id = bad.c_ly_nh_code
+LEFT JOIN GANZHI_CODES fy_gz ON fy_gz.c_ganzhi_code = bad.c_fy_day_gz
+LEFT JOIN GANZHI_CODES ly_gz ON ly_gz.c_ganzhi_code = bad.c_ly_day_gz
+LEFT JOIN YEAR_RANGE_CODES fy_range ON fy_range.c_range_code = bad.c_fy_range
+LEFT JOIN YEAR_RANGE_CODES ly_range ON ly_range.c_range_code = bad.c_ly_range
+LEFT JOIN TEXT_CODES src ON src.c_textid = bad.c_source
+WHERE bad.c_personid = $personId
+ORDER BY bad.c_sequence, bad.c_addr_type, bad.c_addr_id;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            items.Add(new PersonAddressItem(
+                Sequence: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                Natal: reader.IsDBNull(1) ? null : reader.GetInt32(1) == 1,
+                AddressType: JoinDisplay(
+                    reader.IsDBNull(3) ? null : reader.GetString(3),
+                    reader.IsDBNull(2) ? null : reader.GetString(2)
+                ),
+                AddressNameChn: reader.IsDBNull(5) ? null : reader.GetString(5),
+                AddressName: reader.IsDBNull(4) ? null : reader.GetString(4),
+                FirstYear: reader.IsDBNull(6) ? null : reader.GetInt32(6),
+                FirstNianhao: JoinDisplay(
+                    reader.IsDBNull(8) ? null : reader.GetString(8),
+                    reader.IsDBNull(7) ? null : reader.GetString(7)
+                ),
+                FirstNianhaoYear: reader.IsDBNull(9) ? null : reader.GetInt32(9),
+                FirstMonth: reader.IsDBNull(10) ? null : reader.GetInt32(10),
+                FirstIntercalary: reader.IsDBNull(11) ? null : reader.GetInt32(11) == 1,
+                FirstDay: reader.IsDBNull(12) ? null : reader.GetInt32(12),
+                FirstGanzhi: JoinDisplay(
+                    reader.IsDBNull(14) ? null : reader.GetString(14),
+                    reader.IsDBNull(13) ? null : reader.GetString(13)
+                ),
+                FirstRange: JoinDisplay(
+                    reader.IsDBNull(16) ? null : reader.GetString(16),
+                    reader.IsDBNull(15) ? null : reader.GetString(15)
+                ),
+                LastYear: reader.IsDBNull(17) ? null : reader.GetInt32(17),
+                LastNianhao: JoinDisplay(
+                    reader.IsDBNull(19) ? null : reader.GetString(19),
+                    reader.IsDBNull(18) ? null : reader.GetString(18)
+                ),
+                LastNianhaoYear: reader.IsDBNull(20) ? null : reader.GetInt32(20),
+                LastMonth: reader.IsDBNull(21) ? null : reader.GetInt32(21),
+                LastIntercalary: reader.IsDBNull(22) ? null : reader.GetInt32(22) == 1,
+                LastDay: reader.IsDBNull(23) ? null : reader.GetInt32(23),
+                LastGanzhi: JoinDisplay(
+                    reader.IsDBNull(25) ? null : reader.GetString(25),
+                    reader.IsDBNull(24) ? null : reader.GetString(24)
+                ),
+                LastRange: JoinDisplay(
+                    reader.IsDBNull(27) ? null : reader.GetString(27),
+                    reader.IsDBNull(26) ? null : reader.GetString(26)
+                ),
+                Source: JoinDisplay(
+                    reader.IsDBNull(29) ? null : reader.GetString(29),
+                    reader.IsDBNull(28) ? null : reader.GetString(28)
+                ),
+                Pages: reader.IsDBNull(30) ? null : reader.GetString(30),
+                Notes: reader.IsDBNull(31) ? null : reader.GetString(31)
+            ));
+        }
+
+        return items;
+    }
+
     public async Task<DataTable> GetRelatedItemsAsync(
         string sqlitePath,
         int personId,
@@ -656,4 +781,3 @@ LIMIT 1;";
         string ReferenceColumn
     );
 }
-

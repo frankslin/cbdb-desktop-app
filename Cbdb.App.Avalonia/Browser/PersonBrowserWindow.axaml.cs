@@ -1,9 +1,12 @@
 using System.Collections.ObjectModel;
 using System.Text;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -95,7 +98,8 @@ public partial class PersonBrowserWindow : Window {
     private TabItem _tabSources = null!;
     private TabItem _tabInstitutions = null!;
     private TextBlock _txtNoSelection = null!;
-    private TextBlock _txtTabAddressesPlaceholder = null!;
+    private TextBlock _txtAddressesEmpty = null!;
+    private StackPanel _addressesPanel = null!;
     private TextBlock _txtTabAltNamesPlaceholder = null!;
     private TextBlock _txtTabWritingsPlaceholder = null!;
     private TextBlock _txtTabPostingsPlaceholder = null!;
@@ -117,6 +121,7 @@ public partial class PersonBrowserWindow : Window {
     private bool _pendingLoadMore;
     private int? _selectedPersonId;
     private PersonDetail? _currentDetail;
+    private IReadOnlyList<PersonAddressItem> _currentAddresses = Array.Empty<PersonAddressItem>();
 
     public PersonBrowserWindow() : this(string.Empty, new AppLocalizationService()) {
     }
@@ -186,8 +191,9 @@ public partial class PersonBrowserWindow : Window {
         _tabBasic.Header = T("browser.tab_basic");
         UpdateTabHeaders(_currentDetail);
         _txtNoSelection.Text = _currentDetail is null ? T("browser.no_selection") : string.Empty;
+        _txtAddressesEmpty.Text = _currentAddresses.Count == 0 ? T("browser.addresses_none") : string.Empty;
+        RenderAddresses();
         var placeholder = T("browser.tab_placeholder");
-        _txtTabAddressesPlaceholder.Text = placeholder;
         _txtTabAltNamesPlaceholder.Text = placeholder;
         _txtTabWritingsPlaceholder.Text = placeholder;
         _txtTabPostingsPlaceholder.Text = placeholder;
@@ -326,6 +332,7 @@ public partial class PersonBrowserWindow : Window {
             _valIndexAddressType.Text = detail.IndexAddressType ?? string.Empty;
 
             PopulateBasicInfo(detail);
+            await LoadAddressesAsync(selected.PersonId);
             _txtNoSelection.Text = string.Empty;
             UpdateTabHeaders(detail);
             _txtFooter.Text = string.Format(T("browser.search_result_count"), _people.Count);
@@ -432,9 +439,178 @@ public partial class PersonBrowserWindow : Window {
         }
     }
 
+    private async Task LoadAddressesAsync(int personId) {
+        try {
+            _currentAddresses = await _personBrowserService.GetAddressesAsync(_sqlitePath, personId);
+        } catch (Exception ex) {
+            _currentAddresses = Array.Empty<PersonAddressItem>();
+            _txtFooter.Text = ex.Message;
+        }
+
+        _txtAddressesEmpty.Text = _currentAddresses.Count == 0 ? T("browser.addresses_none") : string.Empty;
+        RenderAddresses();
+    }
+
+    private void RenderAddresses() {
+        if (_addressesPanel is null) {
+            return;
+        }
+
+        _addressesPanel.Children.Clear();
+        foreach (var item in _currentAddresses) {
+            _addressesPanel.Children.Add(BuildAddressCard(item));
+        }
+    }
+
+    private Control BuildAddressCard(PersonAddressItem item) {
+        var root = new StackPanel {
+            Spacing = 8
+        };
+
+        root.Children.Add(BuildAddressHeader(item));
+        root.Children.Add(BuildAddressDateGrid(item));
+        root.Children.Add(BuildAddressMetaGrid(item));
+
+        return new Border {
+            BorderBrush = Brush.Parse("#CFCFCF"),
+            BorderThickness = new Thickness(1),
+            Background = Brush.Parse("#FAFAFA"),
+            Padding = new Thickness(10),
+            Child = root
+        };
+    }
+
+    private Control BuildAddressHeader(PersonAddressItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,90,Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
+        AddReadOnlyField(grid, 0, 2, T("browser.address_type"), item.AddressType);
+        AddReadOnlyField(grid, 0, 4, T("browser.address_name"), JoinDisplay(item.AddressNameChn, item.AddressName));
+
+        var label = new TextBlock {
+            Text = T("browser.address_maternal"),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 2, 8, 0)
+        };
+        Grid.SetRow(label, 1);
+        Grid.SetColumn(label, 0);
+        grid.Children.Add(label);
+
+        var check = new CheckBox {
+            IsEnabled = false,
+            IsChecked = item.Natal ?? false,
+            Margin = new Thickness(0, 2, 0, 0)
+        };
+        Grid.SetRow(check, 1);
+        Grid.SetColumn(check, 1);
+        grid.Children.Add(check);
+
+        return grid;
+    }
+
+    private Control BuildAddressDateGrid(PersonAddressItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_first"), FormatAddressDate(item, true));
+        AddReadOnlyField(grid, 1, 0, T("browser.address_last"), FormatAddressDate(item, false));
+        return grid;
+    }
+
+    private Control BuildAddressMetaGrid(PersonAddressItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_source"), item.Source);
+        AddReadOnlyField(grid, 0, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(grid, 1, 0, T("browser.address_notes"), item.Notes, 3, 64, multiline: true);
+        return grid;
+    }
+
+    private void AddReadOnlyField(
+        Grid grid,
+        int row,
+        int column,
+        string label,
+        string? value,
+        int valueColumnSpan = 1,
+        double minHeight = 28,
+        bool multiline = false
+    ) {
+        var labelBlock = new TextBlock {
+            Text = label,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 2, 8, 6)
+        };
+        Grid.SetRow(labelBlock, row);
+        Grid.SetColumn(labelBlock, column);
+        grid.Children.Add(labelBlock);
+
+        var valueBox = new TextBox {
+            Text = value ?? string.Empty,
+            IsReadOnly = true,
+            TextWrapping = multiline ? TextWrapping.Wrap : TextWrapping.NoWrap,
+            AcceptsReturn = multiline,
+            MinHeight = minHeight,
+            MaxLines = multiline ? 0 : 1,
+            Margin = new Thickness(0, 0, 12, 6)
+        };
+        Grid.SetRow(valueBox, row);
+        Grid.SetColumn(valueBox, column + 1);
+        Grid.SetColumnSpan(valueBox, valueColumnSpan);
+        grid.Children.Add(valueBox);
+    }
+
+    private string FormatAddressDate(PersonAddressItem item, bool first) {
+        var parts = new List<string>();
+        var year = first ? item.FirstYear : item.LastYear;
+        var nianhao = first ? item.FirstNianhao : item.LastNianhao;
+        var nianhaoYear = first ? item.FirstNianhaoYear : item.LastNianhaoYear;
+        var month = first ? item.FirstMonth : item.LastMonth;
+        var intercalary = first ? item.FirstIntercalary : item.LastIntercalary;
+        var day = first ? item.FirstDay : item.LastDay;
+        var ganzhi = first ? item.FirstGanzhi : item.LastGanzhi;
+        var range = first ? item.FirstRange : item.LastRange;
+
+        if (year.HasValue) {
+            parts.Add(year.Value.ToString());
+        }
+        if (!string.IsNullOrWhiteSpace(nianhao)) {
+            parts.Add(nianhao);
+        }
+        if (nianhaoYear.HasValue) {
+            parts.Add(nianhaoYear.Value.ToString());
+        }
+        if (month.HasValue) {
+            parts.Add(month.Value.ToString());
+        }
+        if (intercalary == true) {
+            parts.Add(T("browser.address_intercalary"));
+        }
+        if (day.HasValue) {
+            parts.Add(day.Value.ToString());
+        }
+        if (!string.IsNullOrWhiteSpace(ganzhi)) {
+            parts.Add(ganzhi);
+        }
+        if (!string.IsNullOrWhiteSpace(range)) {
+            parts.Add(range);
+        }
+
+        return parts.Count == 0 ? string.Empty : string.Join(" / ", parts);
+    }
+
     private void ClearDetail() {
         _selectedPersonId = null;
         _currentDetail = null;
+        _currentAddresses = Array.Empty<PersonAddressItem>();
 
         _valPersonId.Text = string.Empty;
         _valSurnameChn.Text = string.Empty;
@@ -460,6 +636,8 @@ public partial class PersonBrowserWindow : Window {
         _valIndexAddressType.Text = string.Empty;
 
         ClearBasicInfo();
+        _addressesPanel.Children.Clear();
+        _txtAddressesEmpty.Text = T("browser.addresses_none");
         _txtNoSelection.Text = T("browser.no_selection");
         UpdateTabHeaders(null);
         UpdateRecordText();
@@ -924,7 +1102,8 @@ public partial class PersonBrowserWindow : Window {
         _tabSources = this.FindControl<TabItem>("TabSources") ?? throw new InvalidOperationException("TabSources not found.");
         _tabInstitutions = this.FindControl<TabItem>("TabInstitutions") ?? throw new InvalidOperationException("TabInstitutions not found.");
         _txtNoSelection = this.FindControl<TextBlock>("TxtNoSelection") ?? throw new InvalidOperationException("TxtNoSelection not found.");
-        _txtTabAddressesPlaceholder = this.FindControl<TextBlock>("TxtTabAddressesPlaceholder") ?? throw new InvalidOperationException("TxtTabAddressesPlaceholder not found.");
+        _txtAddressesEmpty = this.FindControl<TextBlock>("TxtAddressesEmpty") ?? throw new InvalidOperationException("TxtAddressesEmpty not found.");
+        _addressesPanel = this.FindControl<StackPanel>("AddressesPanel") ?? throw new InvalidOperationException("AddressesPanel not found.");
         _txtTabAltNamesPlaceholder = this.FindControl<TextBlock>("TxtTabAltNamesPlaceholder") ?? throw new InvalidOperationException("TxtTabAltNamesPlaceholder not found.");
         _txtTabWritingsPlaceholder = this.FindControl<TextBlock>("TxtTabWritingsPlaceholder") ?? throw new InvalidOperationException("TxtTabWritingsPlaceholder not found.");
         _txtTabPostingsPlaceholder = this.FindControl<TextBlock>("TxtTabPostingsPlaceholder") ?? throw new InvalidOperationException("TxtTabPostingsPlaceholder not found.");

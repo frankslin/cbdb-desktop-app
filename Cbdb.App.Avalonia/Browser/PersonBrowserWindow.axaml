@@ -265,7 +265,14 @@
               </ScrollViewer>
             </TabItem>
 
-            <TabItem x:Name="TabAddresses"><TextBlock x:Name="TxtTabAddressesPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabAddresses">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8" Spacing="8">
+                  <TextBlock x:Name="TxtAddressesEmpty" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="AddressesPanel" Spacing="8" />
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
             <TabItem x:Name="TabAltNames"><TextBlock x:Name="TxtTabAltNamesPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
             <TabItem x:Name="TabWritings"><TextBlock x:Name="TxtTabWritingsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
             <TabItem x:Name="TabPostings"><TextBlock x:Name="TxtTabPostingsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
