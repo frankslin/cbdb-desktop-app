@@ -125,10 +125,6 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
     private static readonly IReadOnlyList<PersonPostingItem> Postings = new[] {
         new PersonPostingItem(
             2305,
-            "fixture",
-            "2026-03-01",
-            "fixture",
-            "2026-03-02",
             new[] {
                 new PersonPostingOfficeItem(
                     8001,
@@ -158,9 +154,13 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
                     "宋史",
                     "88-89",
                     "Sample posting note",
+                    "fixture-office",
+                    "2026-03-01",
+                    null,
+                    null,
                     new[] {
-                        new PersonPostingAddressItem(9001, "開封", "Kaifeng"),
-                        new PersonPostingAddressItem(9002, "常州", "Changzhou")
+                        new PersonPostingAddressItem(9001, "開封", "Kaifeng", "fixture-addr", "2026-03-03", null, null),
+                        new PersonPostingAddressItem(9002, "常州", "Changzhou", null, null, null, null)
                     }
                 )
             }

@@ -965,20 +965,6 @@ public partial class PersonBrowserWindow : Window {
             stack.Children.Add(BuildPostingOfficeCard(office));
         }
 
-        if (!string.IsNullOrWhiteSpace(item.CreatedBy) ||
-            !string.IsNullOrWhiteSpace(item.CreatedDate) ||
-            !string.IsNullOrWhiteSpace(item.ModifiedBy) ||
-            !string.IsNullOrWhiteSpace(item.ModifiedDate)) {
-            var audit = new Grid {
-                ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
-                RowDefinitions = new RowDefinitions("Auto,Auto"),
-                Margin = new Thickness(0, 4, 0, 0)
-            };
-            AddReadOnlyField(audit, 0, 0, T("browser.posting_created"), JoinDisplay(item.CreatedDate, item.CreatedBy));
-            AddReadOnlyField(audit, 0, 2, T("browser.posting_modified"), JoinDisplay(item.ModifiedDate, item.ModifiedBy));
-            stack.Children.Add(audit);
-        }
-
         return WrapCard(stack);
     }
 
@@ -1010,6 +996,11 @@ public partial class PersonBrowserWindow : Window {
         var stack = new StackPanel();
         stack.Children.Add(grid);
         stack.Children.Add(notesGrid);
+
+        var auditControl = BuildPostingAuditExpander(item);
+        if (auditControl is not null) {
+            stack.Children.Add(auditControl);
+        }
 
         return new Border {
             BorderBrush = Brush.Parse("#DDDDDD"),
@@ -1353,6 +1344,60 @@ public partial class PersonBrowserWindow : Window {
         }
 
         return parts.Count == 0 ? string.Empty : string.Join(" / ", parts);
+    }
+
+    private Control? BuildPostingAuditExpander(PersonPostingOfficeItem item) {
+        var hasOfficeAudit =
+            !string.IsNullOrWhiteSpace(item.CreatedBy) ||
+            !string.IsNullOrWhiteSpace(item.CreatedDate) ||
+            !string.IsNullOrWhiteSpace(item.ModifiedBy) ||
+            !string.IsNullOrWhiteSpace(item.ModifiedDate);
+        var hasAddressAudit = item.Addresses.Any(address =>
+            !string.IsNullOrWhiteSpace(address.CreatedBy) ||
+            !string.IsNullOrWhiteSpace(address.CreatedDate) ||
+            !string.IsNullOrWhiteSpace(address.ModifiedBy) ||
+            !string.IsNullOrWhiteSpace(address.ModifiedDate));
+
+        if (!hasOfficeAudit && !hasAddressAudit) {
+            return null;
+        }
+
+        var content = new StackPanel {
+            Spacing = 8,
+            Margin = new Thickness(0, 4, 0, 0)
+        };
+
+        if (hasOfficeAudit) {
+            var officeAudit = new Grid {
+                ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+                RowDefinitions = new RowDefinitions("Auto")
+            };
+            AddReadOnlyField(officeAudit, 0, 0, T("browser.audit_created"), JoinDisplay(item.CreatedDate, item.CreatedBy));
+            AddReadOnlyField(officeAudit, 0, 2, T("browser.audit_modified"), JoinDisplay(item.ModifiedDate, item.ModifiedBy));
+            content.Children.Add(officeAudit);
+        }
+
+        foreach (var address in item.Addresses.Where(address =>
+                     !string.IsNullOrWhiteSpace(address.CreatedBy) ||
+                     !string.IsNullOrWhiteSpace(address.CreatedDate) ||
+                     !string.IsNullOrWhiteSpace(address.ModifiedBy) ||
+                     !string.IsNullOrWhiteSpace(address.ModifiedDate))) {
+            var addressAudit = new Grid {
+                ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+                RowDefinitions = new RowDefinitions("Auto,Auto")
+            };
+            AddReadOnlyField(addressAudit, 0, 0, T("browser.posting_address_audit"), JoinDisplay(address.AddressNameChn, address.AddressName), 3, 28, false);
+            AddReadOnlyField(addressAudit, 1, 0, T("browser.audit_created"), JoinDisplay(address.CreatedDate, address.CreatedBy));
+            AddReadOnlyField(addressAudit, 1, 2, T("browser.audit_modified"), JoinDisplay(address.ModifiedDate, address.ModifiedBy));
+            content.Children.Add(addressAudit);
+        }
+
+        return new Expander {
+            Header = T("browser.audit_details"),
+            IsExpanded = false,
+            Margin = new Thickness(0, 4, 0, 0),
+            Content = content
+        };
     }
 
     private string FormatEventDate(PersonEventItem item) {

@@ -28,5 +28,9 @@ public sealed record PersonPostingOfficeItem(
     string? Source,
     string? Pages,
     string? Notes,
+    string? CreatedBy,
+    string? CreatedDate,
+    string? ModifiedBy,
+    string? ModifiedDate,
     IReadOnlyList<PersonPostingAddressItem> Addresses
 );
