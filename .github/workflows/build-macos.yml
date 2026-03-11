@@ -1,0 +1,125 @@
+name: Build macOS App
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish-macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime:
+          - osx-arm64
+          - osx-x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore Cbdb.WindowsApp.sln --configfile NuGet.Config
+
+      - name: Publish Avalonia app
+        run: >
+          dotnet publish Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj
+          -c Release
+          -r ${{ matrix.runtime }}
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:IncludeNativeLibrariesForSelfExtract=true
+          /p:EnableCompressionInSingleFile=true
+          /p:UseAppHost=true
+          /p:DebugType=None
+          /p:DebugSymbols=false
+          -o artifacts/publish/${{ matrix.runtime }}/publish
+
+      - name: Create app bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          runtime="${{ matrix.runtime }}"
+          app_root="artifacts/publish/${runtime}/Cbdb.app"
+          contents_dir="${app_root}/Contents"
+          macos_dir="${contents_dir}/MacOS"
+          resources_dir="${contents_dir}/Resources"
+          publish_dir="artifacts/publish/${runtime}/publish"
+
+          mkdir -p "${macos_dir}" "${resources_dir}"
+
+          cp -R "${publish_dir}/." "${macos_dir}/"
+
+          cat > "${contents_dir}/Info.plist" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+            <dict>
+              <key>CFBundleDevelopmentRegion</key>
+              <string>en</string>
+              <key>CFBundleExecutable</key>
+              <string>Cbdb.App.Avalonia</string>
+              <key>CFBundleIdentifier</key>
+              <string>org.cbdb.desktop</string>
+              <key>CFBundleInfoDictionaryVersion</key>
+              <string>6.0</string>
+              <key>CFBundleName</key>
+              <string>Cbdb</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0.0</string>
+              <key>CFBundleVersion</key>
+              <string>${{ github.run_number }}</string>
+              <key>LSMinimumSystemVersion</key>
+              <string>12.0</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+            </dict>
+          </plist>
+          EOF
+
+          chmod +x "${macos_dir}/Cbdb.App.Avalonia"
+
+      - name: Copy bundled data and docs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          runtime="${{ matrix.runtime }}"
+          app_root="artifacts/publish/${runtime}/Cbdb.app"
+          macos_dir="${app_root}/Contents/MacOS"
+
+          if [ -d data ]; then
+            cp -R data "${macos_dir}/data"
+          fi
+
+          cp README.md "${macos_dir}/README.md"
+
+          if [ -f AGENTS.md ]; then
+            cp AGENTS.md "${macos_dir}/AGENTS.md"
+          fi
+
+      - name: Archive app bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          runtime="${{ matrix.runtime }}"
+          archive_dir="artifacts/publish/${runtime}"
+          ditto -c -k --sequesterRsrc --keepParent "${archive_dir}/Cbdb.app" "${archive_dir}/Cbdb-${runtime}.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbdb-avalonia-${{ matrix.runtime }}
+          path: artifacts/publish/${{ matrix.runtime }}/Cbdb-${{ matrix.runtime }}.zip
+          if-no-files-found: error
