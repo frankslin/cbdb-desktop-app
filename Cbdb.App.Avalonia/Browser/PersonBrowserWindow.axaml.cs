@@ -1161,7 +1161,7 @@ public partial class PersonBrowserWindow : Window {
     private Control BuildWritingCard(PersonWritingItem item) {
         var grid = new Grid {
             ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
-            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto")
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto,Auto")
         };
 
         AddReadOnlyField(grid, 0, 0, T("browser.writing_title_chn"), item.TitleChn);
@@ -1169,9 +1169,10 @@ public partial class PersonBrowserWindow : Window {
         AddReadOnlyField(grid, 1, 0, T("browser.writing_role"), item.Role);
         AddReadOnlyField(grid, 1, 2, "ID", item.TextId.ToString());
         AddReadOnlyField(grid, 2, 0, T("browser.writing_year"), item.Year?.ToString());
-        AddReadOnlyField(grid, 2, 2, T("browser.writing_nianhao"), JoinCompactDate(item.Nianhao, item.NianhaoYear, item.Range));
-        AddReadOnlyField(grid, 3, 0, T("browser.address_source"), item.Source, 1, 28, false);
-        AddReadOnlyField(grid, 3, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(grid, 2, 2, T("browser.writing_nianhao"), JoinCompactDate(item.Nianhao, item.NianhaoYear, null, null));
+        AddReadOnlyField(grid, 3, 0, T("browser.writing_range"), item.Range);
+        AddReadOnlyField(grid, 4, 0, T("browser.address_source"), item.Source, 1, 28, false);
+        AddReadOnlyField(grid, 4, 2, T("browser.address_pages"), item.Pages);
 
         var notesGrid = new Grid {
             ColumnDefinitions = new ColumnDefinitions("Auto,*"),
@@ -1335,20 +1336,57 @@ public partial class PersonBrowserWindow : Window {
     }
 
     private Control BuildKinshipCard(PersonKinshipItem item) {
-        var grid = new Grid {
+        var primaryGrid = new Grid {
             ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
-            RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto")
+            RowDefinitions = new RowDefinitions("Auto,Auto")
         };
 
-        AddReadOnlyField(grid, 0, 0, T("browser.kinship_relation"), item.Kinship);
-        AddReadOnlyField(grid, 0, 2, T("browser.kinship_person"), JoinDisplay(item.KinNameChn, item.KinName));
-        AddReadOnlyField(grid, 1, 0, T("browser.person_id"), item.KinPersonId.ToString());
-        AddReadOnlyField(grid, 1, 2, T("browser.kinship_steps"), FormatKinshipSteps(item));
-        AddReadOnlyField(grid, 2, 0, T("browser.address_source"), item.Source, 1, 28, false);
-        AddReadOnlyField(grid, 2, 2, T("browser.address_pages"), item.Pages);
-        AddReadOnlyField(grid, 3, 0, T("browser.address_notes"), item.Notes, 3, 64, true);
+        AddReadOnlyField(primaryGrid, 0, 0, T("browser.kinship_relation"), item.Kinship);
+        AddReadOnlyField(primaryGrid, 0, 2, T("browser.kinship_steps"), FormatKinshipSteps(item));
 
-        return WrapCard(grid);
+        var relatedRow = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,90,Auto"),
+            RowDefinitions = new RowDefinitions("Auto"),
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        AddReadOnlyField(relatedRow, 0, 0, T("browser.kinship_person"), JoinDisplay(item.KinNameChn, item.KinName));
+        AddReadOnlyField(relatedRow, 0, 2, T("browser.person_id"), item.KinPersonId.ToString());
+        var jumpButton = new Button {
+            Height = 30,
+            MinWidth = 76,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            Content = T("browser.jump_to_person"),
+            Tag = item.KinPersonId
+        };
+        jumpButton.Click += KinshipJumpButton_Click;
+        Grid.SetColumn(jumpButton, 4);
+        relatedRow.Children.Add(jumpButton);
+
+        var detailsGrid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto"),
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        AddReadOnlyField(detailsGrid, 0, 0, T("browser.address_source"), item.Source, 1, 28, false);
+        AddReadOnlyField(detailsGrid, 0, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(detailsGrid, 1, 0, T("browser.address_notes"), item.Notes, 3, 64, true);
+
+        var stack = new StackPanel();
+        stack.Children.Add(primaryGrid);
+        stack.Children.Add(relatedRow);
+        stack.Children.Add(detailsGrid);
+
+        return WrapCard(stack);
+    }
+
+    private async void KinshipJumpButton_Click(object? sender, RoutedEventArgs e) {
+        if (sender is not Button { Tag: int personId }) {
+            return;
+        }
+
+        _txtKeyword.Text = personId.ToString();
+        await SearchAsync();
     }
 
     private Control BuildPossessionCard(PersonPossessionItem item) {

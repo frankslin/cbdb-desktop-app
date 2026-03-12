@@ -42,9 +42,9 @@
                   Orientation="Horizontal"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Top">
-        <Button x:Name="BtnLangEn" Width="40" Height="28" Margin="4,0,0,0" Click="BtnLangEn_Click" Content="EN" />
-        <Button x:Name="BtnLangZhHant" Width="40" Height="28" Margin="4,0,0,0" Click="BtnLangZhHant_Click" Content="繁" />
-        <Button x:Name="BtnLangZhHans" Width="40" Height="28" Margin="4,0,0,0" Click="BtnLangZhHans_Click" Content="简" />
+        <Button x:Name="BtnLangEn" Width="42" Height="32" Padding="0,2" Margin="4,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnLangEn_Click" Content="EN" />
+        <Button x:Name="BtnLangZhHant" Width="42" Height="32" Padding="0,2" Margin="4,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnLangZhHant_Click" Content="繁" />
+        <Button x:Name="BtnLangZhHans" Width="42" Height="32" Padding="0,2" Margin="4,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnLangZhHans_Click" Content="简" />
       </StackPanel>
     </Grid>
 
