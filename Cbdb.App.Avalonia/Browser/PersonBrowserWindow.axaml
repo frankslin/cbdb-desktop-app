@@ -328,16 +328,16 @@
 
             <TabItem x:Name="TabAddresses">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="AddressesLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtAddressesLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtAddressesEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="AddressesPanel" Spacing="8" />
-                  <StackPanel x:Name="AddressesPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtAddressesEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="AddressesPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="AddressesPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnAddressesPrev" Tag="addresses" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtAddressesPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnAddressesNext" Tag="addresses" Click="TabNextPage_Click" />
@@ -347,16 +347,16 @@
             </TabItem>
             <TabItem x:Name="TabAltNames">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="AltNamesLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtAltNamesLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtAltNamesEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="AltNamesPanel" Spacing="8" />
-                  <StackPanel x:Name="AltNamesPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtAltNamesEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="AltNamesPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="AltNamesPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnAltNamesPrev" Tag="alt_names" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtAltNamesPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnAltNamesNext" Tag="alt_names" Click="TabNextPage_Click" />
@@ -366,16 +366,16 @@
             </TabItem>
             <TabItem x:Name="TabWritings">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="WritingsLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtWritingsLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtWritingsEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="WritingsPanel" Spacing="8" />
-                  <StackPanel x:Name="WritingsPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtWritingsEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="WritingsPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="WritingsPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnWritingsPrev" Tag="writings" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtWritingsPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnWritingsNext" Tag="writings" Click="TabNextPage_Click" />
@@ -385,16 +385,16 @@
             </TabItem>
             <TabItem x:Name="TabPostings">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="PostingsLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtPostingsLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtPostingsEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="PostingsPanel" Spacing="8" />
-                  <StackPanel x:Name="PostingsPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtPostingsEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="PostingsPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="PostingsPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnPostingsPrev" Tag="postings" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtPostingsPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnPostingsNext" Tag="postings" Click="TabNextPage_Click" />
@@ -404,16 +404,16 @@
             </TabItem>
             <TabItem x:Name="TabEntry">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="EntryLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtEntryLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtEntryEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="EntryPanel" Spacing="8" />
-                  <StackPanel x:Name="EntryPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtEntryEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="EntryPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="EntryPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnEntryPrev" Tag="entry" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtEntryPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnEntryNext" Tag="entry" Click="TabNextPage_Click" />
@@ -423,16 +423,16 @@
             </TabItem>
             <TabItem x:Name="TabEvents">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="EventsLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtEventsLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtEventsEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="EventsPanel" Spacing="8" />
-                  <StackPanel x:Name="EventsPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtEventsEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="EventsPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="EventsPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnEventsPrev" Tag="events" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtEventsPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnEventsNext" Tag="events" Click="TabNextPage_Click" />
@@ -442,16 +442,16 @@
             </TabItem>
             <TabItem x:Name="TabStatus">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="StatusLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtStatusLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtStatusEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="StatusPanel" Spacing="8" />
-                  <StackPanel x:Name="StatusPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtStatusEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="StatusPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="StatusPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnStatusPrev" Tag="status" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtStatusPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnStatusNext" Tag="status" Click="TabNextPage_Click" />
@@ -461,16 +461,16 @@
             </TabItem>
             <TabItem x:Name="TabKinship">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="KinshipLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtKinshipLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtKinshipEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="KinshipPanel" Spacing="8" />
-                  <StackPanel x:Name="KinshipPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtKinshipEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="KinshipPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="KinshipPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnKinshipPrev" Tag="kinship" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtKinshipPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnKinshipNext" Tag="kinship" Click="TabNextPage_Click" />
@@ -480,16 +480,16 @@
             </TabItem>
             <TabItem x:Name="TabAssociations">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="AssociationsLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtAssociationsLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtAssociationsEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="AssociationsPanel" Spacing="8" />
-                  <StackPanel x:Name="AssociationsPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtAssociationsEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="AssociationsPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="AssociationsPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnAssociationsPrev" Tag="associations" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtAssociationsPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnAssociationsNext" Tag="associations" Click="TabNextPage_Click" />
@@ -499,16 +499,16 @@
             </TabItem>
             <TabItem x:Name="TabPossessions">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="PossessionsLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtPossessionsLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtPossessionsEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="PossessionsPanel" Spacing="8" />
-                  <StackPanel x:Name="PossessionsPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtPossessionsEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="PossessionsPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="PossessionsPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnPossessionsPrev" Tag="possessions" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtPossessionsPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnPossessionsNext" Tag="possessions" Click="TabNextPage_Click" />
@@ -518,16 +518,16 @@
             </TabItem>
             <TabItem x:Name="TabSources">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="SourcesLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtSourcesLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtSourcesEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="SourcesPanel" Spacing="8" />
-                  <StackPanel x:Name="SourcesPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtSourcesEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="SourcesPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="SourcesPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnSourcesPrev" Tag="sources" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtSourcesPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnSourcesNext" Tag="sources" Click="TabNextPage_Click" />
@@ -537,16 +537,16 @@
             </TabItem>
             <TabItem x:Name="TabInstitutions">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="8,4,8,8" Spacing="8">
+                <StackPanel Margin="8,4,8,8">
                   <Border x:Name="InstitutionsLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
                     <StackPanel Spacing="8">
                       <TextBlock x:Name="TxtInstitutionsLoading" Foreground="#666" />
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
-                  <TextBlock x:Name="TxtInstitutionsEmpty" Foreground="#666" TextWrapping="Wrap" />
-                  <StackPanel x:Name="InstitutionsPanel" Spacing="8" />
-                  <StackPanel x:Name="InstitutionsPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                  <TextBlock x:Name="TxtInstitutionsEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="InstitutionsPanel" Margin="0,8,0,0" Spacing="8" />
+                  <StackPanel x:Name="InstitutionsPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                     <Button x:Name="BtnInstitutionsPrev" Tag="institutions" Click="TabPrevPage_Click" />
                     <TextBlock x:Name="TxtInstitutionsPage" VerticalAlignment="Center" />
                     <Button x:Name="BtnInstitutionsNext" Tag="institutions" Click="TabNextPage_Click" />

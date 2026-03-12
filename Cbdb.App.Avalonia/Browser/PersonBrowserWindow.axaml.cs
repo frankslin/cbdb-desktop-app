@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Avalonia;
@@ -1164,6 +1165,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentAddresses, "addresses")) {
             _addressesPanel.Children.Add(BuildAddressCard(item));
         }
+        UpdateEmptyState(_txtAddressesEmpty, _currentAddresses.Count == 0, T("browser.addresses_none"));
         UpdateTabPager("addresses", _currentAddresses.Count);
     }
 
@@ -1176,6 +1178,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentAltNames, "alt_names")) {
             _altNamesPanel.Children.Add(BuildAltNameCard(item));
         }
+        UpdateEmptyState(_txtAltNamesEmpty, _currentAltNames.Count == 0, T("browser.alt_names_none"));
         UpdateTabPager("alt_names", _currentAltNames.Count);
     }
 
@@ -1188,6 +1191,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentWritings, "writings")) {
             _writingsPanel.Children.Add(BuildWritingCard(item));
         }
+        UpdateEmptyState(_txtWritingsEmpty, _currentWritings.Count == 0, T("browser.writings_none"));
         UpdateTabPager("writings", _currentWritings.Count);
     }
 
@@ -1200,6 +1204,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentPostings, "postings")) {
             _postingsPanel.Children.Add(BuildPostingCard(item));
         }
+        UpdateEmptyState(_txtPostingsEmpty, _currentPostings.Count == 0, T("browser.postings_none"));
         UpdateTabPager("postings", _currentPostings.Count);
     }
 
@@ -1212,6 +1217,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentEntries, "entry")) {
             _entryPanel.Children.Add(BuildEntryCard(item));
         }
+        UpdateEmptyState(_txtEntryEmpty, _currentEntries.Count == 0, T("browser.entry_none"));
         UpdateTabPager("entry", _currentEntries.Count);
     }
 
@@ -1224,6 +1230,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentEvents, "events")) {
             _eventsPanel.Children.Add(BuildEventCard(item));
         }
+        UpdateEmptyState(_txtEventsEmpty, _currentEvents.Count == 0, T("browser.events_none"));
         UpdateTabPager("events", _currentEvents.Count);
     }
 
@@ -1236,6 +1243,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentStatuses, "status")) {
             _statusPanel.Children.Add(BuildStatusCard(item));
         }
+        UpdateEmptyState(_txtStatusEmpty, _currentStatuses.Count == 0, T("browser.status_none"));
         UpdateTabPager("status", _currentStatuses.Count);
     }
 
@@ -1248,6 +1256,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentKinships, "kinship")) {
             _kinshipPanel.Children.Add(BuildKinshipCard(item));
         }
+        UpdateEmptyState(_txtKinshipEmpty, _currentKinships.Count == 0, T("browser.kinship_none"));
         UpdateTabPager("kinship", _currentKinships.Count);
     }
 
@@ -1260,6 +1269,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentAssociations, "associations")) {
             _associationsPanel.Children.Add(BuildAssociationCard(item));
         }
+        UpdateEmptyState(_txtAssociationsEmpty, _currentAssociations.Count == 0, T("browser.associations_none"));
         UpdateTabPager("associations", _currentAssociations.Count);
     }
 
@@ -1272,6 +1282,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentPossessions, "possessions")) {
             _possessionsPanel.Children.Add(BuildPossessionCard(item));
         }
+        UpdateEmptyState(_txtPossessionsEmpty, _currentPossessions.Count == 0, T("browser.possessions_none"));
         UpdateTabPager("possessions", _currentPossessions.Count);
     }
 
@@ -1284,6 +1295,7 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentSources, "sources")) {
             _sourcesPanel.Children.Add(BuildSourceCard(item));
         }
+        UpdateEmptyState(_txtSourcesEmpty, _currentSources.Count == 0, T("browser.sources_none"));
         UpdateTabPager("sources", _currentSources.Count);
     }
 
@@ -1296,7 +1308,13 @@ public partial class PersonBrowserWindow : Window {
         foreach (var item in GetPageItems(_currentInstitutions, "institutions")) {
             _institutionsPanel.Children.Add(BuildInstitutionCard(item));
         }
+        UpdateEmptyState(_txtInstitutionsEmpty, _currentInstitutions.Count == 0, T("browser.institutions_none"));
         UpdateTabPager("institutions", _currentInstitutions.Count);
+    }
+
+    private static void UpdateEmptyState(TextBlock emptyText, bool isEmpty, string message) {
+        emptyText.Text = isEmpty ? message : string.Empty;
+        emptyText.IsVisible = isEmpty;
     }
 
     private IReadOnlyList<T> GetPageItems<T>(IReadOnlyList<T> items, string tabKey) {
@@ -1828,7 +1846,7 @@ public partial class PersonBrowserWindow : Window {
 
     private Control BuildSourceCard(PersonSourceItem item) {
         var grid = new Grid {
-            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,220,Auto"),
             RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto")
         };
 
@@ -1836,6 +1854,10 @@ public partial class PersonBrowserWindow : Window {
         AddReadOnlyField(grid, 0, 2, T("browser.source_title"), item.Title);
         AddReadOnlyField(grid, 1, 0, T("browser.address_pages"), item.Pages);
         AddReadOnlyField(grid, 1, 2, T("browser.source_hyperlink"), item.Hyperlink);
+        var openButton = BuildExternalLinkButton(item.Hyperlink);
+        Grid.SetRow(openButton, 1);
+        Grid.SetColumn(openButton, 4);
+        grid.Children.Add(openButton);
         AddReadOnlyCheck(grid, 2, 0, T("browser.source_main"), item.MainSource);
         AddReadOnlyCheck(grid, 2, 2, T("browser.source_self_bio"), item.SelfBio);
 
@@ -2051,6 +2073,39 @@ public partial class PersonBrowserWindow : Window {
         return match.Success && int.TryParse(match.Groups[1].Value, out var personId)
             ? personId
             : null;
+    }
+
+    private Button BuildExternalLinkButton(string? hyperlink) {
+        var button = new Button {
+            Height = 30,
+            MinWidth = 76,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            Content = T("browser.open_link"),
+            Tag = hyperlink ?? string.Empty,
+            IsEnabled = !string.IsNullOrWhiteSpace(hyperlink)
+        };
+        button.Click += ExternalLinkButton_Click;
+        return button;
+    }
+
+    private void ExternalLinkButton_Click(object? sender, RoutedEventArgs e) {
+        if (sender is not Button { Tag: string hyperlink } || string.IsNullOrWhiteSpace(hyperlink)) {
+            return;
+        }
+
+        try {
+            OpenExternalTarget(hyperlink);
+        } catch (Exception ex) {
+            _txtRecord.Text = ex.Message;
+        }
+    }
+
+    private static void OpenExternalTarget(string target) {
+        Process.Start(new ProcessStartInfo {
+            FileName = target,
+            UseShellExecute = true
+        });
     }
 
     private string FormatAddressDate(PersonAddressItem item, bool first) {
