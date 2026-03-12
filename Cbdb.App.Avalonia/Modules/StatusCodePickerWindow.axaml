@@ -1,0 +1,48 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.Modules.StatusCodePickerWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Select Status"
+    Width="720"
+    Height="620"
+    MinWidth="560"
+    MinHeight="480"
+    Background="#E5E5E5">
+  <Window.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="6,4" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="Padding" Value="12,4" />
+    </Style>
+  </Window.Styles>
+
+  <Grid Margin="10" RowDefinitions="Auto,*,Auto">
+    <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox x:Name="TxtSearch" Watermark="Search" KeyUp="TxtSearch_KeyUp" />
+        <Button x:Name="BtnClearSearch" Grid.Column="1" Margin="8,0,0,0" Click="BtnClearSearch_Click" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
+      <Grid RowDefinitions="Auto,*">
+        <TextBlock x:Name="TxtSummary" Foreground="#444" />
+        <ScrollViewer Grid.Row="1" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
+          <StackPanel x:Name="StatusOptionHost" Spacing="6" />
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="2" BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+        <TextBlock x:Name="TxtSelectionHint" VerticalAlignment="Center" Foreground="#555" />
+        <Button x:Name="BtnClearAll" Grid.Column="1" Margin="8,0,0,0" Click="BtnClearAll_Click" />
+        <Button x:Name="BtnCancel" Grid.Column="2" Margin="8,0,0,0" Click="BtnCancel_Click" />
+        <Button x:Name="BtnApply" Grid.Column="3" Margin="8,0,0,0" Click="BtnApply_Click" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

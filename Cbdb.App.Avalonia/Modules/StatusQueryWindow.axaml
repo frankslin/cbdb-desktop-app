@@ -1,0 +1,107 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.Modules.StatusQueryWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Cbdb.App.Avalonia.Controls"
+    xmlns:d="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
+    Title="Query Status"
+    Width="1320"
+    Height="820"
+    MinWidth="1120"
+    MinHeight="700"
+    Background="#E5E5E5">
+  <Window.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="6,4" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="Padding" Value="12,4" />
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </Window.Styles>
+
+  <Grid Margin="10" RowDefinitions="Auto,*,Auto">
+    <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <Grid RowDefinitions="Auto,Auto">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,280,Auto,*" RowDefinitions="Auto,Auto">
+          <TextBlock x:Name="LblPersonKeyword" Grid.Row="0" Grid.Column="0" Margin="0,6,8,0" VerticalAlignment="Center" />
+          <TextBox x:Name="TxtPersonKeyword" Grid.Row="0" Grid.Column="1" Margin="0,0,12,8" />
+          <TextBlock x:Name="LblStatusSelection" Grid.Row="0" Grid.Column="2" Margin="0,6,8,0" VerticalAlignment="Center" />
+          <TextBox x:Name="TxtSelectedStatuses" Grid.Row="0" Grid.Column="3" Margin="0,0,0,8" IsReadOnly="True" />
+
+          <CheckBox x:Name="ChkUseIndexYear" Grid.Row="1" Grid.Column="0" Margin="0,0,8,0" />
+          <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,12,0" ColumnDefinitions="*,Auto,*">
+            <TextBox x:Name="TxtIndexYearFrom" Watermark="-200" />
+            <TextBlock x:Name="LblIndexYearTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtIndexYearTo" Grid.Column="2" Watermark="1911" />
+          </Grid>
+
+          <controls:DynastyRangePicker x:Name="DynastyPicker" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" />
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,10,0,0" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+          <Button x:Name="BtnSelectStatuses" Grid.Column="0" Margin="0,0,8,0" Click="BtnSelectStatuses_Click" />
+          <Button x:Name="BtnClearStatuses" Grid.Column="1" Margin="0,0,8,0" Click="BtnClearStatuses_Click" />
+          <Button x:Name="BtnRunQuery" Grid.Column="2" Margin="0,0,8,0" Click="BtnRunQuery_Click" />
+          <Button x:Name="BtnSavePersonIds" Grid.Column="3" Margin="0,0,8,0" Click="BtnSavePersonIds_Click" />
+          <Button x:Name="BtnClose" Grid.Column="4" Click="BtnClose_Click" />
+        </Grid>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
+      <TabControl x:Name="TabsResults">
+        <TabItem x:Name="TabRecords">
+          <d:DataGrid x:Name="GridRecords"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserSortColumns="False"
+                      CanUserReorderColumns="False"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <d:DataGrid.Columns>
+              <d:DataGridTextColumn Binding="{Binding PersonId}" Width="76" />
+              <d:DataGridTextColumn Binding="{Binding NameChn}" Width="120" />
+              <d:DataGridTextColumn Binding="{Binding Name}" Width="150" />
+              <d:DataGridTextColumn Binding="{Binding IndexYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="100" />
+              <d:DataGridTextColumn Binding="{Binding Status}" Width="160" />
+              <d:DataGridTextColumn Binding="{Binding StatusCode}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding Source}" Width="160" />
+              <d:DataGridTextColumn Binding="{Binding Pages}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddress}" Width="180" />
+            </d:DataGrid.Columns>
+          </d:DataGrid>
+        </TabItem>
+
+        <TabItem x:Name="TabPeople">
+          <d:DataGrid x:Name="GridPeople"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserSortColumns="False"
+                      CanUserReorderColumns="False"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <d:DataGrid.Columns>
+              <d:DataGridTextColumn Binding="{Binding PersonId}" Width="76" />
+              <d:DataGridTextColumn Binding="{Binding NameChn}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding Name}" Width="170" />
+              <d:DataGridTextColumn Binding="{Binding IndexYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="110" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddress}" Width="220" />
+              <d:DataGridTextColumn Binding="{Binding StatusCount}" Width="90" />
+            </d:DataGrid.Columns>
+          </d:DataGrid>
+        </TabItem>
+      </TabControl>
+    </Border>
+
+    <Border Grid.Row="2" BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <TextBlock x:Name="TxtStatusBar" Foreground="#444" />
+    </Border>
+  </Grid>
+</Window>

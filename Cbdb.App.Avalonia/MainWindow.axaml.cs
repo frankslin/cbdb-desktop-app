@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Cbdb.App.Avalonia.Browser;
 using Cbdb.App.Avalonia.Localization;
+using Cbdb.App.Avalonia.Modules;
 using Cbdb.App.Core;
 using Cbdb.App.Data;
 using ShapePath = Avalonia.Controls.Shapes.Path;
@@ -58,6 +59,7 @@ public partial class MainWindow : Window {
 
     private string _sqlitePath = string.Empty;
     private PersonBrowserWindow? _personBrowserWindow;
+    private StatusQueryWindow? _statusQueryWindow;
 
     internal AppLocalizationService LocalizationService => _localizationService;
 
@@ -212,6 +214,37 @@ public partial class MainWindow : Window {
             window.Show();
             _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
             _txtOutput.Text = T("msg.browser_opened");
+            return;
+        }
+
+        if (key == "module.status") {
+            if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
+                _txtStatus.Text = T("status.failed");
+                _txtOutput.Text = T("msg.sqlite_missing");
+                return;
+            }
+
+            if (_statusQueryWindow is { } existingWindow) {
+                if (existingWindow.WindowState == WindowState.Minimized) {
+                    existingWindow.WindowState = WindowState.Normal;
+                }
+
+                existingWindow.Activate();
+                _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+                _txtOutput.Text = T("msg.status_query_opened");
+                return;
+            }
+
+            var window = new StatusQueryWindow(_sqlitePath, _localizationService);
+            _statusQueryWindow = window;
+            window.Closed += (_, _) => {
+                if (ReferenceEquals(_statusQueryWindow, window)) {
+                    _statusQueryWindow = null;
+                }
+            };
+            window.Show(this);
+            _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+            _txtOutput.Text = T("msg.status_query_opened");
             return;
         }
 
