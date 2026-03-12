@@ -1,0 +1,28 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.AboutWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Width="560"
+    Height="260"
+    CanResize="False"
+    WindowStartupLocation="CenterOwner"
+    Background="#F6F6F6">
+  <Border Padding="20" Background="#F6F6F6">
+    <StackPanel Spacing="16">
+      <TextBlock x:Name="TxtTitle"
+                 FontSize="28"
+                 FontWeight="Bold"
+                 Foreground="#133FB5"
+                 Text="CBDB" />
+      <TextBlock x:Name="TxtBody"
+                 TextWrapping="Wrap"
+                 FontSize="15"
+                 LineHeight="24" />
+      <Button x:Name="BtnClose"
+              HorizontalAlignment="Right"
+              Width="96"
+              Height="34"
+              Click="BtnClose_Click" />
+    </StackPanel>
+  </Border>
+</Window>

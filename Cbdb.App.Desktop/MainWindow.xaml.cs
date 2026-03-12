@@ -18,6 +18,7 @@ public partial class MainWindow : Window {
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
     private readonly ILocalizationService _localizationService = new AppLocalizationService();
     private string _sqlitePath = string.Empty;
+    private PersonBrowserWindow? _personBrowserWindow;
 
     public MainWindow() {
         InitializeComponent();
@@ -135,8 +136,25 @@ public partial class MainWindow : Window {
                 return;
             }
 
+            if (_personBrowserWindow is { } existingWindow) {
+                if (existingWindow.WindowState == WindowState.Minimized) {
+                    existingWindow.WindowState = WindowState.Normal;
+                }
+
+                existingWindow.Activate();
+                TxtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+                TxtOutput.Text = T("msg.browser_opened");
+                return;
+            }
+
             var browserWindow = new PersonBrowserWindow(sqlitePath, _localizationService) {
                 Owner = this
+            };
+            _personBrowserWindow = browserWindow;
+            browserWindow.Closed += (_, _) => {
+                if (ReferenceEquals(_personBrowserWindow, browserWindow)) {
+                    _personBrowserWindow = null;
+                }
             };
             browserWindow.Show();
 
