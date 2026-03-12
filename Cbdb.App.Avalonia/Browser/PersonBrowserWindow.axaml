@@ -44,15 +44,33 @@
     </Style>
   </Window.Styles>
   <Grid Margin="8" RowDefinitions="Auto,*">
-    <Grid ColumnDefinitions="*,92,92">
+    <Grid ColumnDefinitions="36,36,*,92,92">
+        <Button x:Name="BtnHistoryBack"
+                Grid.Column="0"
+                Width="32"
+                Height="30"
+                Margin="0,0,6,0"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Click="BtnHistoryBack_Click"
+                Content="←" />
+        <Button x:Name="BtnHistoryForward"
+                Grid.Column="1"
+                Width="32"
+                Height="30"
+                Margin="0,0,8,0"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Click="BtnHistoryForward_Click"
+                Content="→" />
         <TextBox x:Name="TxtKeyword"
-                 Grid.Column="0"
+                 Grid.Column="2"
                  Height="30"
                  Margin="0,0,8,0"
                  VerticalContentAlignment="Center"
                  KeyDown="TxtKeyword_KeyDown" />
-        <Button x:Name="BtnSearch" Grid.Column="1" Height="30" Margin="0,0,8,0" Click="BtnSearch_Click" />
-        <Button x:Name="BtnClear" Grid.Column="2" Height="30" Click="BtnClear_Click" />
+        <Button x:Name="BtnSearch" Grid.Column="3" Height="30" Margin="0,0,8,0" Click="BtnSearch_Click" />
+        <Button x:Name="BtnClear" Grid.Column="4" Height="30" Click="BtnClear_Click" />
     </Grid>
 
     <Grid Grid.Row="1" Margin="0,8,0,0" ColumnDefinitions="4*,6,7*">

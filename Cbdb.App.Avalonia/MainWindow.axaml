@@ -22,7 +22,8 @@
     </Style>
     <Style Selector="Button.side-action">
       <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
   </Window.Styles>
   <Grid Margin="14" ColumnDefinitions="*,150" RowDefinitions="Auto,*,Auto">
@@ -33,7 +34,6 @@
               Padding="16,4">
         <TextBlock x:Name="TxtHeaderMain"
                    FontSize="34"
-                   FontWeight="Bold"
                    Foreground="White"
                    Text="中國歷代人物傳記資料庫" />
       </Border>
@@ -77,6 +77,7 @@
                 Margin="0,0,0,10">
       <Button x:Name="BtnReportError" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnReportError_Click" />
       <Button x:Name="BtnRelinkTables" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnRelinkTables_Click" />
+      <Button x:Name="BtnDownloadLatestData" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnDownloadLatestData_Click" />
       <Button x:Name="BtnChangeIndexAddress" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnChangeIndexAddress_Click" />
       <Button x:Name="BtnUsersGuide" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnUsersGuide_Click" />
       <Button x:Name="BtnExit" Classes="side-action" Height="36" Click="BtnExit_Click" />

@@ -30,6 +30,8 @@ public partial class PersonBrowserWindow : Window {
     private readonly Dictionary<string, CheckBox> _basicChecks = new();
 
     private TextBox _txtKeyword = null!;
+    private Button _btnHistoryBack = null!;
+    private Button _btnHistoryForward = null!;
     private Button _btnSearch = null!;
     private Button _btnClear = null!;
     private Button _btnSaveToFile = null!;
@@ -170,6 +172,10 @@ public partial class PersonBrowserWindow : Window {
     private readonly Dictionary<string, Button> _tabPrevButtons = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Button> _tabNextButtons = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, TextBlock> _tabPageLabels = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<PersonBrowserHistoryState> _personHistory = new();
+    private int _personHistoryIndex = -1;
+    private bool _suppressHistoryPush;
+    private bool _isRestoringHistory;
 
     public PersonBrowserWindow() : this(string.Empty, new AppLocalizationService()) {
     }
@@ -202,6 +208,8 @@ public partial class PersonBrowserWindow : Window {
 
     private void ApplyLocalization() {
         Title = T("browser.window_title");
+        ToolTip.SetTip(_btnHistoryBack, T("browser.history_back"));
+        ToolTip.SetTip(_btnHistoryForward, T("browser.history_forward"));
         _btnSearch.Content = T("browser.search");
         _btnClear.Content = T("browser.clear");
         _btnSaveToFile.Content = T("browser.save_to_file");
@@ -277,6 +285,7 @@ public partial class PersonBrowserWindow : Window {
         _txtInstitutionsEmpty.Text = _currentInstitutions.Count == 0 ? T("browser.institutions_none") : string.Empty;
         RenderInstitutions();
         ApplyBasicInfoLocalization();
+        UpdateHistoryButtons();
 
     }
 
@@ -296,6 +305,14 @@ public partial class PersonBrowserWindow : Window {
 
         e.Handled = true;
         await SearchAsync();
+    }
+
+    private async void BtnHistoryBack_Click(object? sender, RoutedEventArgs e) {
+        await NavigateHistoryAsync(-1);
+    }
+
+    private async void BtnHistoryForward_Click(object? sender, RoutedEventArgs e) {
+        await NavigateHistoryAsync(1);
     }
 
     private async Task SearchAsync() {
@@ -351,6 +368,10 @@ public partial class PersonBrowserWindow : Window {
     }
 
     private async void GridPeople_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
+        if (_isRestoringHistory) {
+            return;
+        }
+
         if (_gridPeople.SelectedItem is not PersonListItem selected) {
             ClearDetail();
             return;
@@ -365,43 +386,238 @@ public partial class PersonBrowserWindow : Window {
                 return;
             }
 
-            _currentDetail = detail;
-            _valPersonId.Text = detail.PersonId.ToString();
-            _valSurnameChn.Text = detail.SurnameChn ?? string.Empty;
-            _valMingziChn.Text = detail.MingziChn ?? string.Empty;
-            _valNameChn.Text = detail.NameChn ?? string.Empty;
-            _valSurname.Text = detail.Surname ?? string.Empty;
-            _valMingzi.Text = detail.Mingzi ?? string.Empty;
-            _valName.Text = detail.Name ?? string.Empty;
-            _valSurnameProper.Text = detail.SurnameProper ?? string.Empty;
-            _valMingziProper.Text = detail.MingziProper ?? string.Empty;
-            _valNameProper.Text = GetRawField(detail, "c_name_proper");
-            _valSurnameRm.Text = detail.SurnameRm ?? string.Empty;
-            _valMingziRm.Text = detail.MingziRm ?? string.Empty;
-            _valNameRm.Text = GetRawField(detail, "c_name_rm");
-            _valGender.Text = detail.Gender switch {
-                "M" => B("male"),
-                "F" => B("female"),
-                _ => B("unknown")
-            };
-            _valBirthYear.Text = detail.BirthYear?.ToString() ?? string.Empty;
-            _valDeathYear.Text = detail.DeathYear?.ToString() ?? string.Empty;
-            _valDynasty.Text = JoinDisplay(detail.DynastyChn, detail.Dynasty);
-            _valIndexYear.Text = detail.IndexYear?.ToString() ?? string.Empty;
-            _valIndexYearType.Text = detail.IndexYearType ?? string.Empty;
-            _valIndexYearSource.Text = detail.IndexYearSource ?? string.Empty;
-            _valIndexAddress.Text = JoinDisplay(detail.IndexAddressChn, detail.IndexAddress);
-            _valIndexAddressType.Text = detail.IndexAddressType ?? string.Empty;
-
-            PopulateBasicInfo(detail);
-            ResetLazyTabs();
+            DisplayDetail(detail);
             await EnsureSelectedTabLoadedAsync();
-            _txtNoSelection.Text = string.Empty;
-            _txtNoSelection.IsVisible = false;
-            UpdateTabHeaders(detail);
+            RecordHistory(selected.PersonId);
         } catch (Exception ex) {
             _txtRecord.Text = ex.Message;
         }
+    }
+
+    private void DisplayDetail(PersonDetail detail) {
+        _currentDetail = detail;
+        _valPersonId.Text = detail.PersonId.ToString();
+        _valSurnameChn.Text = detail.SurnameChn ?? string.Empty;
+        _valMingziChn.Text = detail.MingziChn ?? string.Empty;
+        _valNameChn.Text = detail.NameChn ?? string.Empty;
+        _valSurname.Text = detail.Surname ?? string.Empty;
+        _valMingzi.Text = detail.Mingzi ?? string.Empty;
+        _valName.Text = detail.Name ?? string.Empty;
+        _valSurnameProper.Text = detail.SurnameProper ?? string.Empty;
+        _valMingziProper.Text = detail.MingziProper ?? string.Empty;
+        _valNameProper.Text = GetRawField(detail, "c_name_proper");
+        _valSurnameRm.Text = detail.SurnameRm ?? string.Empty;
+        _valMingziRm.Text = detail.MingziRm ?? string.Empty;
+        _valNameRm.Text = GetRawField(detail, "c_name_rm");
+        _valGender.Text = detail.Gender switch {
+            "M" => B("male"),
+            "F" => B("female"),
+            _ => B("unknown")
+        };
+        _valBirthYear.Text = detail.BirthYear?.ToString() ?? string.Empty;
+        _valDeathYear.Text = detail.DeathYear?.ToString() ?? string.Empty;
+        _valDynasty.Text = JoinDisplay(detail.DynastyChn, detail.Dynasty);
+        _valIndexYear.Text = detail.IndexYear?.ToString() ?? string.Empty;
+        _valIndexYearType.Text = detail.IndexYearType ?? string.Empty;
+        _valIndexYearSource.Text = detail.IndexYearSource ?? string.Empty;
+        _valIndexAddress.Text = JoinDisplay(detail.IndexAddressChn, detail.IndexAddress);
+        _valIndexAddressType.Text = detail.IndexAddressType ?? string.Empty;
+
+        PopulateBasicInfo(detail);
+        ResetLazyTabs();
+        _txtNoSelection.Text = string.Empty;
+        _txtNoSelection.IsVisible = false;
+        UpdateTabHeaders(detail);
+    }
+
+    private async Task NavigateHistoryAsync(int delta) {
+        ReplaceCurrentHistoryState();
+
+        var targetIndex = _personHistoryIndex + delta;
+        if (targetIndex < 0 || targetIndex >= _personHistory.Count) {
+            return;
+        }
+
+        _personHistoryIndex = targetIndex;
+        UpdateHistoryButtons();
+        await RestoreHistoryStateAsync(_personHistory[targetIndex]);
+    }
+
+    private async Task NavigateToPersonAsync(int personId, bool suppressHistoryPush) {
+        var previousSuppress = _suppressHistoryPush;
+        _suppressHistoryPush = suppressHistoryPush;
+
+        try {
+            _txtKeyword.Text = personId.ToString();
+            await SearchAsync();
+        } finally {
+            _suppressHistoryPush = previousSuppress;
+        }
+    }
+
+    private void RecordHistory(int personId) {
+        if (_suppressHistoryPush) {
+            ReplaceCurrentHistoryState();
+            return;
+        }
+
+        if (_personHistoryIndex >= 0 &&
+            _personHistoryIndex < _personHistory.Count &&
+            _personHistory[_personHistoryIndex].SelectedPersonId == personId) {
+            ReplaceCurrentHistoryState();
+            return;
+        }
+
+        if (_personHistoryIndex < _personHistory.Count - 1) {
+            _personHistory.RemoveRange(_personHistoryIndex + 1, _personHistory.Count - (_personHistoryIndex + 1));
+        }
+
+        _personHistory.Add(CaptureCurrentState());
+        _personHistoryIndex = _personHistory.Count - 1;
+        UpdateHistoryButtons();
+    }
+
+    private void ReplaceCurrentHistoryState() {
+        if (_isRestoringHistory) {
+            return;
+        }
+
+        if (_personHistoryIndex < 0 || _personHistoryIndex >= _personHistory.Count) {
+            return;
+        }
+
+        _personHistory[_personHistoryIndex] = CaptureCurrentState();
+        UpdateHistoryButtons();
+    }
+
+    private PersonBrowserHistoryState CaptureCurrentState() {
+        return new PersonBrowserHistoryState(
+            Keyword: _currentKeyword,
+            SearchResults: _people.ToList(),
+            NextOffset: _nextOffset,
+            HasMore: _hasMore,
+            SelectedResultIndex: GetSelectedResultIndex(),
+            SelectedPersonId: _selectedPersonId,
+            SelectedTabKey: GetSelectedTabKey(),
+            RelatedTabPages: new Dictionary<string, int>(_relatedTabPages, StringComparer.OrdinalIgnoreCase),
+            LoadedTabs: new HashSet<string>(_loadedPersonTabs, StringComparer.OrdinalIgnoreCase),
+            Detail: _currentDetail,
+            Addresses: _currentAddresses.ToList(),
+            AltNames: _currentAltNames.ToList(),
+            Writings: _currentWritings.ToList(),
+            Postings: _currentPostings.ToList(),
+            Entries: _currentEntries.ToList(),
+            Events: _currentEvents.ToList(),
+            Statuses: _currentStatuses.ToList(),
+            Kinships: _currentKinships.ToList(),
+            Possessions: _currentPossessions.ToList(),
+            Sources: _currentSources.ToList(),
+            Institutions: _currentInstitutions.ToList()
+        );
+    }
+
+    private async Task RestoreHistoryStateAsync(PersonBrowserHistoryState state) {
+        _isRestoringHistory = true;
+        try {
+            _txtKeyword.Text = state.Keyword ?? string.Empty;
+            _currentKeyword = state.Keyword;
+            _nextOffset = state.NextOffset;
+            _hasMore = state.HasMore;
+
+            _people.Clear();
+            foreach (var item in state.SearchResults) {
+                _people.Add(item);
+            }
+            UpdateRecordText();
+
+            if (state.Detail is null || !state.SelectedPersonId.HasValue) {
+                ClearDetail();
+                return;
+            }
+
+            _selectedPersonId = state.SelectedPersonId;
+            DisplayDetail(state.Detail);
+
+            _relatedTabPages.Clear();
+            foreach (var entry in state.RelatedTabPages) {
+                _relatedTabPages[entry.Key] = entry.Value;
+            }
+
+            _loadedPersonTabs.Clear();
+            foreach (var tabKey in state.LoadedTabs) {
+                _loadedPersonTabs.Add(tabKey);
+            }
+
+            _currentAddresses = state.Addresses;
+            _currentAltNames = state.AltNames;
+            _currentWritings = state.Writings;
+            _currentPostings = state.Postings;
+            _currentEntries = state.Entries;
+            _currentEvents = state.Events;
+            _currentStatuses = state.Statuses;
+            _currentKinships = state.Kinships;
+            _currentPossessions = state.Possessions;
+            _currentSources = state.Sources;
+            _currentInstitutions = state.Institutions;
+
+            if (state.LoadedTabs.Contains("addresses")) {
+                RenderAddresses();
+            }
+            if (state.LoadedTabs.Contains("alt_names")) {
+                RenderAltNames();
+            }
+            if (state.LoadedTabs.Contains("writings")) {
+                RenderWritings();
+            }
+            if (state.LoadedTabs.Contains("postings")) {
+                RenderPostings();
+            }
+            if (state.LoadedTabs.Contains("entry")) {
+                RenderEntries();
+            }
+            if (state.LoadedTabs.Contains("events")) {
+                RenderEvents();
+            }
+            if (state.LoadedTabs.Contains("status")) {
+                RenderStatuses();
+            }
+            if (state.LoadedTabs.Contains("kinship")) {
+                RenderKinships();
+            }
+            if (state.LoadedTabs.Contains("possessions")) {
+                RenderPossessions();
+            }
+            if (state.LoadedTabs.Contains("sources")) {
+                RenderSources();
+            }
+            if (state.LoadedTabs.Contains("institutions")) {
+                RenderInstitutions();
+            }
+
+            SelectTabByKey(state.SelectedTabKey);
+
+            if (state.SelectedResultIndex >= 0 && state.SelectedResultIndex < _people.Count) {
+                _gridPeople.ScrollIntoView(_people[state.SelectedResultIndex], _colPersonId);
+            }
+
+            var selectedItem = _people.FirstOrDefault(item => item.PersonId == state.SelectedPersonId.Value);
+            _gridPeople.SelectedItem = selectedItem;
+            await EnsureSelectedTabLoadedAsync();
+        } finally {
+            _isRestoringHistory = false;
+            UpdateHistoryButtons();
+        }
+    }
+
+    private void UpdateHistoryButtons() {
+        _btnHistoryBack.IsEnabled = _personHistoryIndex > 0;
+        _btnHistoryForward.IsEnabled = _personHistoryIndex >= 0 && _personHistoryIndex < _personHistory.Count - 1;
+    }
+
+    private int GetSelectedResultIndex() {
+        return _gridPeople.SelectedItem is PersonListItem selected
+            ? _people.IndexOf(selected)
+            : -1;
     }
 
     private void AttachPeopleScrollMonitor() {
@@ -418,11 +634,17 @@ public partial class PersonBrowserWindow : Window {
     }
 
     private async void PeopleScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e) {
+        if (_isRestoringHistory) {
+            return;
+        }
+
         if (sender is not ScrollViewer viewer || !_hasMore || _isLoadingPage) {
+            ReplaceCurrentHistoryState();
             return;
         }
 
         if (viewer.Extent.Height <= viewer.Viewport.Height) {
+            ReplaceCurrentHistoryState();
             return;
         }
 
@@ -430,6 +652,8 @@ public partial class PersonBrowserWindow : Window {
         if (remaining <= 120) {
             await LoadNextPageAsync();
         }
+
+        ReplaceCurrentHistoryState();
     }
 
     private void GridPeople_LoadingRow(object? sender, DataGridRowEventArgs e) {
@@ -684,6 +908,7 @@ public partial class PersonBrowserWindow : Window {
         }
 
         await EnsureSelectedTabLoadedAsync();
+        ReplaceCurrentHistoryState();
     }
 
     private async Task EnsureSelectedTabLoadedAsync() {
@@ -865,6 +1090,28 @@ public partial class PersonBrowserWindow : Window {
         }
 
         return null;
+    }
+
+    private string? GetSelectedTabKey() {
+        return _mainTabs.SelectedItem is TabItem tab ? GetLazyTabKey(tab) : null;
+    }
+
+    private void SelectTabByKey(string? tabKey) {
+        _mainTabs.SelectedItem = tabKey switch {
+            "addresses" => _tabAddresses,
+            "alt_names" => _tabAltNames,
+            "writings" => _tabWritings,
+            "postings" => _tabPostings,
+            "entry" => _tabEntry,
+            "events" => _tabEvents,
+            "status" => _tabStatus,
+            "kinship" => _tabKinship,
+            "associations" => _tabAssociations,
+            "possessions" => _tabPossessions,
+            "sources" => _tabSources,
+            "institutions" => _tabInstitutions,
+            _ => _tabBasic
+        };
     }
 
     private void RenderAddresses() {
@@ -1050,6 +1297,7 @@ public partial class PersonBrowserWindow : Window {
 
         _relatedTabPages[tabKey] = nextPage;
         RenderRelatedTab(tabKey);
+        ReplaceCurrentHistoryState();
     }
 
     private int GetRelatedTabCount(string tabKey) {
@@ -1385,8 +1633,7 @@ public partial class PersonBrowserWindow : Window {
             return;
         }
 
-        _txtKeyword.Text = personId.ToString();
-        await SearchAsync();
+        await NavigateToPersonAsync(personId, false);
     }
 
     private Control BuildPossessionCard(PersonPossessionItem item) {
@@ -2223,6 +2470,8 @@ public partial class PersonBrowserWindow : Window {
 
     private void InitializeControls() {
         _txtKeyword = this.FindControl<TextBox>("TxtKeyword") ?? throw new InvalidOperationException("TxtKeyword not found.");
+        _btnHistoryBack = this.FindControl<Button>("BtnHistoryBack") ?? throw new InvalidOperationException("BtnHistoryBack not found.");
+        _btnHistoryForward = this.FindControl<Button>("BtnHistoryForward") ?? throw new InvalidOperationException("BtnHistoryForward not found.");
         _btnSearch = this.FindControl<Button>("BtnSearch") ?? throw new InvalidOperationException("BtnSearch not found.");
         _btnClear = this.FindControl<Button>("BtnClear") ?? throw new InvalidOperationException("BtnClear not found.");
         _btnSaveToFile = this.FindControl<Button>("BtnSaveToFile") ?? throw new InvalidOperationException("BtnSaveToFile not found.");
@@ -2445,6 +2694,30 @@ public partial class PersonBrowserWindow : Window {
     private void RegisterBasicValue(string key, string controlName) {
         _basicValues[key] = this.FindControl<TextBox>(controlName) ?? throw new InvalidOperationException($"{controlName} not found.");
     }
+
+    private sealed record PersonBrowserHistoryState(
+        string? Keyword,
+        IReadOnlyList<PersonListItem> SearchResults,
+        int NextOffset,
+        bool HasMore,
+        int SelectedResultIndex,
+        int? SelectedPersonId,
+        string? SelectedTabKey,
+        Dictionary<string, int> RelatedTabPages,
+        HashSet<string> LoadedTabs,
+        PersonDetail? Detail,
+        IReadOnlyList<PersonAddressItem> Addresses,
+        IReadOnlyList<PersonAltNameItem> AltNames,
+        IReadOnlyList<PersonWritingItem> Writings,
+        IReadOnlyList<PersonPostingItem> Postings,
+        IReadOnlyList<PersonEntryItem> Entries,
+        IReadOnlyList<PersonEventItem> Events,
+        IReadOnlyList<PersonStatusItem> Statuses,
+        IReadOnlyList<PersonKinshipItem> Kinships,
+        IReadOnlyList<PersonPossessionItem> Possessions,
+        IReadOnlyList<PersonSourceItem> Sources,
+        IReadOnlyList<PersonInstitutionItem> Institutions
+    );
 
     private void RegisterBasicCheck(string key, string controlName) {
         _basicChecks[key] = this.FindControl<CheckBox>(controlName) ?? throw new InvalidOperationException($"{controlName} not found.");

@@ -15,6 +15,7 @@ namespace Cbdb.App.Avalonia;
 public partial class MainWindow : Window {
     private const string UserGuideUrlEn = "https://cbdb-project.github.io/cbdb-user-guide";
     private const string UserGuideUrlZhTw = "https://cbdb-project.github.io/cbdb-user-guide/zh-TW/";
+    private const string LatestDataUrl = "https://huggingface.co/datasets/cbdb/cbdb-sqlite/blob/main/latest.zip";
 
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
     private readonly AppLocalizationService _localizationService = new();
@@ -34,6 +35,7 @@ public partial class MainWindow : Window {
     private Button _btnModuleTexts = null!;
     private Button _btnReportError = null!;
     private Button _btnRelinkTables = null!;
+    private Button _btnDownloadLatestData = null!;
     private Button _btnChangeIndexAddress = null!;
     private Button _btnUsersGuide = null!;
     private Button _btnExit = null!;
@@ -81,6 +83,7 @@ public partial class MainWindow : Window {
         _btnReportError.Content = T("button.report_error");
         _btnChangeIndexAddress.Content = T("button.change_index_address");
         _btnRelinkTables.Content = T("button.relink_tables");
+        _btnDownloadLatestData.Content = T("button.download_latest_data");
         _btnUsersGuide.Content = T("button.users_guide");
         _btnExit.Content = T("button.exit");
 
@@ -236,6 +239,17 @@ public partial class MainWindow : Window {
         _txtOutput.Text = T("msg.index_addr_todo");
     }
 
+    private void BtnDownloadLatestData_Click(object? sender, RoutedEventArgs e) {
+        try {
+            OpenExternalTarget(LatestDataUrl);
+            _txtStatus.Text = T("button.download_latest_data");
+            _txtOutput.Text = $"{T("msg.download_latest_data_opened")}{Environment.NewLine}{LatestDataUrl}";
+        } catch (Exception ex) {
+            _txtStatus.Text = T("status.failed");
+            _txtOutput.Text = ex.Message;
+        }
+    }
+
     private void BtnUsersGuide_Click(object? sender, RoutedEventArgs e) {
         try {
             var userGuideUrl = GetUserGuideUrl();
@@ -278,6 +292,7 @@ public partial class MainWindow : Window {
         _btnModuleTexts = this.FindControl<Button>("BtnModuleTexts") ?? throw new InvalidOperationException("BtnModuleTexts not found.");
         _btnReportError = this.FindControl<Button>("BtnReportError") ?? throw new InvalidOperationException("BtnReportError not found.");
         _btnRelinkTables = this.FindControl<Button>("BtnRelinkTables") ?? throw new InvalidOperationException("BtnRelinkTables not found.");
+        _btnDownloadLatestData = this.FindControl<Button>("BtnDownloadLatestData") ?? throw new InvalidOperationException("BtnDownloadLatestData not found.");
         _btnChangeIndexAddress = this.FindControl<Button>("BtnChangeIndexAddress") ?? throw new InvalidOperationException("BtnChangeIndexAddress not found.");
         _btnUsersGuide = this.FindControl<Button>("BtnUsersGuide") ?? throw new InvalidOperationException("BtnUsersGuide not found.");
         _btnExit = this.FindControl<Button>("BtnExit") ?? throw new InvalidOperationException("BtnExit not found.");
