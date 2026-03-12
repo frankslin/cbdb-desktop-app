@@ -41,6 +41,7 @@ public sealed class PersonBrowserWindowTests {
         var mainTabs = AvaloniaUiTestHelper.FindRequiredControl<TabControl>(window, "MainTabs");
         var tabAddresses = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabAddresses");
         var tabAltNames = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabAltNames");
+        var tabWritings = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabWritings");
         var tabPostings = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabPostings");
         var tabEntry = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabEntry");
         var tabEvents = AvaloniaUiTestHelper.FindRequiredControl<TabItem>(window, "TabEvents");
@@ -60,6 +61,13 @@ public sealed class PersonBrowserWindowTests {
             () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AltNamesPanel").Children.Count > 0,
             TimeSpan.FromSeconds(5),
             "Alt names tab did not render any records."
+        );
+
+        mainTabs.SelectedItem = tabWritings;
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "WritingsPanel").Children.Count > 0,
+            TimeSpan.FromSeconds(5),
+            "Writings tab did not render any records."
         );
 
         mainTabs.SelectedItem = tabPostings;
@@ -113,12 +121,29 @@ public sealed class PersonBrowserWindowTests {
                 BirthYear = valBirthYear.Text,
                 AddressCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AddressesPanel").Children.Count,
                 AltNameCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "AltNamesPanel").Children.Count,
+                WritingCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "WritingsPanel").Children.Count,
                 PostingCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "PostingsPanel").Children.Count,
                 EntryCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "EntryPanel").Children.Count,
                 EventCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "EventsPanel").Children.Count,
                 StatusCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "StatusPanel").Children.Count,
                 KinshipCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "KinshipPanel").Children.Count,
                 PossessionCards = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "PossessionsPanel").Children.Count
+            }
+        );
+
+        mainTabs.SelectedItem = tabWritings;
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "WritingsPanel").Children.Count > 0,
+            TimeSpan.FromSeconds(5),
+            "Writings tab was not available for screenshot capture."
+        );
+
+        var writingsScreenshotPath = AvaloniaUiTestHelper.WriteArtifact(
+            testName,
+            "writings-tab.png",
+            path => {
+                var frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("Headless renderer did not return a frame.");
+                frame.Save(path);
             }
         );
 
@@ -133,6 +158,7 @@ public sealed class PersonBrowserWindowTests {
 
         Assert.True(File.Exists(summaryPath), "Structured UI summary artifact was not written.");
         Assert.True(File.Exists(screenshotPath), "Rendered screenshot artifact was not written.");
+        Assert.True(File.Exists(writingsScreenshotPath), "Writings tab screenshot artifact was not written.");
 
         window.Close();
         File.Delete(sqlitePath);

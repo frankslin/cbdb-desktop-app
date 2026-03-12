@@ -1826,7 +1826,6 @@ public partial class PersonBrowserWindow : Window {
             TextWrapping = multiline ? TextWrapping.Wrap : TextWrapping.NoWrap,
             AcceptsReturn = multiline,
             MinHeight = effectiveMinHeight,
-            MaxLines = multiline ? 0 : 1,
             Padding = new Thickness(6, 4),
             VerticalContentAlignment = multiline ? VerticalAlignment.Top : VerticalAlignment.Center,
             Margin = new Thickness(0, 0, 12, 6)

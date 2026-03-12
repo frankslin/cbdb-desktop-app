@@ -129,67 +129,67 @@
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
               <Grid ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
                 <TextBlock x:Name="LblSurnameChnField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValSurnameChn" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValSurnameChn" Grid.Column="1" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                 <TextBlock x:Name="LblMingziChnField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValMingziChn" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValMingziChn" Grid.Column="3" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                 <TextBlock x:Name="LblNameChnField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValNameChn" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
+                <TextBox x:Name="ValNameChn" Grid.Column="5" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                 <TextBlock x:Name="LblPersonId" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
-                <TextBox x:Name="ValPersonId" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
+                <TextBox x:Name="ValPersonId" Grid.Column="7" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
               </Grid>
 
               <Grid Grid.Row="1" Margin="0,6,0,0" ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
                 <TextBlock x:Name="LblSurnameField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValSurname" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValSurname" Grid.Column="1" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                 <TextBlock x:Name="LblMingziField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValMingzi" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValMingzi" Grid.Column="3" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                 <TextBlock x:Name="LblNameField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValName" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
+                <TextBox x:Name="ValName" Grid.Column="5" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                 <TextBlock x:Name="LblGenderSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
-                <TextBox x:Name="ValGender" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValGender" Grid.Column="7" Margin="6,0,0,0" MinWidth="80" IsReadOnly="True" />
               </Grid>
 
               <Grid Grid.Row="2" Margin="0,6,0,0" ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
                 <TextBlock x:Name="LblSurnameProperField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValSurnameProper" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValSurnameProper" Grid.Column="1" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                 <TextBlock x:Name="LblMingziProperField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValMingziProper" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValMingziProper" Grid.Column="3" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                 <TextBlock x:Name="LblNameProperField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValNameProper" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
+                <TextBox x:Name="ValNameProper" Grid.Column="5" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                 <TextBlock x:Name="LblBirthYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
-                <TextBox x:Name="ValBirthYear" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
+                <TextBox x:Name="ValBirthYear" Grid.Column="7" Margin="6,0,0,0" MinWidth="70" IsReadOnly="True" />
               </Grid>
 
               <Grid Grid.Row="3" Margin="0,6,0,0" ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
                 <TextBlock x:Name="LblSurnameRmField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValSurnameRm" Grid.Column="1" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValSurnameRm" Grid.Column="1" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                 <TextBlock x:Name="LblMingziRmField" Grid.Column="2" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValMingziRm" Grid.Column="3" Height="24" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
+                <TextBox x:Name="ValMingziRm" Grid.Column="3" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
                 <TextBlock x:Name="LblNameRmField" Grid.Column="4" VerticalAlignment="Center" Foreground="Red" />
-                <TextBox x:Name="ValNameRm" Grid.Column="5" Height="24" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
+                <TextBox x:Name="ValNameRm" Grid.Column="5" Margin="6,0,10,0" MinWidth="100" IsReadOnly="True" />
                 <TextBlock x:Name="LblDeathYearSummary" Grid.Column="6" VerticalAlignment="Center" Foreground="Blue" />
-                <TextBox x:Name="ValDeathYear" Grid.Column="7" Height="24" Margin="6,0,0,0" MinWidth="90" IsReadOnly="True" />
+                <TextBox x:Name="ValDeathYear" Grid.Column="7" Margin="6,0,0,0" MinWidth="90" IsReadOnly="True" />
               </Grid>
 
               <Grid Grid.Row="4" Margin="0,8,0,0" ColumnDefinitions="Auto,*">
                 <TextBlock x:Name="LblDynastySummary" Grid.Column="0" VerticalAlignment="Center" />
-                <TextBox x:Name="ValDynasty" Grid.Column="1" Height="24" Margin="6,0,0,0" IsReadOnly="True" />
+                <TextBox x:Name="ValDynasty" Grid.Column="1" Margin="6,0,0,0" IsReadOnly="True" />
               </Grid>
 
               <Grid Grid.Row="5" Margin="0,6,0,0" ColumnDefinitions="Auto,0.8*,Auto,1.1*,Auto,1.4*">
                 <TextBlock x:Name="LblIndexYearSummary" Grid.Column="0" VerticalAlignment="Center" />
-                <TextBox x:Name="ValIndexYear" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBox x:Name="ValIndexYear" Grid.Column="1" Margin="6,0,10,0" IsReadOnly="True" />
                 <TextBlock x:Name="LblIndexYearTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
-                <TextBox x:Name="ValIndexYearType" Grid.Column="3" Height="24" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBox x:Name="ValIndexYearType" Grid.Column="3" Margin="6,0,10,0" IsReadOnly="True" />
                 <TextBlock x:Name="LblIndexYearSourceSummary" Grid.Column="4" VerticalAlignment="Center" />
-                <TextBox x:Name="ValIndexYearSource" Grid.Column="5" Height="24" Margin="6,0,0,0" IsReadOnly="True" />
+                <TextBox x:Name="ValIndexYearSource" Grid.Column="5" Margin="6,0,0,0" IsReadOnly="True" />
               </Grid>
 
               <Grid Grid.Row="6" Margin="0,6,0,0" ColumnDefinitions="Auto,1.5*,Auto,1*">
                 <TextBlock x:Name="LblIndexAddressSummary" Grid.Column="0" VerticalAlignment="Center" />
-                <TextBox x:Name="ValIndexAddress" Grid.Column="1" Height="24" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBox x:Name="ValIndexAddress" Grid.Column="1" Margin="6,0,10,0" IsReadOnly="True" />
                 <TextBlock x:Name="LblIndexAddressTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
-                <TextBox x:Name="ValIndexAddressType" Grid.Column="3" Height="24" Margin="6,0,0,0" IsReadOnly="True" />
+                <TextBox x:Name="ValIndexAddressType" Grid.Column="3" Margin="6,0,0,0" IsReadOnly="True" />
               </Grid>
             </Grid>
           </Border>
