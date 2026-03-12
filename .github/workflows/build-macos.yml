@@ -53,10 +53,18 @@ jobs:
           macos_dir="${contents_dir}/MacOS"
           resources_dir="${contents_dir}/Resources"
           publish_dir="artifacts/publish/${runtime}/publish"
+          icon_source="Cbdb.App.Avalonia/Assets/AppIcon.icns"
 
           mkdir -p "${macos_dir}" "${resources_dir}"
 
           cp -R "${publish_dir}/." "${macos_dir}/"
+
+          if [ ! -f "${icon_source}" ]; then
+            echo "Missing macOS app icon: ${icon_source}" >&2
+            exit 1
+          fi
+
+          cp "${icon_source}" "${resources_dir}/AppIcon.icns"
 
           cat > "${contents_dir}/Info.plist" <<'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
@@ -69,6 +77,8 @@ jobs:
               <string>CBDB</string>
               <key>CFBundleIdentifier</key>
               <string>org.cbdb.desktop</string>
+              <key>CFBundleIconFile</key>
+              <string>AppIcon.icns</string>
               <key>CFBundleInfoDictionaryVersion</key>
               <string>6.0</string>
               <key>CFBundleDisplayName</key>

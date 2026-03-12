@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="NAVIGATION_PANE"
+    Icon="/Assets/AppIcon.png"
     Width="1000"
     Height="780"
     MinWidth="920"
