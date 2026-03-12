@@ -171,7 +171,7 @@
                 <TextBox x:Name="ValDeathYear" Grid.Column="7" Margin="6,0,0,0" MinWidth="90" IsReadOnly="True" />
               </Grid>
 
-              <Grid Grid.Row="4" Margin="0,8,0,0" ColumnDefinitions="Auto,0.85*,Auto,0.65*,Auto,1*,Auto,1.5*">
+              <Grid Grid.Row="4" Margin="0,8,0,0" ColumnDefinitions="Auto,0.85*,Auto,0.65*,Auto,1*,Auto,1.5*,Auto">
                 <TextBlock x:Name="LblDynastySummary" Grid.Column="0" VerticalAlignment="Center" />
                 <TextBox x:Name="ValDynasty" Grid.Column="1" Margin="6,0,10,0" IsReadOnly="True" />
                 <TextBlock x:Name="LblIndexYearSummary" Grid.Column="2" VerticalAlignment="Center" />
@@ -180,6 +180,14 @@
                 <TextBox x:Name="ValIndexYearType" Grid.Column="5" Margin="6,0,10,0" IsReadOnly="True" />
                 <TextBlock x:Name="LblIndexYearSourceSummary" Grid.Column="6" VerticalAlignment="Center" />
                 <TextBox x:Name="ValIndexYearSource" Grid.Column="7" Margin="6,0,0,0" IsReadOnly="True" />
+                <Button x:Name="BtnIndexYearSourceGoTo"
+                        Grid.Column="8"
+                        Margin="8,0,0,0"
+                        Height="30"
+                        MinWidth="76"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Click="PersonJumpButton_Click" />
               </Grid>
 
               <Grid Grid.Row="5" Margin="0,6,0,0" ColumnDefinitions="Auto,1.5*,Auto,1*">

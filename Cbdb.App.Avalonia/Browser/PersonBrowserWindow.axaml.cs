@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -84,6 +85,7 @@ public partial class PersonBrowserWindow : Window {
     private TextBox _valIndexYear = null!;
     private TextBox _valIndexYearType = null!;
     private TextBox _valIndexYearSource = null!;
+    private Button _btnIndexYearSourceGoTo = null!;
     private TextBox _valIndexAddress = null!;
     private TextBox _valIndexAddressType = null!;
     private TabControl _mainTabs = null!;
@@ -286,6 +288,7 @@ public partial class PersonBrowserWindow : Window {
         _txtSourcesLoading.Text = loadingText;
         _txtSourcesEmpty.Text = _currentSources.Count == 0 ? T("browser.sources_none") : string.Empty;
         RenderSources();
+        _btnIndexYearSourceGoTo.Content = T("browser.jump_to_person");
         _txtInstitutionsLoading.Text = loadingText;
         _txtInstitutionsEmpty.Text = _currentInstitutions.Count == 0 ? T("browser.institutions_none") : string.Empty;
         RenderInstitutions();
@@ -425,6 +428,7 @@ public partial class PersonBrowserWindow : Window {
         _valIndexYear.Text = detail.IndexYear?.ToString() ?? string.Empty;
         _valIndexYearType.Text = detail.IndexYearType ?? string.Empty;
         _valIndexYearSource.Text = detail.IndexYearSource ?? string.Empty;
+        ConfigurePersonJumpButton(_btnIndexYearSourceGoTo, TryParseLeadingPersonId(detail.IndexYearSource));
         _valIndexAddress.Text = JoinDisplay(detail.IndexAddressChn, detail.IndexAddress);
         _valIndexAddressType.Text = detail.IndexAddressType ?? string.Empty;
 
@@ -1660,7 +1664,7 @@ public partial class PersonBrowserWindow : Window {
             Content = T("browser.jump_to_person"),
             Tag = item.KinPersonId
         };
-        jumpButton.Click += KinshipJumpButton_Click;
+        jumpButton.Click += PersonJumpButton_Click;
         Grid.SetColumn(jumpButton, 4);
         relatedRow.Children.Add(jumpButton);
 
@@ -1709,28 +1713,28 @@ public partial class PersonBrowserWindow : Window {
 
     private Control BuildAssociationCoreGrid(PersonAssociationItem item) {
         var grid = new Grid {
-            ColumnDefinitions = new ColumnDefinitions("Auto,120,Auto,*"),
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,90,Auto,*"),
             RowDefinitions = new RowDefinitions("Auto,Auto")
         };
 
         AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
-        AddReadOnlyField(grid, 0, 2, T("browser.association_count"), item.Count?.ToString());
-        AddReadOnlyField(grid, 1, 0, T("browser.association_associate"), JoinDisplay(item.AssociateNameChn, item.AssociateName));
-        AddReadOnlyField(grid, 1, 2, T("browser.association_label"), item.Association);
+        AddReadOnlyField(grid, 0, 4, T("browser.association_count"), item.Count?.ToString());
+        AddReadOnlyPersonField(grid, 1, 0, T("browser.association_associate"), JoinDisplay(item.AssociateNameChn, item.AssociateName), item.AssociatePersonId);
+        AddReadOnlyField(grid, 1, 4, T("browser.association_label"), item.Association);
         return grid;
     }
 
     private Control BuildAssociationPeopleGrid(PersonAssociationItem item) {
         var grid = new Grid {
-            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,90,Auto,220,Auto,90"),
             RowDefinitions = new RowDefinitions("Auto,Auto,Auto")
         };
 
         AddReadOnlyField(grid, 0, 0, T("browser.association_kinship"), item.Kinship);
-        AddReadOnlyField(grid, 0, 2, T("browser.association_kin_person"), JoinDisplay(item.KinNameChn, item.KinName));
+        AddReadOnlyPersonField(grid, 0, 4, T("browser.association_kin_person"), JoinDisplay(item.KinNameChn, item.KinName), item.KinPersonId);
         AddReadOnlyField(grid, 1, 0, T("browser.association_assoc_kinship"), item.AssociateKinship);
-        AddReadOnlyField(grid, 1, 2, T("browser.association_assoc_kin_person"), JoinDisplay(item.AssociateKinNameChn, item.AssociateKinName));
-        AddReadOnlyField(grid, 2, 0, T("browser.association_claimer"), JoinDisplay(item.ClaimerNameChn, item.ClaimerName), 3, 28, false);
+        AddReadOnlyPersonField(grid, 1, 4, T("browser.association_assoc_kin_person"), JoinDisplay(item.AssociateKinNameChn, item.AssociateKinName), item.AssociateKinPersonId);
+        AddReadOnlyPersonField(grid, 2, 0, T("browser.association_claimer"), JoinDisplay(item.ClaimerNameChn, item.ClaimerName), item.ClaimerPersonId, 5);
         return grid;
     }
 
@@ -1795,8 +1799,8 @@ public partial class PersonBrowserWindow : Window {
         return grid;
     }
 
-    private async void KinshipJumpButton_Click(object? sender, RoutedEventArgs e) {
-        if (sender is not Button { Tag: int personId }) {
+    private async void PersonJumpButton_Click(object? sender, RoutedEventArgs e) {
+        if (sender is not Button { Tag: int personId } || personId < 0) {
             return;
         }
 
@@ -2001,6 +2005,52 @@ public partial class PersonBrowserWindow : Window {
         Grid.SetColumn(valueBox, column + 1);
         Grid.SetColumnSpan(valueBox, valueColumnSpan);
         grid.Children.Add(valueBox);
+    }
+
+    private void AddReadOnlyPersonField(
+        Grid grid,
+        int row,
+        int column,
+        string label,
+        string? value,
+        int? personId,
+        int valueColumnSpan = 1
+    ) {
+        AddReadOnlyField(grid, row, column, label, value, valueColumnSpan, 28, false);
+
+        var jumpButton = BuildPersonJumpButton(personId);
+        Grid.SetRow(jumpButton, row);
+        Grid.SetColumn(jumpButton, column + 2);
+        grid.Children.Add(jumpButton);
+    }
+
+    private Button BuildPersonJumpButton(int? personId) {
+        var button = new Button {
+            Height = 30,
+            MinWidth = 76,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center
+        };
+        ConfigurePersonJumpButton(button, personId);
+        button.Click += PersonJumpButton_Click;
+        return button;
+    }
+
+    private void ConfigurePersonJumpButton(Button button, int? personId) {
+        button.Content = T("browser.jump_to_person");
+        button.Tag = personId ?? -1;
+        button.IsEnabled = personId.HasValue && personId.Value >= 0;
+    }
+
+    private static int? TryParseLeadingPersonId(string? value) {
+        if (string.IsNullOrWhiteSpace(value)) {
+            return null;
+        }
+
+        var match = Regex.Match(value, @"^\s*(\d+)\s*/");
+        return match.Success && int.TryParse(match.Groups[1].Value, out var personId)
+            ? personId
+            : null;
     }
 
     private string FormatAddressDate(PersonAddressItem item, bool first) {
@@ -2246,6 +2296,7 @@ public partial class PersonBrowserWindow : Window {
         _valIndexYear.Text = string.Empty;
         _valIndexYearType.Text = string.Empty;
         _valIndexYearSource.Text = string.Empty;
+        ConfigurePersonJumpButton(_btnIndexYearSourceGoTo, null);
         _valIndexAddress.Text = string.Empty;
         _valIndexAddressType.Text = string.Empty;
 
@@ -2258,7 +2309,8 @@ public partial class PersonBrowserWindow : Window {
     }
 
     private void UpdateRecordText() {
-        _txtRecord.Text = string.Format(T("browser.search_result_count"), _people.Count);
+        var key = _hasMore ? "browser.search_result_count_continued" : "browser.search_result_count";
+        _txtRecord.Text = string.Format(T(key), _people.Count);
     }
 
     private void UpdateTabHeaders(PersonDetail? detail) {
@@ -2700,6 +2752,7 @@ public partial class PersonBrowserWindow : Window {
         _valIndexYear = this.FindControl<TextBox>("ValIndexYear") ?? throw new InvalidOperationException("ValIndexYear not found.");
         _valIndexYearType = this.FindControl<TextBox>("ValIndexYearType") ?? throw new InvalidOperationException("ValIndexYearType not found.");
         _valIndexYearSource = this.FindControl<TextBox>("ValIndexYearSource") ?? throw new InvalidOperationException("ValIndexYearSource not found.");
+        _btnIndexYearSourceGoTo = this.FindControl<Button>("BtnIndexYearSourceGoTo") ?? throw new InvalidOperationException("BtnIndexYearSourceGoTo not found.");
         _valIndexAddress = this.FindControl<TextBox>("ValIndexAddress") ?? throw new InvalidOperationException("ValIndexAddress not found.");
         _valIndexAddressType = this.FindControl<TextBox>("ValIndexAddressType") ?? throw new InvalidOperationException("ValIndexAddressType not found.");
         _mainTabs = this.FindControl<TabControl>("MainTabs") ?? throw new InvalidOperationException("MainTabs not found.");
