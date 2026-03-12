@@ -82,9 +82,24 @@ public sealed class SqlitePersonBrowserService : IPersonBrowserService {
 
         var normalized = NormalizeSqliteText(keyword);
         var hasKeyword = !string.IsNullOrWhiteSpace(normalized);
+        var personIdKeyword = 0;
+        var hasPersonIdKeyword = hasKeyword && int.TryParse(normalized, out personIdKeyword) && personIdKeyword > 0;
 
         await using var command = connection.CreateCommand();
-        command.CommandText = hasKeyword
+        command.CommandText = hasPersonIdKeyword
+            ? @"
+SELECT
+    b.c_personid,
+    b.c_name_chn,
+    b.c_name,
+    b.c_index_year,
+    COALESCE(ac.c_name_chn, ac.c_name) AS c_index_address
+FROM BIOG_MAIN b
+LEFT JOIN ADDR_CODES ac ON ac.c_addr_id = b.c_index_addr_id
+WHERE b.c_personid = $personId
+ORDER BY b.c_personid
+LIMIT $limit OFFSET $offset;"
+            : hasKeyword
             ? @"
 WITH matched_ids AS (
     SELECT b.c_personid
@@ -132,7 +147,9 @@ LIMIT $limit OFFSET $offset;";
         command.Parameters.AddWithValue("$limit", limit);
         command.Parameters.AddWithValue("$offset", offset);
 
-        if (hasKeyword) {
+        if (hasPersonIdKeyword) {
+            command.Parameters.AddWithValue("$personId", personIdKeyword);
+        } else if (hasKeyword) {
             command.Parameters.AddWithValue("$kw", $"%{normalized}%");
         }
 

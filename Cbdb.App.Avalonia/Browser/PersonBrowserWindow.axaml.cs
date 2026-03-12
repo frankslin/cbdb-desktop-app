@@ -18,6 +18,7 @@ namespace Cbdb.App.Avalonia.Browser;
 
 public partial class PersonBrowserWindow : Window {
     private const int PageSize = 300;
+    private const int RelatedTabPageSize = 20;
 
     private readonly AppLocalizationService _localizationService;
     private readonly IPersonBrowserService _personBrowserService;
@@ -99,30 +100,51 @@ public partial class PersonBrowserWindow : Window {
     private TabItem _tabSources = null!;
     private TabItem _tabInstitutions = null!;
     private TextBlock _txtNoSelection = null!;
+    private Border _addressesLoadingHost = null!;
+    private TextBlock _txtAddressesLoading = null!;
     private TextBlock _txtAddressesEmpty = null!;
     private StackPanel _addressesPanel = null!;
+    private Border _altNamesLoadingHost = null!;
+    private TextBlock _txtAltNamesLoading = null!;
     private TextBlock _txtAltNamesEmpty = null!;
     private StackPanel _altNamesPanel = null!;
+    private Border _writingsLoadingHost = null!;
+    private TextBlock _txtWritingsLoading = null!;
     private TextBlock _txtWritingsEmpty = null!;
     private StackPanel _writingsPanel = null!;
+    private Border _postingsLoadingHost = null!;
+    private TextBlock _txtPostingsLoading = null!;
     private TextBlock _txtPostingsEmpty = null!;
     private StackPanel _postingsPanel = null!;
+    private Border _entryLoadingHost = null!;
+    private TextBlock _txtEntryLoading = null!;
     private TextBlock _txtEntryEmpty = null!;
     private StackPanel _entryPanel = null!;
+    private Border _eventsLoadingHost = null!;
+    private TextBlock _txtEventsLoading = null!;
     private TextBlock _txtEventsEmpty = null!;
     private StackPanel _eventsPanel = null!;
+    private Border _statusLoadingHost = null!;
+    private TextBlock _txtStatusLoading = null!;
     private TextBlock _txtStatusEmpty = null!;
     private StackPanel _statusPanel = null!;
+    private Border _kinshipLoadingHost = null!;
+    private TextBlock _txtKinshipLoading = null!;
     private TextBlock _txtKinshipEmpty = null!;
     private StackPanel _kinshipPanel = null!;
     private TextBlock _txtTabAssociationsPlaceholder = null!;
+    private Border _possessionsLoadingHost = null!;
+    private TextBlock _txtPossessionsLoading = null!;
     private TextBlock _txtPossessionsEmpty = null!;
     private StackPanel _possessionsPanel = null!;
+    private Border _sourcesLoadingHost = null!;
+    private TextBlock _txtSourcesLoading = null!;
     private TextBlock _txtSourcesEmpty = null!;
     private StackPanel _sourcesPanel = null!;
+    private Border _institutionsLoadingHost = null!;
+    private TextBlock _txtInstitutionsLoading = null!;
     private TextBlock _txtInstitutionsEmpty = null!;
     private StackPanel _institutionsPanel = null!;
-    private TextBlock _txtFooter = null!;
     private readonly List<ScrollViewer> _peopleScrollViewers = new();
 
     private string? _currentKeyword;
@@ -144,6 +166,11 @@ public partial class PersonBrowserWindow : Window {
     private IReadOnlyList<PersonSourceItem> _currentSources = Array.Empty<PersonSourceItem>();
     private IReadOnlyList<PersonInstitutionItem> _currentInstitutions = Array.Empty<PersonInstitutionItem>();
     private readonly HashSet<string> _loadedPersonTabs = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, int> _relatedTabPages = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, StackPanel> _tabPagerHosts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Button> _tabPrevButtons = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Button> _tabNextButtons = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, TextBlock> _tabPageLabels = new(StringComparer.OrdinalIgnoreCase);
 
     public PersonBrowserWindow() : this(string.Empty, new AppLocalizationService()) {
     }
@@ -214,35 +241,44 @@ public partial class PersonBrowserWindow : Window {
         _tabBasic.Header = T("browser.tab_basic");
         UpdateTabHeaders(_currentDetail);
         _txtNoSelection.Text = _currentDetail is null ? T("browser.no_selection") : string.Empty;
+        var loadingText = T("status.checking");
+        _txtAddressesLoading.Text = loadingText;
         _txtAddressesEmpty.Text = _currentAddresses.Count == 0 ? T("browser.addresses_none") : string.Empty;
         RenderAddresses();
+        _txtAltNamesLoading.Text = loadingText;
         _txtAltNamesEmpty.Text = _currentAltNames.Count == 0 ? T("browser.alt_names_none") : string.Empty;
         RenderAltNames();
         var placeholder = T("browser.tab_placeholder");
+        _txtWritingsLoading.Text = loadingText;
         _txtWritingsEmpty.Text = _currentWritings.Count == 0 ? T("browser.writings_none") : string.Empty;
         RenderWritings();
+        _txtPostingsLoading.Text = loadingText;
         _txtPostingsEmpty.Text = _currentPostings.Count == 0 ? T("browser.postings_none") : string.Empty;
         RenderPostings();
+        _txtEntryLoading.Text = loadingText;
         _txtEntryEmpty.Text = _currentEntries.Count == 0 ? T("browser.entry_none") : string.Empty;
         RenderEntries();
+        _txtEventsLoading.Text = loadingText;
         _txtEventsEmpty.Text = _currentEvents.Count == 0 ? T("browser.events_none") : string.Empty;
         RenderEvents();
+        _txtStatusLoading.Text = loadingText;
         _txtStatusEmpty.Text = _currentStatuses.Count == 0 ? T("browser.status_none") : string.Empty;
         RenderStatuses();
+        _txtKinshipLoading.Text = loadingText;
         _txtKinshipEmpty.Text = _currentKinships.Count == 0 ? T("browser.kinship_none") : string.Empty;
         RenderKinships();
         _txtTabAssociationsPlaceholder.Text = placeholder;
+        _txtPossessionsLoading.Text = loadingText;
         _txtPossessionsEmpty.Text = _currentPossessions.Count == 0 ? T("browser.possessions_none") : string.Empty;
         RenderPossessions();
+        _txtSourcesLoading.Text = loadingText;
         _txtSourcesEmpty.Text = _currentSources.Count == 0 ? T("browser.sources_none") : string.Empty;
         RenderSources();
+        _txtInstitutionsLoading.Text = loadingText;
         _txtInstitutionsEmpty.Text = _currentInstitutions.Count == 0 ? T("browser.institutions_none") : string.Empty;
         RenderInstitutions();
         ApplyBasicInfoLocalization();
 
-        if (string.IsNullOrWhiteSpace(_txtFooter.Text) || _txtFooter.Text == "Ready" || _txtFooter.Text == "就緒" || _txtFooter.Text == "就绪") {
-            _txtFooter.Text = T("status.ready");
-        }
     }
 
     private async void BtnSearch_Click(object? sender, RoutedEventArgs e) {
@@ -267,7 +303,6 @@ public partial class PersonBrowserWindow : Window {
         if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
             _people.Clear();
             ClearDetail();
-            _txtFooter.Text = $"{T("msg.sqlite_missing")}: {_sqlitePath}";
             return;
         }
 
@@ -278,13 +313,11 @@ public partial class PersonBrowserWindow : Window {
         try {
             _btnSearch.IsEnabled = false;
             _btnClear.IsEnabled = false;
-            _txtFooter.Text = T("status.checking");
-
             _people.Clear();
             ClearDetail();
             await LoadNextPageAsync(selectFirstRowWhenAvailable: true);
         } catch (Exception ex) {
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
         } finally {
             _btnSearch.IsEnabled = true;
             _btnClear.IsEnabled = true;
@@ -298,8 +331,6 @@ public partial class PersonBrowserWindow : Window {
 
         try {
             _isLoadingPage = true;
-            _txtFooter.Text = T("status.checking");
-
             var rows = await _personBrowserService.SearchAsync(_sqlitePath, _currentKeyword, PageSize, _nextOffset);
             foreach (var row in rows) {
                 _people.Add(row);
@@ -314,7 +345,7 @@ public partial class PersonBrowserWindow : Window {
                 _gridPeople.SelectedIndex = 0;
             }
         } catch (Exception ex) {
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
         } finally {
             _isLoadingPage = false;
         }
@@ -327,7 +358,6 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _selectedPersonId = selected.PersonId;
-        _txtFooter.Text = T("status.checking");
 
         try {
             var detail = await _personBrowserService.GetDetailAsync(_sqlitePath, selected.PersonId);
@@ -369,9 +399,8 @@ public partial class PersonBrowserWindow : Window {
             await EnsureSelectedTabLoadedAsync();
             _txtNoSelection.Text = string.Empty;
             UpdateTabHeaders(detail);
-            _txtFooter.Text = string.Format(T("browser.search_result_count"), _people.Count);
         } catch (Exception ex) {
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
         }
     }
 
@@ -427,7 +456,7 @@ public partial class PersonBrowserWindow : Window {
 
     private async void BtnSaveToFile_Click(object? sender, RoutedEventArgs e) {
         if (_people.Count == 0) {
-            _txtFooter.Text = T("browser.no_data_to_export");
+            _txtRecord.Text = T("browser.no_data_to_export");
             return;
         }
 
@@ -467,141 +496,185 @@ public partial class PersonBrowserWindow : Window {
             }
 
             await File.WriteAllTextAsync(path, builder.ToString(), new UTF8Encoding(true));
-            _txtFooter.Text = path;
+            _txtRecord.Text = path;
         } catch (Exception ex) {
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
         }
     }
 
     private async Task LoadAddressesAsync(int personId) {
+        await PrepareTabLoadAsync("addresses");
         try {
-            _currentAddresses = await _personBrowserService.GetAddressesAsync(_sqlitePath, personId);
+            _currentAddresses = await Task.Run(() => _personBrowserService.GetAddressesAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentAddresses = Array.Empty<PersonAddressItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("addresses", false);
         }
 
         _txtAddressesEmpty.Text = _currentAddresses.Count == 0 ? T("browser.addresses_none") : string.Empty;
+        _relatedTabPages["addresses"] = 0;
         RenderAddresses();
     }
 
     private async Task LoadAltNamesAsync(int personId) {
+        await PrepareTabLoadAsync("alt_names");
         try {
-            _currentAltNames = await _personBrowserService.GetAltNamesAsync(_sqlitePath, personId);
+            _currentAltNames = await Task.Run(() => _personBrowserService.GetAltNamesAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentAltNames = Array.Empty<PersonAltNameItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("alt_names", false);
         }
 
         _txtAltNamesEmpty.Text = _currentAltNames.Count == 0 ? T("browser.alt_names_none") : string.Empty;
+        _relatedTabPages["alt_names"] = 0;
         RenderAltNames();
     }
 
     private async Task LoadWritingsAsync(int personId) {
+        await PrepareTabLoadAsync("writings");
         try {
-            _currentWritings = await _personBrowserService.GetWritingsAsync(_sqlitePath, personId);
+            _currentWritings = await Task.Run(() => _personBrowserService.GetWritingsAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentWritings = Array.Empty<PersonWritingItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("writings", false);
         }
 
         _txtWritingsEmpty.Text = _currentWritings.Count == 0 ? T("browser.writings_none") : string.Empty;
+        _relatedTabPages["writings"] = 0;
         RenderWritings();
     }
 
     private async Task LoadPostingsAsync(int personId) {
+        await PrepareTabLoadAsync("postings");
         try {
-            _currentPostings = await _personBrowserService.GetPostingsAsync(_sqlitePath, personId);
+            _currentPostings = await Task.Run(() => _personBrowserService.GetPostingsAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentPostings = Array.Empty<PersonPostingItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("postings", false);
         }
 
         _txtPostingsEmpty.Text = _currentPostings.Count == 0 ? T("browser.postings_none") : string.Empty;
+        _relatedTabPages["postings"] = 0;
         RenderPostings();
     }
 
     private async Task LoadEntriesAsync(int personId) {
+        await PrepareTabLoadAsync("entry");
         try {
-            _currentEntries = await _personBrowserService.GetEntriesAsync(_sqlitePath, personId);
+            _currentEntries = await Task.Run(() => _personBrowserService.GetEntriesAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentEntries = Array.Empty<PersonEntryItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("entry", false);
         }
 
         _txtEntryEmpty.Text = _currentEntries.Count == 0 ? T("browser.entry_none") : string.Empty;
+        _relatedTabPages["entry"] = 0;
         RenderEntries();
     }
 
     private async Task LoadStatusesAsync(int personId) {
+        await PrepareTabLoadAsync("status");
         try {
-            _currentStatuses = await _personBrowserService.GetStatusesAsync(_sqlitePath, personId);
+            _currentStatuses = await Task.Run(() => _personBrowserService.GetStatusesAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentStatuses = Array.Empty<PersonStatusItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("status", false);
         }
 
         _txtStatusEmpty.Text = _currentStatuses.Count == 0 ? T("browser.status_none") : string.Empty;
+        _relatedTabPages["status"] = 0;
         RenderStatuses();
     }
 
     private async Task LoadEventsAsync(int personId) {
+        await PrepareTabLoadAsync("events");
         try {
-            _currentEvents = await _personBrowserService.GetEventsAsync(_sqlitePath, personId);
+            _currentEvents = await Task.Run(() => _personBrowserService.GetEventsAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentEvents = Array.Empty<PersonEventItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("events", false);
         }
 
         _txtEventsEmpty.Text = _currentEvents.Count == 0 ? T("browser.events_none") : string.Empty;
+        _relatedTabPages["events"] = 0;
         RenderEvents();
     }
 
     private async Task LoadKinshipsAsync(int personId) {
+        await PrepareTabLoadAsync("kinship");
         try {
-            _currentKinships = await _personBrowserService.GetKinshipsAsync(_sqlitePath, personId);
+            _currentKinships = await Task.Run(() => _personBrowserService.GetKinshipsAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentKinships = Array.Empty<PersonKinshipItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("kinship", false);
         }
 
         _txtKinshipEmpty.Text = _currentKinships.Count == 0 ? T("browser.kinship_none") : string.Empty;
+        _relatedTabPages["kinship"] = 0;
         RenderKinships();
     }
 
     private async Task LoadPossessionsAsync(int personId) {
+        await PrepareTabLoadAsync("possessions");
         try {
-            _currentPossessions = await _personBrowserService.GetPossessionsAsync(_sqlitePath, personId);
+            _currentPossessions = await Task.Run(() => _personBrowserService.GetPossessionsAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentPossessions = Array.Empty<PersonPossessionItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("possessions", false);
         }
 
         _txtPossessionsEmpty.Text = _currentPossessions.Count == 0 ? T("browser.possessions_none") : string.Empty;
+        _relatedTabPages["possessions"] = 0;
         RenderPossessions();
     }
 
     private async Task LoadSourcesAsync(int personId) {
+        await PrepareTabLoadAsync("sources");
         try {
-            _currentSources = await _personBrowserService.GetSourcesAsync(_sqlitePath, personId);
+            _currentSources = await Task.Run(() => _personBrowserService.GetSourcesAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentSources = Array.Empty<PersonSourceItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("sources", false);
         }
 
         _txtSourcesEmpty.Text = _currentSources.Count == 0 ? T("browser.sources_none") : string.Empty;
+        _relatedTabPages["sources"] = 0;
         RenderSources();
     }
 
     private async Task LoadInstitutionsAsync(int personId) {
+        await PrepareTabLoadAsync("institutions");
         try {
-            _currentInstitutions = await _personBrowserService.GetInstitutionsAsync(_sqlitePath, personId);
+            _currentInstitutions = await Task.Run(() => _personBrowserService.GetInstitutionsAsync(_sqlitePath, personId));
         } catch (Exception ex) {
             _currentInstitutions = Array.Empty<PersonInstitutionItem>();
-            _txtFooter.Text = ex.Message;
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("institutions", false);
         }
 
         _txtInstitutionsEmpty.Text = _currentInstitutions.Count == 0 ? T("browser.institutions_none") : string.Empty;
+        _relatedTabPages["institutions"] = 0;
         RenderInstitutions();
     }
 
@@ -622,8 +695,6 @@ public partial class PersonBrowserWindow : Window {
         if (tabKey is null || _loadedPersonTabs.Contains(tabKey)) {
             return;
         }
-
-        _txtFooter.Text = T("status.checking");
 
         switch (tabKey) {
             case "addresses":
@@ -662,12 +733,12 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _loadedPersonTabs.Add(tabKey);
-        _txtFooter.Text = string.Format(T("browser.search_result_count"), _people.Count);
     }
 
     private void ResetLazyTabs() {
         _loadedPersonTabs.Clear();
         _loadedPersonTabs.Add("basic");
+        _relatedTabPages.Clear();
 
         _currentAddresses = Array.Empty<PersonAddressItem>();
         _currentAltNames = Array.Empty<PersonAltNameItem>();
@@ -704,6 +775,55 @@ public partial class PersonBrowserWindow : Window {
         _txtPossessionsEmpty.Text = T("browser.possessions_none");
         _txtSourcesEmpty.Text = T("browser.sources_none");
         _txtInstitutionsEmpty.Text = T("browser.institutions_none");
+        SetTabLoadingState("addresses", false);
+        SetTabLoadingState("alt_names", false);
+        SetTabLoadingState("writings", false);
+        SetTabLoadingState("postings", false);
+        SetTabLoadingState("entry", false);
+        SetTabLoadingState("events", false);
+        SetTabLoadingState("status", false);
+        SetTabLoadingState("kinship", false);
+        SetTabLoadingState("possessions", false);
+        SetTabLoadingState("sources", false);
+        SetTabLoadingState("institutions", false);
+    }
+
+    private async Task PrepareTabLoadAsync(string tabKey) {
+        SetTabLoadingState(tabKey, true);
+        await Dispatcher.UIThread.InvokeAsync(static () => { }, DispatcherPriority.Background);
+    }
+
+    private void SetTabLoadingState(string tabKey, bool isLoading) {
+        var (host, empty, panel) = GetTabLoadingTargets(tabKey);
+        if (host is null || empty is null || panel is null) {
+            return;
+        }
+
+        host.IsVisible = isLoading;
+        if (isLoading) {
+            empty.IsVisible = false;
+            panel.IsVisible = false;
+        } else {
+            empty.IsVisible = true;
+            panel.IsVisible = true;
+        }
+    }
+
+    private (Border? Host, TextBlock? Empty, StackPanel? Panel) GetTabLoadingTargets(string tabKey) {
+        return tabKey switch {
+            "addresses" => (_addressesLoadingHost, _txtAddressesEmpty, _addressesPanel),
+            "alt_names" => (_altNamesLoadingHost, _txtAltNamesEmpty, _altNamesPanel),
+            "writings" => (_writingsLoadingHost, _txtWritingsEmpty, _writingsPanel),
+            "postings" => (_postingsLoadingHost, _txtPostingsEmpty, _postingsPanel),
+            "entry" => (_entryLoadingHost, _txtEntryEmpty, _entryPanel),
+            "events" => (_eventsLoadingHost, _txtEventsEmpty, _eventsPanel),
+            "status" => (_statusLoadingHost, _txtStatusEmpty, _statusPanel),
+            "kinship" => (_kinshipLoadingHost, _txtKinshipEmpty, _kinshipPanel),
+            "possessions" => (_possessionsLoadingHost, _txtPossessionsEmpty, _possessionsPanel),
+            "sources" => (_sourcesLoadingHost, _txtSourcesEmpty, _sourcesPanel),
+            "institutions" => (_institutionsLoadingHost, _txtInstitutionsEmpty, _institutionsPanel),
+            _ => (null, null, null)
+        };
     }
 
     private string? GetLazyTabKey(TabItem tab) {
@@ -753,9 +873,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _addressesPanel.Children.Clear();
-        foreach (var item in _currentAddresses) {
+        foreach (var item in GetPageItems(_currentAddresses, "addresses")) {
             _addressesPanel.Children.Add(BuildAddressCard(item));
         }
+        UpdateTabPager("addresses", _currentAddresses.Count);
     }
 
     private void RenderAltNames() {
@@ -764,9 +885,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _altNamesPanel.Children.Clear();
-        foreach (var item in _currentAltNames) {
+        foreach (var item in GetPageItems(_currentAltNames, "alt_names")) {
             _altNamesPanel.Children.Add(BuildAltNameCard(item));
         }
+        UpdateTabPager("alt_names", _currentAltNames.Count);
     }
 
     private void RenderWritings() {
@@ -775,9 +897,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _writingsPanel.Children.Clear();
-        foreach (var item in _currentWritings) {
+        foreach (var item in GetPageItems(_currentWritings, "writings")) {
             _writingsPanel.Children.Add(BuildWritingCard(item));
         }
+        UpdateTabPager("writings", _currentWritings.Count);
     }
 
     private void RenderPostings() {
@@ -786,9 +909,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _postingsPanel.Children.Clear();
-        foreach (var item in _currentPostings) {
+        foreach (var item in GetPageItems(_currentPostings, "postings")) {
             _postingsPanel.Children.Add(BuildPostingCard(item));
         }
+        UpdateTabPager("postings", _currentPostings.Count);
     }
 
     private void RenderEntries() {
@@ -797,9 +921,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _entryPanel.Children.Clear();
-        foreach (var item in _currentEntries) {
+        foreach (var item in GetPageItems(_currentEntries, "entry")) {
             _entryPanel.Children.Add(BuildEntryCard(item));
         }
+        UpdateTabPager("entry", _currentEntries.Count);
     }
 
     private void RenderEvents() {
@@ -808,9 +933,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _eventsPanel.Children.Clear();
-        foreach (var item in _currentEvents) {
+        foreach (var item in GetPageItems(_currentEvents, "events")) {
             _eventsPanel.Children.Add(BuildEventCard(item));
         }
+        UpdateTabPager("events", _currentEvents.Count);
     }
 
     private void RenderStatuses() {
@@ -819,9 +945,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _statusPanel.Children.Clear();
-        foreach (var item in _currentStatuses) {
+        foreach (var item in GetPageItems(_currentStatuses, "status")) {
             _statusPanel.Children.Add(BuildStatusCard(item));
         }
+        UpdateTabPager("status", _currentStatuses.Count);
     }
 
     private void RenderKinships() {
@@ -830,9 +957,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _kinshipPanel.Children.Clear();
-        foreach (var item in _currentKinships) {
+        foreach (var item in GetPageItems(_currentKinships, "kinship")) {
             _kinshipPanel.Children.Add(BuildKinshipCard(item));
         }
+        UpdateTabPager("kinship", _currentKinships.Count);
     }
 
     private void RenderPossessions() {
@@ -841,9 +969,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _possessionsPanel.Children.Clear();
-        foreach (var item in _currentPossessions) {
+        foreach (var item in GetPageItems(_currentPossessions, "possessions")) {
             _possessionsPanel.Children.Add(BuildPossessionCard(item));
         }
+        UpdateTabPager("possessions", _currentPossessions.Count);
     }
 
     private void RenderSources() {
@@ -852,9 +981,10 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _sourcesPanel.Children.Clear();
-        foreach (var item in _currentSources) {
+        foreach (var item in GetPageItems(_currentSources, "sources")) {
             _sourcesPanel.Children.Add(BuildSourceCard(item));
         }
+        UpdateTabPager("sources", _currentSources.Count);
     }
 
     private void RenderInstitutions() {
@@ -863,8 +993,117 @@ public partial class PersonBrowserWindow : Window {
         }
 
         _institutionsPanel.Children.Clear();
-        foreach (var item in _currentInstitutions) {
+        foreach (var item in GetPageItems(_currentInstitutions, "institutions")) {
             _institutionsPanel.Children.Add(BuildInstitutionCard(item));
+        }
+        UpdateTabPager("institutions", _currentInstitutions.Count);
+    }
+
+    private IReadOnlyList<T> GetPageItems<T>(IReadOnlyList<T> items, string tabKey) {
+        var page = _relatedTabPages.GetValueOrDefault(tabKey, 0);
+        return items.Skip(page * RelatedTabPageSize).Take(RelatedTabPageSize).ToArray();
+    }
+
+    private void UpdateTabPager(string tabKey, int totalCount) {
+        if (!_tabPagerHosts.TryGetValue(tabKey, out var host) ||
+            !_tabPrevButtons.TryGetValue(tabKey, out var prevButton) ||
+            !_tabNextButtons.TryGetValue(tabKey, out var nextButton) ||
+            !_tabPageLabels.TryGetValue(tabKey, out var pageLabel)) {
+            return;
+        }
+
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)RelatedTabPageSize));
+        var currentPage = Math.Min(_relatedTabPages.GetValueOrDefault(tabKey, 0), totalPages - 1);
+        _relatedTabPages[tabKey] = currentPage;
+        host.IsVisible = totalCount > RelatedTabPageSize;
+        prevButton.Content = T("browser.page_prev");
+        nextButton.Content = T("browser.page_next");
+        prevButton.IsEnabled = currentPage > 0;
+        nextButton.IsEnabled = currentPage < totalPages - 1;
+        pageLabel.Text = string.Format(T("browser.page_status"), currentPage + 1, totalPages, totalCount);
+    }
+
+    private void TabPrevPage_Click(object? sender, RoutedEventArgs e) {
+        ChangeRelatedTabPage(sender, -1);
+    }
+
+    private void TabNextPage_Click(object? sender, RoutedEventArgs e) {
+        ChangeRelatedTabPage(sender, 1);
+    }
+
+    private void ChangeRelatedTabPage(object? sender, int delta) {
+        if (sender is not Button button || button.Tag is not string tabKey) {
+            return;
+        }
+
+        var totalCount = GetRelatedTabCount(tabKey);
+        if (totalCount <= RelatedTabPageSize) {
+            return;
+        }
+
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)RelatedTabPageSize));
+        var currentPage = _relatedTabPages.GetValueOrDefault(tabKey, 0);
+        var nextPage = Math.Clamp(currentPage + delta, 0, totalPages - 1);
+        if (nextPage == currentPage) {
+            return;
+        }
+
+        _relatedTabPages[tabKey] = nextPage;
+        RenderRelatedTab(tabKey);
+    }
+
+    private int GetRelatedTabCount(string tabKey) {
+        return tabKey switch {
+            "addresses" => _currentAddresses.Count,
+            "alt_names" => _currentAltNames.Count,
+            "writings" => _currentWritings.Count,
+            "postings" => _currentPostings.Count,
+            "entry" => _currentEntries.Count,
+            "events" => _currentEvents.Count,
+            "status" => _currentStatuses.Count,
+            "kinship" => _currentKinships.Count,
+            "possessions" => _currentPossessions.Count,
+            "sources" => _currentSources.Count,
+            "institutions" => _currentInstitutions.Count,
+            _ => 0
+        };
+    }
+
+    private void RenderRelatedTab(string tabKey) {
+        switch (tabKey) {
+            case "addresses":
+                RenderAddresses();
+                break;
+            case "alt_names":
+                RenderAltNames();
+                break;
+            case "writings":
+                RenderWritings();
+                break;
+            case "postings":
+                RenderPostings();
+                break;
+            case "entry":
+                RenderEntries();
+                break;
+            case "events":
+                RenderEvents();
+                break;
+            case "status":
+                RenderStatuses();
+                break;
+            case "kinship":
+                RenderKinships();
+                break;
+            case "possessions":
+                RenderPossessions();
+                break;
+            case "sources":
+                RenderSources();
+                break;
+            case "institutions":
+                RenderInstitutions();
+                break;
         }
     }
 
@@ -1562,7 +1801,6 @@ public partial class PersonBrowserWindow : Window {
 
     private void UpdateRecordText() {
         _txtRecord.Text = string.Format(T("browser.search_result_count"), _people.Count);
-        _txtFooter.Text = string.Format(T("browser.search_result_count"), _people.Count);
     }
 
     private void UpdateTabHeaders(PersonDetail? detail) {
@@ -2020,30 +2258,62 @@ public partial class PersonBrowserWindow : Window {
         _tabSources = this.FindControl<TabItem>("TabSources") ?? throw new InvalidOperationException("TabSources not found.");
         _tabInstitutions = this.FindControl<TabItem>("TabInstitutions") ?? throw new InvalidOperationException("TabInstitutions not found.");
         _txtNoSelection = this.FindControl<TextBlock>("TxtNoSelection") ?? throw new InvalidOperationException("TxtNoSelection not found.");
+        _addressesLoadingHost = this.FindControl<Border>("AddressesLoadingHost") ?? throw new InvalidOperationException("AddressesLoadingHost not found.");
+        _txtAddressesLoading = this.FindControl<TextBlock>("TxtAddressesLoading") ?? throw new InvalidOperationException("TxtAddressesLoading not found.");
         _txtAddressesEmpty = this.FindControl<TextBlock>("TxtAddressesEmpty") ?? throw new InvalidOperationException("TxtAddressesEmpty not found.");
         _addressesPanel = this.FindControl<StackPanel>("AddressesPanel") ?? throw new InvalidOperationException("AddressesPanel not found.");
+        _altNamesLoadingHost = this.FindControl<Border>("AltNamesLoadingHost") ?? throw new InvalidOperationException("AltNamesLoadingHost not found.");
+        _txtAltNamesLoading = this.FindControl<TextBlock>("TxtAltNamesLoading") ?? throw new InvalidOperationException("TxtAltNamesLoading not found.");
         _txtAltNamesEmpty = this.FindControl<TextBlock>("TxtAltNamesEmpty") ?? throw new InvalidOperationException("TxtAltNamesEmpty not found.");
         _altNamesPanel = this.FindControl<StackPanel>("AltNamesPanel") ?? throw new InvalidOperationException("AltNamesPanel not found.");
+        _writingsLoadingHost = this.FindControl<Border>("WritingsLoadingHost") ?? throw new InvalidOperationException("WritingsLoadingHost not found.");
+        _txtWritingsLoading = this.FindControl<TextBlock>("TxtWritingsLoading") ?? throw new InvalidOperationException("TxtWritingsLoading not found.");
         _txtWritingsEmpty = this.FindControl<TextBlock>("TxtWritingsEmpty") ?? throw new InvalidOperationException("TxtWritingsEmpty not found.");
         _writingsPanel = this.FindControl<StackPanel>("WritingsPanel") ?? throw new InvalidOperationException("WritingsPanel not found.");
+        _postingsLoadingHost = this.FindControl<Border>("PostingsLoadingHost") ?? throw new InvalidOperationException("PostingsLoadingHost not found.");
+        _txtPostingsLoading = this.FindControl<TextBlock>("TxtPostingsLoading") ?? throw new InvalidOperationException("TxtPostingsLoading not found.");
         _txtPostingsEmpty = this.FindControl<TextBlock>("TxtPostingsEmpty") ?? throw new InvalidOperationException("TxtPostingsEmpty not found.");
         _postingsPanel = this.FindControl<StackPanel>("PostingsPanel") ?? throw new InvalidOperationException("PostingsPanel not found.");
+        _entryLoadingHost = this.FindControl<Border>("EntryLoadingHost") ?? throw new InvalidOperationException("EntryLoadingHost not found.");
+        _txtEntryLoading = this.FindControl<TextBlock>("TxtEntryLoading") ?? throw new InvalidOperationException("TxtEntryLoading not found.");
         _txtEntryEmpty = this.FindControl<TextBlock>("TxtEntryEmpty") ?? throw new InvalidOperationException("TxtEntryEmpty not found.");
         _entryPanel = this.FindControl<StackPanel>("EntryPanel") ?? throw new InvalidOperationException("EntryPanel not found.");
+        _eventsLoadingHost = this.FindControl<Border>("EventsLoadingHost") ?? throw new InvalidOperationException("EventsLoadingHost not found.");
+        _txtEventsLoading = this.FindControl<TextBlock>("TxtEventsLoading") ?? throw new InvalidOperationException("TxtEventsLoading not found.");
         _txtEventsEmpty = this.FindControl<TextBlock>("TxtEventsEmpty") ?? throw new InvalidOperationException("TxtEventsEmpty not found.");
         _eventsPanel = this.FindControl<StackPanel>("EventsPanel") ?? throw new InvalidOperationException("EventsPanel not found.");
+        _statusLoadingHost = this.FindControl<Border>("StatusLoadingHost") ?? throw new InvalidOperationException("StatusLoadingHost not found.");
+        _txtStatusLoading = this.FindControl<TextBlock>("TxtStatusLoading") ?? throw new InvalidOperationException("TxtStatusLoading not found.");
         _txtStatusEmpty = this.FindControl<TextBlock>("TxtStatusEmpty") ?? throw new InvalidOperationException("TxtStatusEmpty not found.");
         _statusPanel = this.FindControl<StackPanel>("StatusPanel") ?? throw new InvalidOperationException("StatusPanel not found.");
+        _kinshipLoadingHost = this.FindControl<Border>("KinshipLoadingHost") ?? throw new InvalidOperationException("KinshipLoadingHost not found.");
+        _txtKinshipLoading = this.FindControl<TextBlock>("TxtKinshipLoading") ?? throw new InvalidOperationException("TxtKinshipLoading not found.");
         _txtKinshipEmpty = this.FindControl<TextBlock>("TxtKinshipEmpty") ?? throw new InvalidOperationException("TxtKinshipEmpty not found.");
         _kinshipPanel = this.FindControl<StackPanel>("KinshipPanel") ?? throw new InvalidOperationException("KinshipPanel not found.");
         _txtTabAssociationsPlaceholder = this.FindControl<TextBlock>("TxtTabAssociationsPlaceholder") ?? throw new InvalidOperationException("TxtTabAssociationsPlaceholder not found.");
+        _possessionsLoadingHost = this.FindControl<Border>("PossessionsLoadingHost") ?? throw new InvalidOperationException("PossessionsLoadingHost not found.");
+        _txtPossessionsLoading = this.FindControl<TextBlock>("TxtPossessionsLoading") ?? throw new InvalidOperationException("TxtPossessionsLoading not found.");
         _txtPossessionsEmpty = this.FindControl<TextBlock>("TxtPossessionsEmpty") ?? throw new InvalidOperationException("TxtPossessionsEmpty not found.");
         _possessionsPanel = this.FindControl<StackPanel>("PossessionsPanel") ?? throw new InvalidOperationException("PossessionsPanel not found.");
+        _sourcesLoadingHost = this.FindControl<Border>("SourcesLoadingHost") ?? throw new InvalidOperationException("SourcesLoadingHost not found.");
+        _txtSourcesLoading = this.FindControl<TextBlock>("TxtSourcesLoading") ?? throw new InvalidOperationException("TxtSourcesLoading not found.");
         _txtSourcesEmpty = this.FindControl<TextBlock>("TxtSourcesEmpty") ?? throw new InvalidOperationException("TxtSourcesEmpty not found.");
         _sourcesPanel = this.FindControl<StackPanel>("SourcesPanel") ?? throw new InvalidOperationException("SourcesPanel not found.");
+        _institutionsLoadingHost = this.FindControl<Border>("InstitutionsLoadingHost") ?? throw new InvalidOperationException("InstitutionsLoadingHost not found.");
+        _txtInstitutionsLoading = this.FindControl<TextBlock>("TxtInstitutionsLoading") ?? throw new InvalidOperationException("TxtInstitutionsLoading not found.");
         _txtInstitutionsEmpty = this.FindControl<TextBlock>("TxtInstitutionsEmpty") ?? throw new InvalidOperationException("TxtInstitutionsEmpty not found.");
         _institutionsPanel = this.FindControl<StackPanel>("InstitutionsPanel") ?? throw new InvalidOperationException("InstitutionsPanel not found.");
-        _txtFooter = this.FindControl<TextBlock>("TxtFooter") ?? throw new InvalidOperationException("TxtFooter not found.");
+        RegisterTabPager("addresses", "AddressesPager", "BtnAddressesPrev", "BtnAddressesNext", "TxtAddressesPage");
+        RegisterTabPager("alt_names", "AltNamesPager", "BtnAltNamesPrev", "BtnAltNamesNext", "TxtAltNamesPage");
+        RegisterTabPager("writings", "WritingsPager", "BtnWritingsPrev", "BtnWritingsNext", "TxtWritingsPage");
+        RegisterTabPager("postings", "PostingsPager", "BtnPostingsPrev", "BtnPostingsNext", "TxtPostingsPage");
+        RegisterTabPager("entry", "EntryPager", "BtnEntryPrev", "BtnEntryNext", "TxtEntryPage");
+        RegisterTabPager("events", "EventsPager", "BtnEventsPrev", "BtnEventsNext", "TxtEventsPage");
+        RegisterTabPager("status", "StatusPager", "BtnStatusPrev", "BtnStatusNext", "TxtStatusPage");
+        RegisterTabPager("kinship", "KinshipPager", "BtnKinshipPrev", "BtnKinshipNext", "TxtKinshipPage");
+        RegisterTabPager("possessions", "PossessionsPager", "BtnPossessionsPrev", "BtnPossessionsNext", "TxtPossessionsPage");
+        RegisterTabPager("sources", "SourcesPager", "BtnSourcesPrev", "BtnSourcesNext", "TxtSourcesPage");
+        RegisterTabPager("institutions", "InstitutionsPager", "BtnInstitutionsPrev", "BtnInstitutionsNext", "TxtInstitutionsPage");
 
         _basicGroupHeaders["birth_group"] = this.FindControl<TextBlock>("HdrBasic_birth_group") ?? throw new InvalidOperationException("HdrBasic_birth_group not found.");
         _basicGroupHeaders["death_group"] = this.FindControl<TextBlock>("HdrBasic_death_group") ?? throw new InvalidOperationException("HdrBasic_death_group not found.");
@@ -2124,6 +2394,14 @@ public partial class PersonBrowserWindow : Window {
 
     private void RegisterBasicLabel(string key, string controlName) {
         _basicLabels[key] = this.FindControl<TextBlock>(controlName) ?? throw new InvalidOperationException($"{controlName} not found.");
+    }
+
+    private void RegisterTabPager(string tabKey, string hostName, string prevButtonName, string nextButtonName, string labelName) {
+        _tabPagerHosts[tabKey] = this.FindControl<StackPanel>(hostName) ?? throw new InvalidOperationException($"{hostName} not found.");
+        _tabPrevButtons[tabKey] = this.FindControl<Button>(prevButtonName) ?? throw new InvalidOperationException($"{prevButtonName} not found.");
+        _tabNextButtons[tabKey] = this.FindControl<Button>(nextButtonName) ?? throw new InvalidOperationException($"{nextButtonName} not found.");
+        _tabPageLabels[tabKey] = this.FindControl<TextBlock>(labelName) ?? throw new InvalidOperationException($"{labelName} not found.");
+        _tabPagerHosts[tabKey].IsVisible = false;
     }
 
     private void RegisterBasicValue(string key, string controlName) {
