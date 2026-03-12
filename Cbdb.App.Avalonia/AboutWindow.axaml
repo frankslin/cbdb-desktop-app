@@ -3,26 +3,37 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Width="560"
-    Height="260"
+    Height="360"
     CanResize="False"
     WindowStartupLocation="CenterOwner"
     Background="#F6F6F6">
   <Border Padding="20" Background="#F6F6F6">
-    <StackPanel Spacing="16">
+    <Grid RowDefinitions="Auto,*,Auto">
       <TextBlock x:Name="TxtTitle"
+                 Grid.Row="0"
                  FontSize="28"
                  FontWeight="Bold"
                  Foreground="#133FB5"
                  Text="CBDB" />
-      <TextBlock x:Name="TxtBody"
-                 TextWrapping="Wrap"
-                 FontSize="15"
-                 LineHeight="24" />
+
+      <ScrollViewer Grid.Row="1"
+                    Margin="0,16,0,16"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <TextBlock x:Name="TxtBody"
+                   TextWrapping="Wrap"
+                   FontSize="15"
+                   LineHeight="24" />
+      </ScrollViewer>
+
       <Button x:Name="BtnClose"
-              HorizontalAlignment="Right"
+              Grid.Row="2"
+              HorizontalAlignment="Center"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"
               Width="96"
               Height="34"
               Click="BtnClose_Click" />
-    </StackPanel>
+    </Grid>
   </Border>
 </Window>

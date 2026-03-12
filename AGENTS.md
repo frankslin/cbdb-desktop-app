@@ -168,6 +168,8 @@
   - matching `reader.Get*` indexes
 - If Chinese text appears garbled, stop feature work and repair encoding first.
 - Avoid introducing duplicate representations of the same field in both the summary panel and Basic Information tab unless that duplication is explicitly intended.
+- For Avalonia dialog/action buttons, center button text both horizontally and vertically by default.
+- For Avalonia modal/info windows with potentially long body text, keep action buttons fixed and use a scrollable body area rather than letting content push buttons out of view.
 - For Avalonia UI regression work, prefer extending `Cbdb.App.Avalonia.Tests` instead of relying on manual visual checks.
 - When adding UI tests, produce both:
   - structure assertions against named controls

@@ -9,6 +9,7 @@ using Cbdb.App.Avalonia.Browser;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Core;
 using Cbdb.App.Data;
+using ShapePath = Avalonia.Controls.Shapes.Path;
 
 namespace Cbdb.App.Avalonia;
 
@@ -16,6 +17,18 @@ public partial class MainWindow : Window {
     private const string UserGuideUrlEn = "https://cbdb-project.github.io/cbdb-user-guide";
     private const string UserGuideUrlZhTw = "https://cbdb-project.github.io/cbdb-user-guide/zh-TW/";
     private const string LatestDataUrl = "https://huggingface.co/datasets/cbdb/cbdb-sqlite/blob/main/latest.zip";
+    private static readonly IReadOnlyDictionary<string, string> ModuleIconPaths = new Dictionary<string, string>(StringComparer.Ordinal) {
+        ["module.browser"] = "M224 248a120 120 0 1 0 0-240 120 120 0 1 0 0 240m-29.7 56C95.8 304 16 383.8 16 482.3c0 16.4 13.3 29.7 29.7 29.7h356.6c16.4 0 29.7-13.3 29.7-29.7 0-98.5-79.8-178.3-178.3-178.3z",
+        ["module.entry"] = "m48 195.8 209.2 86.1c9.8 4 20.2 6.1 30.8 6.1s21-2.1 30.8-6.1l242.4-99.8c9-3.7 14.8-12.4 14.8-22.1s-5.8-18.4-14.8-22.1L318.8 38.1c-9.8-4-20.2-6.1-30.8-6.1s-21 2.1-30.8 6.1L14.8 137.9C5.8 141.6 0 150.3 0 160v296c0 13.3 10.7 24 24 24s24-10.7 24-24zm48 71.7V384c0 53 86 96 192 96s192-43 192-96V267.4l-142.9 58.9c-15.6 6.4-32.2 9.7-49.1 9.7s-33.5-3.3-49.1-9.7L96 267.4z",
+        ["module.office"] = "M200 48h112c4.4 0 8 3.6 8 8v40H192V56c0-4.4 3.6-8 8-8m-56 8v40H64c-35.3 0-64 28.7-64 64v96h512v-96c0-35.3-28.7-64-64-64h-80V56c0-30.9-25.1-56-56-56H200c-30.9 0-56 25.1-56 56m368 248H320v16c0 17.7-14.3 32-32 32h-64c-17.7 0-32-14.3-32-32v-16H0v112c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64z",
+        ["module.kinship"] = "M64 128a112 112 0 1 1 224 0 112 112 0 1 1-224 0M0 464c0-97.2 78.8-176 176-176s176 78.8 176 176v6c0 23.2-18.8 42-42 42H42c-23.2 0-42-18.8-42-42zM432 64a96 96 0 1 1 0 192 96 96 0 1 1 0-192m0 240c79.5 0 144 64.5 144 144v22.4c0 23-18.6 41.6-41.6 41.6H389.6c6.6-12.5 10.4-26.8 10.4-42v-6c0-51.5-17.4-98.9-46.5-136.7 22.6-14.7 49.6-23.3 78.5-23.3",
+        ["module.associations"] = "M32 64a64 64 0 1 1 128 0 64 64 0 1 1-128 0M0 224c0-35.3 28.7-64 64-64h64c3.2 0 6.4.2 9.5.7l-44.4 44.4c-28.1 28.1-28.1 73.7 0 101.8l56 56c3.4 3.4 7 6.4 10.9 9V464c0 26.5-21.5 48-48 48H80c-26.5 0-48-21.5-48-48V343.4c-19.1-11-32-31.7-32-55.4zM352 64a64 64 0 1 1 128 0 64 64 0 1 1-128 0m66.9 141.1-44.4-44.4c3.1-.5 6.3-.7 9.5-.7h64c35.3 0 64 28.7 64 64v64c0 23.7-12.9 44.4-32 55.4V464c0 26.5-21.5 48-48 48h-32c-26.5 0-48-21.5-48-48v-92.1c3.9-2.6 7.5-5.6 10.9-9l56-56c28.1-28.1 28.1-73.7 0-101.8m-116.1-27.3c9-3.7 19.3-1.7 26.2 5.2l56 56c9.4 9.4 9.4 24.6 0 33.9l-56 56c-6.9 6.9-17.2 8.9-26.2 5.2S288 321.7 288 312v-24h-64v24c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-56-56c-9.4-9.4-9.4-24.6 0-33.9l56-56c6.9-6.9 17.2-8.9 26.2-5.2S224 190.3 224 200v24h64v-24c0-9.7 5.8-18.5 14.8-22.2",
+        ["module.networks"] = "M384 192c53 0 96-43 96-96S437 0 384 0s-96 43-96 96c0 5.4.5 10.8 1.3 16l-129.7 72.1c-16.9-15-39.2-24.1-63.6-24.1-53 0-96 43-96 96s43 96 96 96c24.4 0 46.6-9.1 63.6-24.1L289.3 400c-.9 5.2-1.3 10.5-1.3 16 0 53 43 96 96 96s96-43 96-96-43-96-96-96c-24.4 0-46.6 9.1-63.6 24.1L190.7 272c.9-5.2 1.3-10.5 1.3-16s-.5-10.8-1.3-16l129.7-72.1c16.9 15 39.2 24.1 63.6 24.1",
+        ["module.association_pairs"] = "M0 80c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v16h128V80c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48h-96c-26.5 0-48-21.5-48-48v-16H192v16c0 7.3-1.7 14.3-4.6 20.5L256 288h80c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48h-96c-26.5 0-48-21.5-48-48v-96c0-7.3 1.7-14.3 4.6-20.5L128 224H48c-26.5 0-48-21.5-48-48z",
+        ["module.place"] = "M576 48c0-11.1-5.7-21.4-15.2-27.2s-21.2-6.4-31.1-1.4L413.5 77.5 234.1 17.6c-8.1-2.7-16.8-2.1-24.4 1.7l-128 64C70.8 88.8 64 99.9 64 112v352c0 11.1 5.7 21.4 15.2 27.2s21.2 6.4 31.1 1.4l116.1-58.1 173.3 57.8c-4.3-6.4-8.5-13.1-12.6-19.9-11-18.3-21.9-39.3-30-61.8l-101.2-33.7V92.4l128 42.7v99.3c31-35.8 77-58.4 128-58.4 22.6 0 44.2 4.4 64 12.5zm-64 176c-66.3 0-120 52.8-120 117.9 0 68.9 64.1 150.4 98.6 189.3 11.6 13 31.3 13 42.9 0 34.5-38.9 98.6-120.4 98.6-189.3 0-65.1-53.7-117.9-120-117.9zm-40 120a40 40 0 1 1 80 0 40 40 0 1 1-80 0",
+        ["module.status"] = "M288 160h96V96h-96zM0 160V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48zm160 256h224v-64H160zM0 416v-80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48z",
+        ["module.texts"] = "M256 141.3v309.3l.5-.2A449 449 0 0 1 428.8 416H448V96h-19.2c-42.2 0-84.1 8.4-123.1 24.6-16.8 7-33.4 13.9-49.7 20.7m-25.1-79.8L256 72l25.1-10.5C327.9 42 378.1 32 428.8 32H464c26.5 0 48 21.5 48 48v352c0 26.5-21.5 48-48 48h-35.2c-50.7 0-100.9 10-147.7 29.5l-12.8 5.3c-7.9 3.3-16.7 3.3-24.6 0l-12.8-5.3C184.1 490 133.9 480 83.2 480H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h35.2c50.7 0 100.9 10 147.7 29.5"
+    };
 
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
     private readonly AppLocalizationService _localizationService = new();
@@ -69,16 +82,16 @@ public partial class MainWindow : Window {
         Title = T("window.title");
         _txtHeaderMain.Text = T("header.main");
 
-        SetModuleButtonContent(_btnModuleBrowser, "module.browser", "◎");
-        SetModuleButtonContent(_btnModuleEntry, "module.entry", "◇");
-        SetModuleButtonContent(_btnModuleOffice, "module.office", "▣");
-        SetModuleButtonContent(_btnModuleKinship, "module.kinship", "◌");
-        SetModuleButtonContent(_btnModuleAssociations, "module.associations", "△");
-        SetModuleButtonContent(_btnModuleNetworks, "module.networks", "⌘");
-        SetModuleButtonContent(_btnModuleAssociationPairs, "module.association_pairs", "◫");
-        SetModuleButtonContent(_btnModulePlace, "module.place", "◈");
-        SetModuleButtonContent(_btnModuleStatus, "module.status", "≡");
-        SetModuleButtonContent(_btnModuleTexts, "module.texts", "✦");
+        SetModuleButtonContent(_btnModuleBrowser, "module.browser");
+        SetModuleButtonContent(_btnModuleEntry, "module.entry");
+        SetModuleButtonContent(_btnModuleOffice, "module.office");
+        SetModuleButtonContent(_btnModuleKinship, "module.kinship");
+        SetModuleButtonContent(_btnModuleAssociations, "module.associations");
+        SetModuleButtonContent(_btnModuleNetworks, "module.networks");
+        SetModuleButtonContent(_btnModuleAssociationPairs, "module.association_pairs");
+        SetModuleButtonContent(_btnModulePlace, "module.place");
+        SetModuleButtonContent(_btnModuleStatus, "module.status");
+        SetModuleButtonContent(_btnModuleTexts, "module.texts");
 
         _btnReportError.Content = T("button.report_error");
         _btnChangeIndexAddress.Content = T("button.change_index_address");
@@ -94,8 +107,37 @@ public partial class MainWindow : Window {
         HighlightLanguageButton();
     }
 
-    private void SetModuleButtonContent(Button button, string key, string icon) {
-        button.Content = $"{icon}  {T(key)}";
+    private void SetModuleButtonContent(Button button, string key) {
+        var pathData = ModuleIconPaths.TryGetValue(key, out var value)
+            ? value
+            : ModuleIconPaths["module.browser"];
+
+        var icon = new ShapePath {
+            Data = Geometry.Parse(pathData),
+            Fill = new SolidColorBrush(Color.Parse("#133FB5")),
+            Stretch = Stretch.Uniform,
+            Width = 24,
+            Height = 24,
+            VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center
+        };
+
+        var label = new TextBlock {
+            Text = T(key),
+            VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
+            TextWrapping = TextWrapping.Wrap,
+            MaxLines = 2,
+            Margin = new Thickness(12, 0, 0, 0)
+        };
+
+        var content = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
+            VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center
+        };
+        Grid.SetColumn(icon, 0);
+        Grid.SetColumn(label, 1);
+        content.Children.Add(icon);
+        content.Children.Add(label);
+        button.Content = content;
     }
 
     private void HighlightLanguageButton() {
