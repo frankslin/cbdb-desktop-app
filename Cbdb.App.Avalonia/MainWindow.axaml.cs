@@ -42,10 +42,18 @@ public partial class MainWindow : Window {
     private TextBox _txtOutput = null!;
 
     private string _sqlitePath = string.Empty;
+    private PersonBrowserWindow? _personBrowserWindow;
+
+    internal AppLocalizationService LocalizationService => _localizationService;
 
     public MainWindow() {
         InitializeComponent();
         InitializeControls();
+
+        var savedLanguage = AppSettingsStore.TryGetLastLanguage();
+        if (savedLanguage.HasValue) {
+            _localizationService.SetLanguage(savedLanguage.Value);
+        }
 
         _localizationService.LanguageChanged += (_, _) => ApplyLocalization();
         _localizationService.ApplyCurrentLanguage();
@@ -106,18 +114,21 @@ public partial class MainWindow : Window {
     }
 
     private void BtnLangEn_Click(object? sender, RoutedEventArgs e) {
-        _localizationService.SetLanguage(UiLanguage.English);
-        _txtStatus.Text = T("status.language_set");
+        SetLanguage(UiLanguage.English);
     }
 
     private void BtnLangZhHant_Click(object? sender, RoutedEventArgs e) {
-        _localizationService.SetLanguage(UiLanguage.TraditionalChinese);
-        _txtStatus.Text = T("status.language_set");
+        SetLanguage(UiLanguage.TraditionalChinese);
     }
 
     private void BtnLangZhHans_Click(object? sender, RoutedEventArgs e) {
-        _localizationService.SetLanguage(UiLanguage.SimplifiedChinese);
+        SetLanguage(UiLanguage.SimplifiedChinese);
+    }
+
+    private void SetLanguage(UiLanguage language) {
+        _localizationService.SetLanguage(language);
         _txtStatus.Text = T("status.language_set");
+        _ = AppSettingsStore.SaveLastLanguageAsync(language);
     }
 
     private void ModuleButton_Click(object? sender, RoutedEventArgs e) {
@@ -135,7 +146,24 @@ public partial class MainWindow : Window {
                 return;
             }
 
+            if (_personBrowserWindow is { } existingWindow) {
+                if (existingWindow.WindowState == WindowState.Minimized) {
+                    existingWindow.WindowState = WindowState.Normal;
+                }
+
+                existingWindow.Activate();
+                _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+                _txtOutput.Text = T("msg.browser_opened");
+                return;
+            }
+
             var window = new PersonBrowserWindow(_sqlitePath, _localizationService);
+            _personBrowserWindow = window;
+            window.Closed += (_, _) => {
+                if (ReferenceEquals(_personBrowserWindow, window)) {
+                    _personBrowserWindow = null;
+                }
+            };
             window.Show();
             _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
             _txtOutput.Text = T("msg.browser_opened");

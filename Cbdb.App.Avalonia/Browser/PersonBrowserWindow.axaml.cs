@@ -33,7 +33,6 @@ public partial class PersonBrowserWindow : Window {
     private Button _btnSearch = null!;
     private Button _btnClear = null!;
     private Button _btnSaveToFile = null!;
-    private TextBlock _lblSearchByName = null!;
     private DataGrid _gridPeople = null!;
     private DataGridTextColumn _colPersonId = null!;
     private DataGridTextColumn _colNameChn = null!;
@@ -206,7 +205,6 @@ public partial class PersonBrowserWindow : Window {
         _btnSearch.Content = T("browser.search");
         _btnClear.Content = T("browser.clear");
         _btnSaveToFile.Content = T("browser.save_to_file");
-        _lblSearchByName.Text = T("browser.keyword_tooltip");
         _txtKeyword.Watermark = T("browser.keyword_tooltip");
 
         _colPersonId.Header = T("browser.grid_person_id");
@@ -2190,7 +2188,6 @@ public partial class PersonBrowserWindow : Window {
         _btnSearch = this.FindControl<Button>("BtnSearch") ?? throw new InvalidOperationException("BtnSearch not found.");
         _btnClear = this.FindControl<Button>("BtnClear") ?? throw new InvalidOperationException("BtnClear not found.");
         _btnSaveToFile = this.FindControl<Button>("BtnSaveToFile") ?? throw new InvalidOperationException("BtnSaveToFile not found.");
-        _lblSearchByName = this.FindControl<TextBlock>("LblSearchByName") ?? throw new InvalidOperationException("LblSearchByName not found.");
         _gridPeople = this.FindControl<DataGrid>("GridPeople") ?? throw new InvalidOperationException("GridPeople not found.");
         if (_gridPeople.Columns.Count < 5) {
             throw new InvalidOperationException("GridPeople columns are not initialized.");
