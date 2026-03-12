@@ -133,7 +133,10 @@ public partial class PersonBrowserWindow : Window {
     private TextBlock _txtKinshipLoading = null!;
     private TextBlock _txtKinshipEmpty = null!;
     private StackPanel _kinshipPanel = null!;
-    private TextBlock _txtTabAssociationsPlaceholder = null!;
+    private Border _associationsLoadingHost = null!;
+    private TextBlock _txtAssociationsLoading = null!;
+    private TextBlock _txtAssociationsEmpty = null!;
+    private StackPanel _associationsPanel = null!;
     private Border _possessionsLoadingHost = null!;
     private TextBlock _txtPossessionsLoading = null!;
     private TextBlock _txtPossessionsEmpty = null!;
@@ -163,6 +166,7 @@ public partial class PersonBrowserWindow : Window {
     private IReadOnlyList<PersonEventItem> _currentEvents = Array.Empty<PersonEventItem>();
     private IReadOnlyList<PersonStatusItem> _currentStatuses = Array.Empty<PersonStatusItem>();
     private IReadOnlyList<PersonKinshipItem> _currentKinships = Array.Empty<PersonKinshipItem>();
+    private IReadOnlyList<PersonAssociationItem> _currentAssociations = Array.Empty<PersonAssociationItem>();
     private IReadOnlyList<PersonPossessionItem> _currentPossessions = Array.Empty<PersonPossessionItem>();
     private IReadOnlyList<PersonSourceItem> _currentSources = Array.Empty<PersonSourceItem>();
     private IReadOnlyList<PersonInstitutionItem> _currentInstitutions = Array.Empty<PersonInstitutionItem>();
@@ -255,7 +259,6 @@ public partial class PersonBrowserWindow : Window {
         _txtAltNamesLoading.Text = loadingText;
         _txtAltNamesEmpty.Text = _currentAltNames.Count == 0 ? T("browser.alt_names_none") : string.Empty;
         RenderAltNames();
-        var placeholder = T("browser.tab_placeholder");
         _txtWritingsLoading.Text = loadingText;
         _txtWritingsEmpty.Text = _currentWritings.Count == 0 ? T("browser.writings_none") : string.Empty;
         RenderWritings();
@@ -274,7 +277,9 @@ public partial class PersonBrowserWindow : Window {
         _txtKinshipLoading.Text = loadingText;
         _txtKinshipEmpty.Text = _currentKinships.Count == 0 ? T("browser.kinship_none") : string.Empty;
         RenderKinships();
-        _txtTabAssociationsPlaceholder.Text = placeholder;
+        _txtAssociationsLoading.Text = loadingText;
+        _txtAssociationsEmpty.Text = _currentAssociations.Count == 0 ? T("browser.associations_none") : string.Empty;
+        RenderAssociations();
         _txtPossessionsLoading.Text = loadingText;
         _txtPossessionsEmpty.Text = _currentPossessions.Count == 0 ? T("browser.possessions_none") : string.Empty;
         RenderPossessions();
@@ -510,6 +515,7 @@ public partial class PersonBrowserWindow : Window {
             Events: _currentEvents.ToList(),
             Statuses: _currentStatuses.ToList(),
             Kinships: _currentKinships.ToList(),
+            Associations: _currentAssociations.ToList(),
             Possessions: _currentPossessions.ToList(),
             Sources: _currentSources.ToList(),
             Institutions: _currentInstitutions.ToList()
@@ -556,6 +562,7 @@ public partial class PersonBrowserWindow : Window {
             _currentEvents = state.Events;
             _currentStatuses = state.Statuses;
             _currentKinships = state.Kinships;
+            _currentAssociations = state.Associations;
             _currentPossessions = state.Possessions;
             _currentSources = state.Sources;
             _currentInstitutions = state.Institutions;
@@ -583,6 +590,9 @@ public partial class PersonBrowserWindow : Window {
             }
             if (state.LoadedTabs.Contains("kinship")) {
                 RenderKinships();
+            }
+            if (state.LoadedTabs.Contains("associations")) {
+                RenderAssociations();
             }
             if (state.LoadedTabs.Contains("possessions")) {
                 RenderPossessions();
@@ -854,6 +864,22 @@ public partial class PersonBrowserWindow : Window {
         RenderKinships();
     }
 
+    private async Task LoadAssociationsAsync(int personId) {
+        await PrepareTabLoadAsync("associations");
+        try {
+            _currentAssociations = await Task.Run(() => _personBrowserService.GetAssociationsAsync(_sqlitePath, personId));
+        } catch (Exception ex) {
+            _currentAssociations = Array.Empty<PersonAssociationItem>();
+            _txtRecord.Text = ex.Message;
+        } finally {
+            SetTabLoadingState("associations", false);
+        }
+
+        _txtAssociationsEmpty.Text = _currentAssociations.Count == 0 ? T("browser.associations_none") : string.Empty;
+        _relatedTabPages["associations"] = 0;
+        RenderAssociations();
+    }
+
     private async Task LoadPossessionsAsync(int personId) {
         await PrepareTabLoadAsync("possessions");
         try {
@@ -946,6 +972,9 @@ public partial class PersonBrowserWindow : Window {
             case "kinship":
                 await LoadKinshipsAsync(_selectedPersonId.Value);
                 break;
+            case "associations":
+                await LoadAssociationsAsync(_selectedPersonId.Value);
+                break;
             case "possessions":
                 await LoadPossessionsAsync(_selectedPersonId.Value);
                 break;
@@ -973,6 +1002,7 @@ public partial class PersonBrowserWindow : Window {
         _currentEvents = Array.Empty<PersonEventItem>();
         _currentStatuses = Array.Empty<PersonStatusItem>();
         _currentKinships = Array.Empty<PersonKinshipItem>();
+        _currentAssociations = Array.Empty<PersonAssociationItem>();
         _currentPossessions = Array.Empty<PersonPossessionItem>();
         _currentSources = Array.Empty<PersonSourceItem>();
         _currentInstitutions = Array.Empty<PersonInstitutionItem>();
@@ -985,6 +1015,7 @@ public partial class PersonBrowserWindow : Window {
         _eventsPanel.Children.Clear();
         _statusPanel.Children.Clear();
         _kinshipPanel.Children.Clear();
+        _associationsPanel.Children.Clear();
         _possessionsPanel.Children.Clear();
         _sourcesPanel.Children.Clear();
         _institutionsPanel.Children.Clear();
@@ -997,6 +1028,7 @@ public partial class PersonBrowserWindow : Window {
         _txtEventsEmpty.Text = T("browser.events_none");
         _txtStatusEmpty.Text = T("browser.status_none");
         _txtKinshipEmpty.Text = T("browser.kinship_none");
+        _txtAssociationsEmpty.Text = T("browser.associations_none");
         _txtPossessionsEmpty.Text = T("browser.possessions_none");
         _txtSourcesEmpty.Text = T("browser.sources_none");
         _txtInstitutionsEmpty.Text = T("browser.institutions_none");
@@ -1008,6 +1040,7 @@ public partial class PersonBrowserWindow : Window {
         SetTabLoadingState("events", false);
         SetTabLoadingState("status", false);
         SetTabLoadingState("kinship", false);
+        SetTabLoadingState("associations", false);
         SetTabLoadingState("possessions", false);
         SetTabLoadingState("sources", false);
         SetTabLoadingState("institutions", false);
@@ -1044,6 +1077,7 @@ public partial class PersonBrowserWindow : Window {
             "events" => (_eventsLoadingHost, _txtEventsEmpty, _eventsPanel),
             "status" => (_statusLoadingHost, _txtStatusEmpty, _statusPanel),
             "kinship" => (_kinshipLoadingHost, _txtKinshipEmpty, _kinshipPanel),
+            "associations" => (_associationsLoadingHost, _txtAssociationsEmpty, _associationsPanel),
             "possessions" => (_possessionsLoadingHost, _txtPossessionsEmpty, _possessionsPanel),
             "sources" => (_sourcesLoadingHost, _txtSourcesEmpty, _sourcesPanel),
             "institutions" => (_institutionsLoadingHost, _txtInstitutionsEmpty, _institutionsPanel),
@@ -1078,6 +1112,9 @@ public partial class PersonBrowserWindow : Window {
         }
         if (ReferenceEquals(tab, _tabKinship)) {
             return "kinship";
+        }
+        if (ReferenceEquals(tab, _tabAssociations)) {
+            return "associations";
         }
         if (ReferenceEquals(tab, _tabPossessions)) {
             return "possessions";
@@ -1210,6 +1247,18 @@ public partial class PersonBrowserWindow : Window {
         UpdateTabPager("kinship", _currentKinships.Count);
     }
 
+    private void RenderAssociations() {
+        if (_associationsPanel is null) {
+            return;
+        }
+
+        _associationsPanel.Children.Clear();
+        foreach (var item in GetPageItems(_currentAssociations, "associations")) {
+            _associationsPanel.Children.Add(BuildAssociationCard(item));
+        }
+        UpdateTabPager("associations", _currentAssociations.Count);
+    }
+
     private void RenderPossessions() {
         if (_possessionsPanel is null) {
             return;
@@ -1310,6 +1359,7 @@ public partial class PersonBrowserWindow : Window {
             "events" => _currentEvents.Count,
             "status" => _currentStatuses.Count,
             "kinship" => _currentKinships.Count,
+            "associations" => _currentAssociations.Count,
             "possessions" => _currentPossessions.Count,
             "sources" => _currentSources.Count,
             "institutions" => _currentInstitutions.Count,
@@ -1342,6 +1392,9 @@ public partial class PersonBrowserWindow : Window {
                 break;
             case "kinship":
                 RenderKinships();
+                break;
+            case "associations":
+                RenderAssociations();
                 break;
             case "possessions":
                 RenderPossessions();
@@ -1628,6 +1681,120 @@ public partial class PersonBrowserWindow : Window {
         return WrapCard(stack);
     }
 
+    private Control BuildAssociationCard(PersonAssociationItem item) {
+        var stack = new StackPanel {
+            Spacing = 8
+        };
+
+        stack.Children.Add(BuildAssociationSection(T("browser.association_core"), BuildAssociationCoreGrid(item)));
+        stack.Children.Add(BuildAssociationSection(T("browser.association_related_people"), BuildAssociationPeopleGrid(item)));
+        stack.Children.Add(BuildAssociationSection(T("browser.association_place_date"), BuildAssociationPlaceDateGrid(item)));
+        stack.Children.Add(BuildAssociationSection(T("browser.association_context"), BuildAssociationContextGrid(item)));
+        stack.Children.Add(BuildAssociationSection(T("browser.association_source_notes"), BuildAssociationSourceGrid(item)));
+
+        return WrapCard(stack);
+    }
+
+    private Control BuildAssociationSection(string title, Control content) {
+        var stack = new StackPanel {
+            Spacing = 6
+        };
+        stack.Children.Add(new TextBlock {
+            Text = title,
+            FontWeight = FontWeight.SemiBold
+        });
+        stack.Children.Add(content);
+        return stack;
+    }
+
+    private Control BuildAssociationCoreGrid(PersonAssociationItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,120,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
+        AddReadOnlyField(grid, 0, 2, T("browser.association_count"), item.Count?.ToString());
+        AddReadOnlyField(grid, 1, 0, T("browser.association_associate"), JoinDisplay(item.AssociateNameChn, item.AssociateName));
+        AddReadOnlyField(grid, 1, 2, T("browser.association_label"), item.Association);
+        return grid;
+    }
+
+    private Control BuildAssociationPeopleGrid(PersonAssociationItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.association_kinship"), item.Kinship);
+        AddReadOnlyField(grid, 0, 2, T("browser.association_kin_person"), JoinDisplay(item.KinNameChn, item.KinName));
+        AddReadOnlyField(grid, 1, 0, T("browser.association_assoc_kinship"), item.AssociateKinship);
+        AddReadOnlyField(grid, 1, 2, T("browser.association_assoc_kin_person"), JoinDisplay(item.AssociateKinNameChn, item.AssociateKinName));
+        AddReadOnlyField(grid, 2, 0, T("browser.association_claimer"), JoinDisplay(item.ClaimerNameChn, item.ClaimerName), 3, 28, false);
+        return grid;
+    }
+
+    private Control BuildAssociationPlaceDateGrid(PersonAssociationItem item) {
+        var stack = new StackPanel {
+            Spacing = 8
+        };
+
+        var placeGrid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto")
+        };
+        AddReadOnlyField(placeGrid, 0, 0, T("browser.association_place"), JoinDisplay(item.AddressNameChn, item.AddressName));
+        stack.Children.Add(placeGrid);
+
+        var dateGrid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,120,Auto,220,Auto,100,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto")
+        };
+        AddReadOnlyField(dateGrid, 0, 0, T("browser.association_year"), item.Year?.ToString());
+        AddReadOnlyField(dateGrid, 0, 2, T("browser.association_nianhao"), item.Nianhao);
+        AddReadOnlyField(dateGrid, 0, 4, T("browser.association_nianhao_year"), item.NianhaoYear?.ToString());
+        AddReadOnlyField(dateGrid, 1, 0, T("browser.association_month"), item.Month?.ToString());
+        AddReadOnlyField(dateGrid, 1, 2, T("browser.association_range"), item.Range);
+        AddReadOnlyField(dateGrid, 1, 4, T("browser.association_day"), item.Day?.ToString());
+        AddReadOnlyField(dateGrid, 1, 6, T("browser.association_ganzhi"), item.Ganzhi);
+        stack.Children.Add(dateGrid);
+
+        var intercalaryGrid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,Auto"),
+            RowDefinitions = new RowDefinitions("Auto")
+        };
+        AddReadOnlyCheck(intercalaryGrid, 0, 0, T("browser.association_intercalary"), item.Intercalary);
+        stack.Children.Add(intercalaryGrid);
+
+        return stack;
+    }
+
+    private Control BuildAssociationContextGrid(PersonAssociationItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.association_topic"), JoinDisplay(item.TopicChn, item.Topic));
+        AddReadOnlyField(grid, 0, 2, T("browser.association_institution"), JoinDisplay(item.InstitutionNameChn, item.InstitutionName));
+        AddReadOnlyField(grid, 1, 0, T("browser.association_occasion"), JoinDisplay(item.OccasionChn, item.Occasion));
+        AddReadOnlyField(grid, 1, 2, T("browser.association_genre"), JoinDisplay(item.LiteraryGenreChn, item.LiteraryGenre));
+        AddReadOnlyField(grid, 2, 0, T("browser.association_text_title"), item.TextTitle, 3, 28, false);
+        return grid;
+    }
+
+    private Control BuildAssociationSourceGrid(PersonAssociationItem item) {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto")
+        };
+
+        AddReadOnlyField(grid, 0, 0, T("browser.address_source"), JoinDisplay(item.SourceTitleChn, item.SourceTitle));
+        AddReadOnlyField(grid, 0, 2, T("browser.address_pages"), item.Pages);
+        AddReadOnlyField(grid, 1, 0, T("browser.address_notes"), item.Notes, 3, 64, true);
+        return grid;
+    }
+
     private async void KinshipJumpButton_Click(object? sender, RoutedEventArgs e) {
         if (sender is not Button { Tag: int personId }) {
             return;
@@ -1745,8 +1912,8 @@ public partial class PersonBrowserWindow : Window {
 
     private Control BuildAddressHeader(PersonAddressItem item) {
         var grid = new Grid {
-            ColumnDefinitions = new ColumnDefinitions("Auto,90,Auto,220,Auto,*"),
-            RowDefinitions = new RowDefinitions("Auto,Auto")
+            ColumnDefinitions = new ColumnDefinitions("Auto,90,Auto,220,Auto,*,Auto,Auto"),
+            RowDefinitions = new RowDefinitions("Auto")
         };
 
         AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
@@ -1756,10 +1923,10 @@ public partial class PersonBrowserWindow : Window {
         var label = new TextBlock {
             Text = T("browser.address_maternal"),
             VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(0, 2, 8, 0)
+            Margin = new Thickness(12, 2, 8, 0)
         };
-        Grid.SetRow(label, 1);
-        Grid.SetColumn(label, 0);
+        Grid.SetRow(label, 0);
+        Grid.SetColumn(label, 6);
         grid.Children.Add(label);
 
         var check = new CheckBox {
@@ -1767,8 +1934,8 @@ public partial class PersonBrowserWindow : Window {
             IsChecked = item.Natal ?? false,
             Margin = new Thickness(0, 2, 0, 0)
         };
-        Grid.SetRow(check, 1);
-        Grid.SetColumn(check, 1);
+        Grid.SetRow(check, 0);
+        Grid.SetColumn(check, 7);
         grid.Children.Add(check);
 
         return grid;
@@ -2582,7 +2749,10 @@ public partial class PersonBrowserWindow : Window {
         _txtKinshipLoading = this.FindControl<TextBlock>("TxtKinshipLoading") ?? throw new InvalidOperationException("TxtKinshipLoading not found.");
         _txtKinshipEmpty = this.FindControl<TextBlock>("TxtKinshipEmpty") ?? throw new InvalidOperationException("TxtKinshipEmpty not found.");
         _kinshipPanel = this.FindControl<StackPanel>("KinshipPanel") ?? throw new InvalidOperationException("KinshipPanel not found.");
-        _txtTabAssociationsPlaceholder = this.FindControl<TextBlock>("TxtTabAssociationsPlaceholder") ?? throw new InvalidOperationException("TxtTabAssociationsPlaceholder not found.");
+        _associationsLoadingHost = this.FindControl<Border>("AssociationsLoadingHost") ?? throw new InvalidOperationException("AssociationsLoadingHost not found.");
+        _txtAssociationsLoading = this.FindControl<TextBlock>("TxtAssociationsLoading") ?? throw new InvalidOperationException("TxtAssociationsLoading not found.");
+        _txtAssociationsEmpty = this.FindControl<TextBlock>("TxtAssociationsEmpty") ?? throw new InvalidOperationException("TxtAssociationsEmpty not found.");
+        _associationsPanel = this.FindControl<StackPanel>("AssociationsPanel") ?? throw new InvalidOperationException("AssociationsPanel not found.");
         _possessionsLoadingHost = this.FindControl<Border>("PossessionsLoadingHost") ?? throw new InvalidOperationException("PossessionsLoadingHost not found.");
         _txtPossessionsLoading = this.FindControl<TextBlock>("TxtPossessionsLoading") ?? throw new InvalidOperationException("TxtPossessionsLoading not found.");
         _txtPossessionsEmpty = this.FindControl<TextBlock>("TxtPossessionsEmpty") ?? throw new InvalidOperationException("TxtPossessionsEmpty not found.");
@@ -2603,6 +2773,7 @@ public partial class PersonBrowserWindow : Window {
         RegisterTabPager("events", "EventsPager", "BtnEventsPrev", "BtnEventsNext", "TxtEventsPage");
         RegisterTabPager("status", "StatusPager", "BtnStatusPrev", "BtnStatusNext", "TxtStatusPage");
         RegisterTabPager("kinship", "KinshipPager", "BtnKinshipPrev", "BtnKinshipNext", "TxtKinshipPage");
+        RegisterTabPager("associations", "AssociationsPager", "BtnAssociationsPrev", "BtnAssociationsNext", "TxtAssociationsPage");
         RegisterTabPager("possessions", "PossessionsPager", "BtnPossessionsPrev", "BtnPossessionsNext", "TxtPossessionsPage");
         RegisterTabPager("sources", "SourcesPager", "BtnSourcesPrev", "BtnSourcesNext", "TxtSourcesPage");
         RegisterTabPager("institutions", "InstitutionsPager", "BtnInstitutionsPrev", "BtnInstitutionsNext", "TxtInstitutionsPage");
@@ -2719,6 +2890,7 @@ public partial class PersonBrowserWindow : Window {
         IReadOnlyList<PersonEventItem> Events,
         IReadOnlyList<PersonStatusItem> Statuses,
         IReadOnlyList<PersonKinshipItem> Kinships,
+        IReadOnlyList<PersonAssociationItem> Associations,
         IReadOnlyList<PersonPossessionItem> Possessions,
         IReadOnlyList<PersonSourceItem> Sources,
         IReadOnlyList<PersonInstitutionItem> Institutions

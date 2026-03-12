@@ -1226,6 +1226,132 @@ ORDER BY kd.c_kin_id, kd.c_kin_code;";
         return items;
     }
 
+    public async Task<IReadOnlyList<PersonAssociationItem>> GetAssociationsAsync(
+        string sqlitePath,
+        int personId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
+            return Array.Empty<PersonAssociationItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = SqliteOpenMode.ReadOnly };
+        var items = new List<PersonAssociationItem>();
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    ad.c_sequence,
+    ad.c_assoc_count,
+    assoc_person.c_name_chn,
+    assoc_person.c_name,
+    ac.c_assoc_desc_chn,
+    ac.c_assoc_desc,
+    kin_code.c_kinrel_chn,
+    kin_code.c_kinrel,
+    kin_person.c_name_chn,
+    kin_person.c_name,
+    assoc_kin_code.c_kinrel_chn,
+    assoc_kin_code.c_kinrel,
+    assoc_kin_person.c_name_chn,
+    assoc_kin_person.c_name,
+    claimer_person.c_name_chn,
+    claimer_person.c_name,
+    assoc_addr.c_name_chn,
+    assoc_addr.c_name,
+    ad.c_assoc_first_year,
+    fy_nh.c_nianhao_chn,
+    fy_nh.c_nianhao_pin,
+    ad.c_assoc_fy_nh_year,
+    ad.c_assoc_fy_month,
+    ad.c_assoc_fy_intercalary,
+    ad.c_assoc_fy_day,
+    fy_gz.c_ganzhi_chn,
+    fy_gz.c_ganzhi_py,
+    fy_range.c_range_chn,
+    fy_range.c_range,
+    topic.c_topic_desc_chn,
+    topic.c_topic_desc,
+    inst.c_inst_name_hz,
+    inst.c_inst_name_py,
+    occ.c_occasion_desc_chn,
+    occ.c_occasion_desc,
+    genre.c_lit_genre_desc_chn,
+    genre.c_lit_genre_desc,
+    ad.c_text_title,
+    src.c_title_chn,
+    src.c_title,
+    ad.c_pages,
+    ad.c_notes
+FROM ASSOC_DATA ad
+LEFT JOIN BIOG_MAIN assoc_person ON assoc_person.c_personid = ad.c_assoc_id
+LEFT JOIN ASSOC_CODES ac ON ac.c_assoc_code = ad.c_assoc_code
+LEFT JOIN KINSHIP_CODES kin_code ON kin_code.c_kincode = ad.c_kin_code
+LEFT JOIN BIOG_MAIN kin_person ON kin_person.c_personid = ad.c_kin_id
+LEFT JOIN KINSHIP_CODES assoc_kin_code ON assoc_kin_code.c_kincode = ad.c_assoc_kin_code
+LEFT JOIN BIOG_MAIN assoc_kin_person ON assoc_kin_person.c_personid = ad.c_assoc_kin_id
+LEFT JOIN BIOG_MAIN claimer_person ON claimer_person.c_personid = ad.c_assoc_claimer_id
+LEFT JOIN ADDR_CODES assoc_addr ON assoc_addr.c_addr_id = ad.c_addr_id
+LEFT JOIN NIAN_HAO fy_nh ON fy_nh.c_nianhao_id = ad.c_assoc_fy_nh_code
+LEFT JOIN GANZHI_CODES fy_gz ON fy_gz.c_ganzhi_code = ad.c_assoc_fy_day_gz
+LEFT JOIN YEAR_RANGE_CODES fy_range ON fy_range.c_range_code = ad.c_assoc_fy_range
+LEFT JOIN SCHOLARLYTOPIC_CODES topic ON topic.c_topic_code = ad.c_topic_code
+LEFT JOIN SOCIAL_INSTITUTION_NAME_CODES inst ON inst.c_inst_name_code = ad.c_inst_name_code
+LEFT JOIN OCCASION_CODES occ ON occ.c_occasion_code = ad.c_occasion_code
+LEFT JOIN LITERARYGENRE_CODES genre ON genre.c_lit_genre_code = ad.c_litgenre_code
+LEFT JOIN TEXT_CODES src ON src.c_textid = ad.c_source
+WHERE ad.c_personid = $personId
+ORDER BY ad.c_assoc_first_year, ad.c_sequence, ad.c_assoc_code, ad.c_assoc_id;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            items.Add(new PersonAssociationItem(
+                Sequence: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                Count: reader.IsDBNull(1) ? null : reader.GetInt32(1),
+                AssociateNameChn: reader.IsDBNull(2) ? null : reader.GetString(2),
+                AssociateName: reader.IsDBNull(3) ? null : reader.GetString(3),
+                Association: JoinDisplay(reader.IsDBNull(4) ? null : reader.GetString(4), reader.IsDBNull(5) ? null : reader.GetString(5)),
+                Kinship: JoinDisplay(reader.IsDBNull(6) ? null : reader.GetString(6), reader.IsDBNull(7) ? null : reader.GetString(7)),
+                KinNameChn: reader.IsDBNull(8) ? null : reader.GetString(8),
+                KinName: reader.IsDBNull(9) ? null : reader.GetString(9),
+                AssociateKinship: JoinDisplay(reader.IsDBNull(10) ? null : reader.GetString(10), reader.IsDBNull(11) ? null : reader.GetString(11)),
+                AssociateKinNameChn: reader.IsDBNull(12) ? null : reader.GetString(12),
+                AssociateKinName: reader.IsDBNull(13) ? null : reader.GetString(13),
+                ClaimerNameChn: reader.IsDBNull(14) ? null : reader.GetString(14),
+                ClaimerName: reader.IsDBNull(15) ? null : reader.GetString(15),
+                AddressNameChn: reader.IsDBNull(16) ? null : reader.GetString(16),
+                AddressName: reader.IsDBNull(17) ? null : reader.GetString(17),
+                Year: reader.IsDBNull(18) ? null : reader.GetInt32(18),
+                Nianhao: JoinDisplay(reader.IsDBNull(19) ? null : reader.GetString(19), reader.IsDBNull(20) ? null : reader.GetString(20)),
+                NianhaoYear: reader.IsDBNull(21) ? null : reader.GetInt32(21),
+                Month: reader.IsDBNull(22) ? null : reader.GetInt32(22),
+                Intercalary: reader.IsDBNull(23) ? null : reader.GetInt32(23) == 1,
+                Day: reader.IsDBNull(24) ? null : reader.GetInt32(24),
+                Ganzhi: JoinDisplay(reader.IsDBNull(25) ? null : reader.GetString(25), reader.IsDBNull(26) ? null : reader.GetString(26)),
+                Range: JoinDisplay(reader.IsDBNull(27) ? null : reader.GetString(27), reader.IsDBNull(28) ? null : reader.GetString(28)),
+                TopicChn: reader.IsDBNull(29) ? null : reader.GetString(29),
+                Topic: reader.IsDBNull(30) ? null : reader.GetString(30),
+                InstitutionNameChn: reader.IsDBNull(31) ? null : reader.GetString(31),
+                InstitutionName: reader.IsDBNull(32) ? null : reader.GetString(32),
+                OccasionChn: reader.IsDBNull(33) ? null : reader.GetString(33),
+                Occasion: reader.IsDBNull(34) ? null : reader.GetString(34),
+                LiteraryGenreChn: reader.IsDBNull(35) ? null : reader.GetString(35),
+                LiteraryGenre: reader.IsDBNull(36) ? null : reader.GetString(36),
+                TextTitle: reader.IsDBNull(37) ? null : reader.GetString(37),
+                SourceTitleChn: reader.IsDBNull(38) ? null : reader.GetString(38),
+                SourceTitle: reader.IsDBNull(39) ? null : reader.GetString(39),
+                Pages: reader.IsDBNull(40) ? null : reader.GetString(40),
+                Notes: reader.IsDBNull(41) ? null : reader.GetString(41)
+            ));
+        }
+
+        return items;
+    }
+
     public async Task<IReadOnlyList<PersonSourceItem>> GetSourcesAsync(
         string sqlitePath,
         int personId,

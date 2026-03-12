@@ -72,6 +72,7 @@
   - It supports fixture-backed UI tests for deterministic person-browser coverage.
   - It can emit screenshot and JSON artifacts under `artifacts/ui-tests/`.
 - The following person-browser tabs now render repeated-form cards instead of placeholders:
+  - Associations
   - Alt. Names
   - Writings
   - Entry
@@ -82,6 +83,14 @@
   - Sources
   - Institutions
 - Addresses tab now renders each address record as a repeated form rather than a generic grid.
+- Associations tab now renders each association record as a repeated form rather than a placeholder.
+- Associations tab currently groups each record into:
+  - association core
+  - related people
+  - place and date
+  - context
+  - source and notes
+- Associations tab uses a dedicated SQL query with joins instead of the old generic related-item pipeline.
 - Addresses tab currently includes:
   - sequence
   - address type
@@ -104,14 +113,21 @@
   - Current automated coverage is only an initial person-browser path with fixture data.
   - The fixture-backed lazy-load path now covers:
     - Addresses
+    - Associations
     - Alt. Names
     - Entry
     - Events
+    - Writings
     - Status
     - Kinship
     - Possessions
+    - Postings
   - Real-database UI scenarios and screenshot baseline diffing are not wired yet.
-- The newly ported `Entry`, `Events`, `Status`, `Kinship`, and `Possessions` tabs are stable repeated-form summaries, but they are not yet field-for-field Access-equivalent layouts.
+- The newly ported `Associations`, `Entry`, `Events`, `Status`, `Kinship`, and `Possessions` tabs are stable repeated-form summaries, but they are not yet field-for-field Access-equivalent layouts.
+- The Associations tab is only partially aligned with Access.
+  - It now follows the main Access subform grouping, but the detailed layout is still an approximation rather than a control-for-control replica of `ASSOC_DATA_2 Subform`.
+  - Some Access fields are still summarized into merged display values instead of being shown as fully discrete Access-style controls.
+  - The current dedicated SQL is correctness-oriented and should still be reviewed for any Access-specific display semantics that need normalization.
 - The Addresses tab is only partially aligned with Access.
   - First/last year content is still collapsed into summary strings instead of discrete Access-style controls for Gregorian year, reign title, reign year, month, intercalary, day, ganzhi, and range.
   - Address card layout is only approximate and does not yet mirror `BIOG_ADDR_DATA_2 Subform`.
@@ -164,6 +180,7 @@
 - Finish populating the remaining Basic Information fields so the structured form is fully backed by real data.
 - Continue improving code-field display to match the Access app more closely.
 - Optimize related-tab loading by replacing the generic per-cell lookup path for the heaviest tabs with dedicated SQL.
+- Continue refining the Associations and Addresses tabs toward closer Access-equivalent layouts and display semantics.
 - Continue aligning the remaining query modules with the Access manual and screenshots.
 - Expand the headless Avalonia UI test suite beyond the initial person-browser scenario.
 - Commit this `AGENTS.md` into the repository so future contributors get the current project state directly after clone.

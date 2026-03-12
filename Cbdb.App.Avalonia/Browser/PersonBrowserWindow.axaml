@@ -126,7 +126,7 @@
               Padding="6">
         <Grid RowDefinitions="Auto,*">
           <Border BorderBrush="#C7C7C7" BorderThickness="1" Background="#F7F7F7" Padding="10">
-            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
               <Grid ColumnDefinitions="Auto,1.15*,Auto,1.15*,Auto,1.2*,Auto,0.9*">
                 <TextBlock x:Name="LblSurnameChnField" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" />
                 <TextBox x:Name="ValSurnameChn" Grid.Column="1" Margin="6,0,10,0" MinWidth="80" IsReadOnly="True" />
@@ -171,21 +171,18 @@
                 <TextBox x:Name="ValDeathYear" Grid.Column="7" Margin="6,0,0,0" MinWidth="90" IsReadOnly="True" />
               </Grid>
 
-              <Grid Grid.Row="4" Margin="0,8,0,0" ColumnDefinitions="Auto,*">
+              <Grid Grid.Row="4" Margin="0,8,0,0" ColumnDefinitions="Auto,0.85*,Auto,0.65*,Auto,1*,Auto,1.5*">
                 <TextBlock x:Name="LblDynastySummary" Grid.Column="0" VerticalAlignment="Center" />
-                <TextBox x:Name="ValDynasty" Grid.Column="1" Margin="6,0,0,0" IsReadOnly="True" />
+                <TextBox x:Name="ValDynasty" Grid.Column="1" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBlock x:Name="LblIndexYearSummary" Grid.Column="2" VerticalAlignment="Center" />
+                <TextBox x:Name="ValIndexYear" Grid.Column="3" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBlock x:Name="LblIndexYearTypeSummary" Grid.Column="4" VerticalAlignment="Center" />
+                <TextBox x:Name="ValIndexYearType" Grid.Column="5" Margin="6,0,10,0" IsReadOnly="True" />
+                <TextBlock x:Name="LblIndexYearSourceSummary" Grid.Column="6" VerticalAlignment="Center" />
+                <TextBox x:Name="ValIndexYearSource" Grid.Column="7" Margin="6,0,0,0" IsReadOnly="True" />
               </Grid>
 
-              <Grid Grid.Row="5" Margin="0,6,0,0" ColumnDefinitions="Auto,0.8*,Auto,1.1*,Auto,1.4*">
-                <TextBlock x:Name="LblIndexYearSummary" Grid.Column="0" VerticalAlignment="Center" />
-                <TextBox x:Name="ValIndexYear" Grid.Column="1" Margin="6,0,10,0" IsReadOnly="True" />
-                <TextBlock x:Name="LblIndexYearTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
-                <TextBox x:Name="ValIndexYearType" Grid.Column="3" Margin="6,0,10,0" IsReadOnly="True" />
-                <TextBlock x:Name="LblIndexYearSourceSummary" Grid.Column="4" VerticalAlignment="Center" />
-                <TextBox x:Name="ValIndexYearSource" Grid.Column="5" Margin="6,0,0,0" IsReadOnly="True" />
-              </Grid>
-
-              <Grid Grid.Row="6" Margin="0,6,0,0" ColumnDefinitions="Auto,1.5*,Auto,1*">
+              <Grid Grid.Row="5" Margin="0,6,0,0" ColumnDefinitions="Auto,1.5*,Auto,1*">
                 <TextBlock x:Name="LblIndexAddressSummary" Grid.Column="0" VerticalAlignment="Center" />
                 <TextBox x:Name="ValIndexAddress" Grid.Column="1" Margin="6,0,10,0" IsReadOnly="True" />
                 <TextBlock x:Name="LblIndexAddressTypeSummary" Grid.Column="2" VerticalAlignment="Center" />
@@ -473,7 +470,25 @@
                 </StackPanel>
               </ScrollViewer>
             </TabItem>
-            <TabItem x:Name="TabAssociations"><TextBlock x:Name="TxtTabAssociationsPlaceholder" Margin="12" Foreground="#666" TextWrapping="Wrap" /></TabItem>
+            <TabItem x:Name="TabAssociations">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8,4,8,8" Spacing="8">
+                  <Border x:Name="AssociationsLoadingHost" IsVisible="False" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1" Padding="12">
+                    <StackPanel Spacing="8">
+                      <TextBlock x:Name="TxtAssociationsLoading" Foreground="#666" />
+                      <ProgressBar IsIndeterminate="True" Height="6" />
+                    </StackPanel>
+                  </Border>
+                  <TextBlock x:Name="TxtAssociationsEmpty" Foreground="#666" TextWrapping="Wrap" />
+                  <StackPanel x:Name="AssociationsPanel" Spacing="8" />
+                  <StackPanel x:Name="AssociationsPager" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button x:Name="BtnAssociationsPrev" Tag="associations" Click="TabPrevPage_Click" />
+                    <TextBlock x:Name="TxtAssociationsPage" VerticalAlignment="Center" />
+                    <Button x:Name="BtnAssociationsNext" Tag="associations" Click="TabNextPage_Click" />
+                  </StackPanel>
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
             <TabItem x:Name="TabPossessions">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="8,4,8,8" Spacing="8">

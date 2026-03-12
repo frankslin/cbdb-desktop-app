@@ -35,7 +35,7 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
         1,
         1,
         1,
-        0,
+        1,
         0,
         1,
         1,
@@ -226,6 +226,47 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
         new PersonStatusItem(1, "士大夫 / Literati Official", 1060, "嘉祐", 5, "Exact", 1100, "元符", 3, "Exact", "宋史", "55", "Sample status note")
     };
 
+    private static readonly IReadOnlyList<PersonAssociationItem> Associations = new[] {
+        new PersonAssociationItem(
+            1,
+            2,
+            "黃庭堅",
+            "Huang Tingjian",
+            "友人 / Friend",
+            "父 / Father",
+            "蘇洵",
+            "Su Xun",
+            "子 / Son",
+            "黃大臨",
+            "Huang Dalin",
+            "蘇轍",
+            "Su Zhe",
+            "開封",
+            "Kaifeng",
+            1094,
+            "紹聖 / Shaosheng",
+            1,
+            4,
+            false,
+            12,
+            "甲子 / jia zi",
+            "確切 / Exact",
+            "詩文唱和",
+            "Poetic exchange",
+            "翰林院",
+            "Hanlin Academy",
+            "宴集",
+            "Gathering",
+            "詩",
+            "Poetry",
+            "東坡唱和集",
+            "宋史",
+            "History of Song",
+            "101-102",
+            "Sample association note"
+        )
+    };
+
     private static readonly IReadOnlyList<PersonPossessionItem> Possessions = new[] {
         new PersonPossessionItem(501, 1, "田產 / Landholding", "受賜 / Granted", "120", "畝 / mu", 1085, "元豐", 8, "Exact", "常州", "Changzhou", "宋史", "78", "Sample possession note")
     };
@@ -283,6 +324,10 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
 
     public Task<IReadOnlyList<PersonStatusItem>> GetStatusesAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
         return Task.FromResult(personId == Detail.PersonId ? Statuses : Array.Empty<PersonStatusItem>());
+    }
+
+    public Task<IReadOnlyList<PersonAssociationItem>> GetAssociationsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
+        return Task.FromResult(personId == Detail.PersonId ? Associations : Array.Empty<PersonAssociationItem>());
     }
 
     public Task<IReadOnlyList<PersonPossessionItem>> GetPossessionsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
