@@ -42,11 +42,7 @@ jobs:
           if (Test-Path data) {
             Copy-Item data artifacts/publish/win-x64/data -Recurse -Force
           }
-          Copy-Item README.md artifacts/publish/win-x64/README.md
-          if (Test-Path AGENTS.md) {
-            Copy-Item AGENTS.md artifacts/publish/win-x64/AGENTS.md
-          }
-
+          Copy-Item THIRD-PARTY-LICENSES.md artifacts/publish/win-x64/THIRD-PARTY-LICENSES.md
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

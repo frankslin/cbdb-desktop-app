@@ -114,11 +114,7 @@ jobs:
             cp -R data "${macos_dir}/data"
           fi
 
-          cp README.md "${macos_dir}/README.md"
-
-          if [ -f AGENTS.md ]; then
-            cp AGENTS.md "${macos_dir}/AGENTS.md"
-          fi
+          cp THIRD-PARTY-LICENSES.md "${macos_dir}/THIRD-PARTY-LICENSES.md"
 
       - name: Archive app bundle
         shell: bash
