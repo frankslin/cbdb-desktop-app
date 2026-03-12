@@ -1807,6 +1807,10 @@ public partial class PersonBrowserWindow : Window {
         double minHeight = 28,
         bool multiline = false
     ) {
+        var effectiveMinHeight = multiline
+            ? Math.Max(minHeight, 64)
+            : Math.Max(minHeight, 32);
+
         var labelBlock = new TextBlock {
             Text = label,
             VerticalAlignment = VerticalAlignment.Center,
@@ -1821,8 +1825,10 @@ public partial class PersonBrowserWindow : Window {
             IsReadOnly = true,
             TextWrapping = multiline ? TextWrapping.Wrap : TextWrapping.NoWrap,
             AcceptsReturn = multiline,
-            MinHeight = minHeight,
+            MinHeight = effectiveMinHeight,
             MaxLines = multiline ? 0 : 1,
+            Padding = new Thickness(6, 4),
+            VerticalContentAlignment = multiline ? VerticalAlignment.Top : VerticalAlignment.Center,
             Margin = new Thickness(0, 0, 12, 6)
         };
         Grid.SetRow(valueBox, row);

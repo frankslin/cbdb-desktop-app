@@ -360,7 +360,7 @@ public sealed class AppLocalizationService : ILocalizationService {
         },
         [UiLanguage.SimplifiedChinese] = new(StringComparer.OrdinalIgnoreCase) {
             ["window.title"] = "导航面板",
-            ["header.main"] = "中国历代人物传记资料库",
+            ["header.main"] = "中国历代人物传记数据库",
             ["button.report_error"] = "问题回报",
             ["button.change_index_address"] = "修改索引地址排序",
             ["button.relink_tables"] = "切换数据集",
@@ -385,7 +385,7 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["status.module_selected"] = "已选模块：{0}",
             ["about.title"] = "關於 CBDB",
             ["about.close"] = "关闭",
-            ["about.body"] = "中國歷代人物傳記資料庫是一個可自由存取的關聯式資料庫，收錄超過六十五萬人的傳記資訊。CBDB 由哈佛大學、中央研究院與北京大學共同合作建置。",
+            ["about.body"] = "中国历代人物传记数据库是一个可自由存取的关系型数据库，收录超过六十五万人的传记信息。CBDB 由哈佛大学、中央研究院与北京大学共同合作建置。",
             ["msg.index_addr_todo"] = "导航壳完成后再移植此模块。",
             ["msg.user_guide_opened"] = "已打开用户指南",
             ["msg.user_guide_failed"] = "打开用户指南失败",

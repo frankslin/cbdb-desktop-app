@@ -27,7 +27,7 @@
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
   </Window.Styles>
-  <Grid Margin="14" ColumnDefinitions="*,150" RowDefinitions="Auto,*,Auto">
+  <Grid Margin="14" ColumnDefinitions="*,200" RowDefinitions="Auto,*,Auto">
     <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,Auto">
       <Border Grid.Column="0"
               HorizontalAlignment="Center"

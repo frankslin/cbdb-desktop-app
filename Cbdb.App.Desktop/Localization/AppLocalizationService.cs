@@ -244,7 +244,7 @@ public sealed class AppLocalizationService : ILocalizationService {
         },
         [UiLanguage.SimplifiedChinese] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
             ["window.title"] = "导航面板",
-            ["header.main"] = "中国历代人物传记资料库",
+            ["header.main"] = "中国历代人物传记数据库",
             ["button.browse"] = "选择文件",
             ["button.check_db"] = "检查数据库",
             ["button.users_guide"] = "用户指南",
@@ -363,7 +363,6 @@ public sealed class AppLocalizationService : ILocalizationService {
         Application.Current.Resources["AppFontFamily"] = new FontFamily(familyName);
     }
 }
-
 
 
 

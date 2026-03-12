@@ -10,6 +10,11 @@
     MinHeight="720"
     Background="#DCDCDC">
   <Window.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="6,4" />
+    </Style>
+
     <Style Selector="TabControl">
       <Setter Property="Background" Value="#E9E9E9" />
     </Style>
