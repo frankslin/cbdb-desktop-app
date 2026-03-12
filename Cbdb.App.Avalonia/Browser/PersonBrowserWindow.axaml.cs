@@ -241,6 +241,7 @@ public partial class PersonBrowserWindow : Window {
         _tabBasic.Header = T("browser.tab_basic");
         UpdateTabHeaders(_currentDetail);
         _txtNoSelection.Text = _currentDetail is null ? T("browser.no_selection") : string.Empty;
+        _txtNoSelection.IsVisible = _currentDetail is null;
         var loadingText = T("status.checking");
         _txtAddressesLoading.Text = loadingText;
         _txtAddressesEmpty.Text = _currentAddresses.Count == 0 ? T("browser.addresses_none") : string.Empty;
@@ -398,6 +399,7 @@ public partial class PersonBrowserWindow : Window {
             ResetLazyTabs();
             await EnsureSelectedTabLoadedAsync();
             _txtNoSelection.Text = string.Empty;
+            _txtNoSelection.IsVisible = false;
             UpdateTabHeaders(detail);
         } catch (Exception ex) {
             _txtRecord.Text = ex.Message;
@@ -1795,6 +1797,7 @@ public partial class PersonBrowserWindow : Window {
         ClearBasicInfo();
         ResetLazyTabs();
         _txtNoSelection.Text = T("browser.no_selection");
+        _txtNoSelection.IsVisible = true;
         UpdateTabHeaders(null);
         UpdateRecordText();
     }
