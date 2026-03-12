@@ -13,6 +13,9 @@ using Cbdb.App.Data;
 namespace Cbdb.App.Avalonia;
 
 public partial class MainWindow : Window {
+    private const string UserGuideUrlEn = "https://cbdb-project.github.io/cbdb-user-guide";
+    private const string UserGuideUrlZhTw = "https://cbdb-project.github.io/cbdb-user-guide/zh-TW/";
+
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
     private readonly AppLocalizationService _localizationService = new();
 
@@ -207,16 +210,10 @@ public partial class MainWindow : Window {
 
     private void BtnUsersGuide_Click(object? sender, RoutedEventArgs e) {
         try {
-            var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "cbdb-user-guide", "docs", "index.md"));
-            if (!File.Exists(path)) {
-                _txtStatus.Text = T("button.users_guide");
-                _txtOutput.Text = string.Format(T("msg.user_guide_not_found"), path);
-                return;
-            }
-
-            OpenExternalTarget(path);
+            var userGuideUrl = GetUserGuideUrl();
+            OpenExternalTarget(userGuideUrl);
             _txtStatus.Text = T("msg.user_guide_opened");
-            _txtOutput.Text = path;
+            _txtOutput.Text = userGuideUrl;
         } catch (Exception ex) {
             _txtStatus.Text = T("msg.user_guide_failed");
             _txtOutput.Text = ex.Message;
@@ -228,6 +225,10 @@ public partial class MainWindow : Window {
     }
 
     private string T(string key) => _localizationService.Get(key);
+
+    private string GetUserGuideUrl() {
+        return _localizationService.CurrentLanguage == UiLanguage.English ? UserGuideUrlEn : UserGuideUrlZhTw;
+    }
 
     private void InitializeComponent() {
         AvaloniaXamlLoader.Load(this);

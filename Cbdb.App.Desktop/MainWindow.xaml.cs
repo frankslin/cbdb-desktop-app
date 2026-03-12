@@ -12,6 +12,9 @@ using Microsoft.Win32;
 namespace Cbdb.App.Desktop;
 
 public partial class MainWindow : Window {
+    private const string UserGuideUrlEn = "https://cbdb-project.github.io/cbdb-user-guide";
+    private const string UserGuideUrlZhTw = "https://cbdb-project.github.io/cbdb-user-guide/zh-TW/";
+
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
     private readonly ILocalizationService _localizationService = new AppLocalizationService();
     private string _sqlitePath = string.Empty;
@@ -268,18 +271,13 @@ public partial class MainWindow : Window {
 
     private void BtnUsersGuide_Click(object sender, RoutedEventArgs e) {
         try {
-            var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "cbdb-user-guide", "docs", "index.md"));
-            if (!File.Exists(path)) {
-                TxtStatus.Text = T("button.users_guide");
-                TxtOutput.Text = string.Format(T("msg.user_guide_not_found"), path);
-                return;
-            }
-
+            var userGuideUrl = GetUserGuideUrl();
             Process.Start(new ProcessStartInfo {
-                FileName = path,
+                FileName = userGuideUrl,
                 UseShellExecute = true
             });
             TxtStatus.Text = T("msg.user_guide_opened");
+            TxtOutput.Text = userGuideUrl;
         } catch (Exception ex) {
             TxtStatus.Text = T("msg.user_guide_failed");
             TxtOutput.Text = ex.Message;
@@ -291,6 +289,10 @@ public partial class MainWindow : Window {
     }
 
     private string T(string key) => _localizationService.Get(key);
+
+    private string GetUserGuideUrl() {
+        return _localizationService.CurrentLanguage == UiLanguage.English ? UserGuideUrlEn : UserGuideUrlZhTw;
+    }
 
     private static string NormalizeSqlitePath(string? path) {
         if (string.IsNullOrWhiteSpace(path)) {
@@ -346,4 +348,3 @@ public partial class MainWindow : Window {
         return File.Exists(legacyProbe) ? legacyProbe : string.Empty;
     }
 }
-

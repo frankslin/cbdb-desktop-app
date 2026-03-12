@@ -101,7 +101,9 @@ dotnet run --project ./Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj
 6. Select a valid SQLite file from `data/`.
 7. Confirm the status changes to connected and the output shows row counts.
 8. Click `Report an Error` and confirm the browser opens.
-9. Click `Users Guide` and confirm the markdown file opens if present.
+9. Click `Users Guide` and confirm the browser opens:
+   English UI: `https://cbdb-project.github.io/cbdb-user-guide`
+   Chinese UI: `https://cbdb-project.github.io/cbdb-user-guide/zh-TW/`
 10. Click module buttons and confirm the shell shows porting placeholder messages rather than crashing.
 
 ### Expected macOS Result

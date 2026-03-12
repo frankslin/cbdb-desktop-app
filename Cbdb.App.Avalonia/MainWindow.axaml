@@ -8,6 +8,23 @@
     MinWidth="920"
     MinHeight="680"
     Background="#F2F2F2">
+  <Window.Styles>
+    <Style Selector="Button.module-tile">
+      <Setter Property="Height" Value="74" />
+      <Setter Property="Padding" Value="14,10" />
+      <Setter Property="Background" Value="#F4F4F4" />
+      <Setter Property="BorderBrush" Value="#8E8E8E" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Stretch" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.side-action">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+  </Window.Styles>
   <Grid Margin="14" ColumnDefinitions="*,150" RowDefinitions="Auto,*,Auto">
     <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,Auto">
       <Border Grid.Column="0"
@@ -40,16 +57,16 @@
             Background="#F9F9F9">
       <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-          <Button x:Name="BtnModuleBrowser" Grid.Row="0" Grid.Column="0" Margin="0,0,12,12" Height="74" Click="ModuleButton_Click" Tag="module.browser" />
-          <Button x:Name="BtnModuleEntry" Grid.Row="0" Grid.Column="1" Margin="0,0,0,12" Height="74" Click="ModuleButton_Click" Tag="module.entry" />
-          <Button x:Name="BtnModuleOffice" Grid.Row="1" Grid.Column="0" Margin="0,0,12,12" Height="74" Click="ModuleButton_Click" Tag="module.office" />
-          <Button x:Name="BtnModuleKinship" Grid.Row="1" Grid.Column="1" Margin="0,0,0,12" Height="74" Click="ModuleButton_Click" Tag="module.kinship" />
-          <Button x:Name="BtnModuleAssociations" Grid.Row="2" Grid.Column="0" Margin="0,0,12,12" Height="74" Click="ModuleButton_Click" Tag="module.associations" />
-          <Button x:Name="BtnModuleNetworks" Grid.Row="2" Grid.Column="1" Margin="0,0,0,12" Height="74" Click="ModuleButton_Click" Tag="module.networks" />
-          <Button x:Name="BtnModuleAssociationPairs" Grid.Row="3" Grid.Column="0" Margin="0,0,12,12" Height="74" Click="ModuleButton_Click" Tag="module.association_pairs" />
-          <Button x:Name="BtnModulePlace" Grid.Row="3" Grid.Column="1" Margin="0,0,0,12" Height="74" Click="ModuleButton_Click" Tag="module.place" />
-          <Button x:Name="BtnModuleStatus" Grid.Row="4" Grid.Column="0" Margin="0,0,12,0" Height="74" Click="ModuleButton_Click" Tag="module.status" />
-          <Button x:Name="BtnModuleTexts" Grid.Row="4" Grid.Column="1" Height="74" Click="ModuleButton_Click" Tag="module.texts" />
+          <Button x:Name="BtnModuleBrowser" Classes="module-tile" Grid.Row="0" Grid.Column="0" Margin="0,0,12,12" Click="ModuleButton_Click" Tag="module.browser" />
+          <Button x:Name="BtnModuleEntry" Classes="module-tile" Grid.Row="0" Grid.Column="1" Margin="0,0,0,12" Click="ModuleButton_Click" Tag="module.entry" />
+          <Button x:Name="BtnModuleOffice" Classes="module-tile" Grid.Row="1" Grid.Column="0" Margin="0,0,12,12" Click="ModuleButton_Click" Tag="module.office" />
+          <Button x:Name="BtnModuleKinship" Classes="module-tile" Grid.Row="1" Grid.Column="1" Margin="0,0,0,12" Click="ModuleButton_Click" Tag="module.kinship" />
+          <Button x:Name="BtnModuleAssociations" Classes="module-tile" Grid.Row="2" Grid.Column="0" Margin="0,0,12,12" Click="ModuleButton_Click" Tag="module.associations" />
+          <Button x:Name="BtnModuleNetworks" Classes="module-tile" Grid.Row="2" Grid.Column="1" Margin="0,0,0,12" Click="ModuleButton_Click" Tag="module.networks" />
+          <Button x:Name="BtnModuleAssociationPairs" Classes="module-tile" Grid.Row="3" Grid.Column="0" Margin="0,0,12,12" Click="ModuleButton_Click" Tag="module.association_pairs" />
+          <Button x:Name="BtnModulePlace" Classes="module-tile" Grid.Row="3" Grid.Column="1" Margin="0,0,0,12" Click="ModuleButton_Click" Tag="module.place" />
+          <Button x:Name="BtnModuleStatus" Classes="module-tile" Grid.Row="4" Grid.Column="0" Margin="0,0,12,0" Click="ModuleButton_Click" Tag="module.status" />
+          <Button x:Name="BtnModuleTexts" Classes="module-tile" Grid.Row="4" Grid.Column="1" Click="ModuleButton_Click" Tag="module.texts" />
         </Grid>
       </ScrollViewer>
     </Border>
@@ -58,11 +75,11 @@
                 Grid.Column="1"
                 VerticalAlignment="Bottom"
                 Margin="0,0,0,10">
-      <Button x:Name="BtnReportError" Height="46" Margin="0,0,0,10" Click="BtnReportError_Click" />
-      <Button x:Name="BtnRelinkTables" Height="46" Margin="0,0,0,10" Click="BtnRelinkTables_Click" />
-      <Button x:Name="BtnChangeIndexAddress" Height="46" Margin="0,0,0,10" Click="BtnChangeIndexAddress_Click" />
-      <Button x:Name="BtnUsersGuide" Height="46" Margin="0,0,0,10" Click="BtnUsersGuide_Click" />
-      <Button x:Name="BtnExit" Height="36" Click="BtnExit_Click" />
+      <Button x:Name="BtnReportError" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnReportError_Click" />
+      <Button x:Name="BtnRelinkTables" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnRelinkTables_Click" />
+      <Button x:Name="BtnChangeIndexAddress" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnChangeIndexAddress_Click" />
+      <Button x:Name="BtnUsersGuide" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnUsersGuide_Click" />
+      <Button x:Name="BtnExit" Classes="side-action" Height="36" Click="BtnExit_Click" />
     </StackPanel>
 
     <Border Grid.Row="2"
