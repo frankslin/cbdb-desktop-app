@@ -66,17 +66,19 @@ jobs:
               <key>CFBundleDevelopmentRegion</key>
               <string>en</string>
               <key>CFBundleExecutable</key>
-              <string>Cbdb.App.Avalonia</string>
+              <string>CBDB</string>
               <key>CFBundleIdentifier</key>
               <string>org.cbdb.desktop</string>
               <key>CFBundleInfoDictionaryVersion</key>
               <string>6.0</string>
+              <key>CFBundleDisplayName</key>
+              <string>CBDB</string>
               <key>CFBundleName</key>
-              <string>Cbdb</string>
+              <string>CBDB</string>
               <key>CFBundlePackageType</key>
               <string>APPL</string>
               <key>CFBundleShortVersionString</key>
-              <string>1.0.0</string>
+              <string>0.1.0</string>
               <key>CFBundleVersion</key>
               <string>${{ github.run_number }}</string>
               <key>LSMinimumSystemVersion</key>
@@ -87,7 +89,7 @@ jobs:
           </plist>
           EOF
 
-          chmod +x "${macos_dir}/Cbdb.App.Avalonia"
+          chmod +x "${macos_dir}/CBDB"
 
       - name: Copy bundled data and docs
         shell: bash
@@ -115,11 +117,11 @@ jobs:
 
           runtime="${{ matrix.runtime }}"
           archive_dir="artifacts/publish/${runtime}"
-          ditto -c -k --sequesterRsrc --keepParent "${archive_dir}/Cbdb.app" "${archive_dir}/Cbdb-${runtime}.zip"
+          ditto -c -k --sequesterRsrc --keepParent "${archive_dir}/Cbdb.app" "${archive_dir}/Cbdb-0.1.0-${runtime}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cbdb-avalonia-${{ matrix.runtime }}
-          path: artifacts/publish/${{ matrix.runtime }}/Cbdb-${{ matrix.runtime }}.zip
+          name: cbdb-0.1.0-${{ matrix.runtime }}
+          path: artifacts/publish/${{ matrix.runtime }}/Cbdb-0.1.0-${{ matrix.runtime }}.zip
           if-no-files-found: error
