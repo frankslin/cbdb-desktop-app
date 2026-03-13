@@ -6,6 +6,11 @@ public interface IStatusQueryService {
         CancellationToken cancellationToken = default
     );
 
+    Task<StatusPickerData> GetStatusPickerDataAsync(
+        string sqlitePath,
+        CancellationToken cancellationToken = default
+    );
+
     Task<StatusQueryResult> QueryAsync(
         string sqlitePath,
         StatusQueryRequest request,

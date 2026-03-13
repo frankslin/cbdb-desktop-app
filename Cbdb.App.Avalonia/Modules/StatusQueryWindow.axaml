@@ -27,28 +27,35 @@
   <Grid Margin="10" RowDefinitions="Auto,*,Auto">
     <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
       <Grid RowDefinitions="Auto,Auto">
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,280,Auto,*" RowDefinitions="Auto,Auto">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,280,Auto,*,Auto,Auto" RowDefinitions="Auto,Auto,Auto">
           <TextBlock x:Name="LblPersonKeyword" Grid.Row="0" Grid.Column="0" Margin="0,6,8,0" VerticalAlignment="Center" />
           <TextBox x:Name="TxtPersonKeyword" Grid.Row="0" Grid.Column="1" Margin="0,0,12,8" />
           <TextBlock x:Name="LblStatusSelection" Grid.Row="0" Grid.Column="2" Margin="0,6,8,0" VerticalAlignment="Center" />
-          <TextBox x:Name="TxtSelectedStatuses" Grid.Row="0" Grid.Column="3" Margin="0,0,0,8" IsReadOnly="True" />
+          <TextBox x:Name="TxtSelectedStatuses" Grid.Row="0" Grid.Column="3" Margin="0,0,12,8" IsReadOnly="True" />
+          <Button x:Name="BtnSelectStatuses" Grid.Row="0" Grid.Column="4" Margin="0,0,8,8" Click="BtnSelectStatuses_Click" />
+          <Button x:Name="BtnClearStatuses" Grid.Row="0" Grid.Column="5" Margin="0,0,0,8" Click="BtnClearStatuses_Click" />
 
-          <CheckBox x:Name="ChkUseIndexYear" Grid.Row="1" Grid.Column="0" Margin="0,0,8,0" />
-          <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,12,0" ColumnDefinitions="*,Auto,*">
+          <TextBlock x:Name="LblPlaceSelection" Grid.Row="1" Grid.Column="0" Margin="0,6,8,0" VerticalAlignment="Center" />
+          <TextBox x:Name="TxtSelectedPlaces" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,0,12,8" IsReadOnly="True" />
+          <Button x:Name="BtnSelectPlaces" Grid.Row="1" Grid.Column="4" Margin="0,0,8,8" Click="BtnSelectPlaces_Click" />
+          <Button x:Name="BtnClearPlaces" Grid.Row="1" Grid.Column="5" Margin="0,0,0,8" Click="BtnClearPlaces_Click" />
+
+          <CheckBox x:Name="ChkIncludeSubUnits" Grid.Row="2" Grid.Column="0" Margin="0,0,8,0" />
+          <CheckBox x:Name="ChkUseIndexYear" Grid.Row="2" Grid.Column="1" Margin="0,0,8,0" />
+          <Grid Grid.Row="2" Grid.Column="2" Margin="0,0,12,0" ColumnDefinitions="*,Auto,*">
             <TextBox x:Name="TxtIndexYearFrom" Watermark="-200" />
             <TextBlock x:Name="LblIndexYearTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
             <TextBox x:Name="TxtIndexYearTo" Grid.Column="2" Watermark="1911" />
           </Grid>
 
-          <controls:DynastyRangePicker x:Name="DynastyPicker" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" />
+          <controls:DynastyRangePicker x:Name="DynastyPicker" Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="3" />
         </Grid>
 
-        <Grid Grid.Row="1" Margin="0,10,0,0" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*">
-          <Button x:Name="BtnSelectStatuses" Grid.Column="0" Margin="0,0,8,0" Click="BtnSelectStatuses_Click" />
-          <Button x:Name="BtnClearStatuses" Grid.Column="1" Margin="0,0,8,0" Click="BtnClearStatuses_Click" />
-          <Button x:Name="BtnRunQuery" Grid.Column="2" Margin="0,0,8,0" Click="BtnRunQuery_Click" />
-          <Button x:Name="BtnSavePersonIds" Grid.Column="3" Margin="0,0,8,0" Click="BtnSavePersonIds_Click" />
-          <Button x:Name="BtnClose" Grid.Column="4" Click="BtnClose_Click" />
+        <Grid Grid.Row="1" Margin="0,10,0,0" ColumnDefinitions="Auto,Auto,Auto,Auto,*">
+          <Button x:Name="BtnRunQuery" Grid.Column="0" Margin="0,0,8,0" Click="BtnRunQuery_Click" />
+          <Button x:Name="BtnSavePersonIds" Grid.Column="1" Margin="0,0,8,0" Click="BtnSavePersonIds_Click" />
+          <Button x:Name="BtnSaveStatusCodes" Grid.Column="2" Margin="0,0,8,0" Click="BtnSaveStatusCodes_Click" />
+          <Button x:Name="BtnClose" Grid.Column="3" Click="BtnClose_Click" />
         </Grid>
       </Grid>
     </Border>
@@ -67,14 +74,21 @@
               <d:DataGridTextColumn Binding="{Binding NameChn}" Width="120" />
               <d:DataGridTextColumn Binding="{Binding Name}" Width="150" />
               <d:DataGridTextColumn Binding="{Binding IndexYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding IndexYearType}" Width="110" />
+              <d:DataGridTextColumn Binding="{Binding Sex}" Width="64" />
               <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="100" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddressId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding Status}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding StatusCode}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding FirstYear}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding LastYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding Supplement}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding Source}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding Pages}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding IndexAddress}" Width="180" />
+              <d:DataGridTextColumn Binding="{Binding XCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding YCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding Notes}" Width="220" />
             </d:DataGrid.Columns>
           </d:DataGrid>
         </TabItem>
@@ -91,8 +105,14 @@
               <d:DataGridTextColumn Binding="{Binding NameChn}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding Name}" Width="170" />
               <d:DataGridTextColumn Binding="{Binding IndexYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding IndexYearType}" Width="110" />
+              <d:DataGridTextColumn Binding="{Binding Sex}" Width="64" />
               <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="110" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddressId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding IndexAddress}" Width="220" />
+              <d:DataGridTextColumn Binding="{Binding XCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding YCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding XyCount}" Width="80" />
               <d:DataGridTextColumn Binding="{Binding StatusCount}" Width="90" />
             </d:DataGrid.Columns>
           </d:DataGrid>
