@@ -2,7 +2,8 @@
     x:Class="Cbdb.App.Avalonia.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Name="CBDB">
+    Name="CBDB"
+    RequestedThemeVariant="Light">
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />

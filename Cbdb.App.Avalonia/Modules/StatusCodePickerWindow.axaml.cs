@@ -119,11 +119,14 @@ public partial class StatusCodePickerWindow : Window {
         RenderOptions();
     }
 
-    private void TxtSearch_KeyUp(object? sender, KeyEventArgs e) {
-        ResetSearchState();
-        if (e.Key == Key.Enter) {
-            RunSearch(moveNext: false);
+    private void TxtSearch_KeyDown(object? sender, KeyEventArgs e) {
+        if (e.Key != Key.Enter) {
+            return;
         }
+
+        e.Handled = true;
+        ResetSearchState();
+        RunSearch(moveNext: false);
     }
 
     private void BtnFind_Click(object? sender, RoutedEventArgs e) {

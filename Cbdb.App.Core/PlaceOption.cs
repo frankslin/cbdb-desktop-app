@@ -13,13 +13,20 @@ public sealed record PlaceOption(
     double? XCoord,
     double? YCoord
 ) {
-    public string DisplayLabel => string.IsNullOrWhiteSpace(NameChn)
-        ? string.IsNullOrWhiteSpace(Name)
-            ? $"#{AddressId}"
-            : $"#{AddressId} {Name}"
-        : string.IsNullOrWhiteSpace(Name)
-            ? $"#{AddressId} {NameChn}"
-            : $"#{AddressId} {NameChn} / {Name}";
+    public string DisplayLabel {
+        get {
+            var primary = string.IsNullOrWhiteSpace(NameChn) ? Name : NameChn;
+            var secondary = string.IsNullOrWhiteSpace(NameChn) || string.IsNullOrWhiteSpace(Name)
+                ? null
+                : Name;
+
+            return string.IsNullOrWhiteSpace(primary)
+                ? $"({AddressId})"
+                : string.IsNullOrWhiteSpace(secondary)
+                    ? $"{primary} ({AddressId})"
+                    : $"{primary} / {secondary} ({AddressId})";
+        }
+    }
 
     public string DetailLabel {
         get {

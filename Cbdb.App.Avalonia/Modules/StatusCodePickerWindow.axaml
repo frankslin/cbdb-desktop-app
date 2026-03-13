@@ -22,7 +22,7 @@
   <Grid Margin="10" RowDefinitions="Auto,*,Auto">
     <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
       <Grid ColumnDefinitions="*,Auto,Auto">
-        <TextBox x:Name="TxtSearch" Watermark="Search" KeyUp="TxtSearch_KeyUp" />
+        <TextBox x:Name="TxtSearch" Watermark="Search" KeyDown="TxtSearch_KeyDown" />
         <Button x:Name="BtnFind" Grid.Column="1" Margin="8,0,0,0" Click="BtnFind_Click" />
         <Button x:Name="BtnFindNext" Grid.Column="2" Margin="8,0,0,0" Click="BtnFindNext_Click" />
       </Grid>
