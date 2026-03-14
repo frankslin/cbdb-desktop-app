@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -41,10 +41,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -68,7 +68,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Validate release version
         shell: pwsh
@@ -83,7 +83,7 @@ jobs:
           }
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -119,7 +119,7 @@ jobs:
           Compress-Archive -Path artifacts/publish/win-x64/* -DestinationPath $zipPath -Force
 
       - name: Upload release asset
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cbdb-${{ env.RELEASE_VERSION }}-win-x64
           path: artifacts/publish/cbdb-${{ env.RELEASE_VERSION }}-win-x64.zip
@@ -139,7 +139,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Validate release version
         shell: bash
@@ -156,7 +156,7 @@ jobs:
           fi
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -260,7 +260,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "${archive_dir}/Cbdb.app" "${archive_dir}/cbdb-${RELEASE_VERSION}-${runtime}.zip"
 
       - name: Upload release asset
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cbdb-${{ env.RELEASE_VERSION }}-${{ matrix.runtime }}
           path: artifacts/publish/${{ matrix.runtime }}/cbdb-${{ env.RELEASE_VERSION }}-${{ matrix.runtime }}.zip
@@ -277,22 +277,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download win-x64 asset
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: cbdb-${{ env.RELEASE_VERSION }}-win-x64
           path: artifacts/release
 
       - name: Download osx-arm64 asset
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: cbdb-${{ env.RELEASE_VERSION }}-osx-arm64
           path: artifacts/release
 
       - name: Download osx-x64 asset
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: cbdb-${{ env.RELEASE_VERSION }}-osx-x64
           path: artifacts/release

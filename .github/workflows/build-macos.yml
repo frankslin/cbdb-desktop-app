@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Read app version
         shell: bash
@@ -32,7 +32,7 @@ jobs:
           echo "APP_VERSION=${version}" >> "$GITHUB_ENV"
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -146,7 +146,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "${archive_dir}/Cbdb.app" "${archive_dir}/Cbdb-${APP_VERSION}-${runtime}.zip"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cbdb-${{ env.APP_VERSION }}-${{ matrix.runtime }}
           path: artifacts/publish/${{ matrix.runtime }}/Cbdb-${{ env.APP_VERSION }}-${{ matrix.runtime }}.zip
