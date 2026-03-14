@@ -11,6 +11,12 @@ public interface IPersonBrowserService {
         CancellationToken cancellationToken = default
     );
 
+    Task<IReadOnlyList<PersonListItem>> GetPeopleByIdsAsync(
+        string sqlitePath,
+        IReadOnlyList<int> personIds,
+        CancellationToken cancellationToken = default
+    );
+
     Task<PersonDetail?> GetDetailAsync(
         string sqlitePath,
         int personId,
@@ -68,6 +74,7 @@ public interface IPersonBrowserService {
     Task<IReadOnlyList<PersonKinshipItem>> GetKinshipsAsync(
         string sqlitePath,
         int personId,
+        bool expandNetwork = false,
         CancellationToken cancellationToken = default
     );
 

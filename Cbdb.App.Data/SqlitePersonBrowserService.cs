@@ -6,6 +6,18 @@ using Microsoft.Data.Sqlite;
 namespace Cbdb.App.Data;
 
 public sealed class SqlitePersonBrowserService : IPersonBrowserService {
+    private static readonly IReadOnlyDictionary<string, KinshipReductionRule> KinshipReductionRules =
+        new Dictionary<string, KinshipReductionRule>(StringComparer.OrdinalIgnoreCase) {
+            ["BB"] = new("B", 0, 0, -1, 0),
+            ["BZ"] = new("Z", 0, 0, -1, 0),
+            ["DB"] = new("S", 0, 0, -1, 0),
+            ["DZ"] = new("D", 0, 0, -1, 0),
+            ["SB"] = new("S", 0, 0, -1, 0),
+            ["SZ"] = new("D", 0, 0, -1, 0),
+            ["ZB"] = new("B", 0, 0, -1, 0),
+            ["ZZ"] = new("Z", 0, 0, -1, 0)
+        };
+
     private static readonly HashSet<string> HiddenBiogMainFields = new(StringComparer.OrdinalIgnoreCase) {
         "c_personid",
         "c_surname_chn",
@@ -165,6 +177,80 @@ LIMIT $limit OFFSET $offset;";
         }
 
         return list;
+    }
+
+    public async Task<IReadOnlyList<PersonListItem>> GetPeopleByIdsAsync(
+        string sqlitePath,
+        IReadOnlyList<int> personIds,
+        CancellationToken cancellationToken = default
+    ) {
+        if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath) || personIds.Count == 0) {
+            return Array.Empty<PersonListItem>();
+        }
+
+        var orderedIds = new List<int>(personIds.Count);
+        var seen = new HashSet<int>();
+        foreach (var personId in personIds) {
+            if (personId > 0 && seen.Add(personId)) {
+                orderedIds.Add(personId);
+            }
+        }
+
+        if (orderedIds.Count == 0) {
+            return Array.Empty<PersonListItem>();
+        }
+
+        var builder = new SqliteConnectionStringBuilder {
+            DataSource = sqlitePath,
+            Mode = SqliteOpenMode.ReadOnly
+        };
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        var results = new Dictionary<int, PersonListItem>();
+        const int chunkSize = 900;
+
+        for (var offset = 0; offset < orderedIds.Count; offset += chunkSize) {
+            var chunk = orderedIds.Skip(offset).Take(chunkSize).ToArray();
+            await using var command = connection.CreateCommand();
+
+            var parameterNames = new string[chunk.Length];
+            for (var i = 0; i < chunk.Length; i++) {
+                var parameterName = $"$id{i}";
+                parameterNames[i] = parameterName;
+                command.Parameters.AddWithValue(parameterName, chunk[i]);
+            }
+
+            command.CommandText = $@"
+SELECT
+    b.c_personid,
+    b.c_name_chn,
+    b.c_name,
+    b.c_index_year,
+    COALESCE(ac.c_name_chn, ac.c_name) AS c_index_address
+FROM BIOG_MAIN b
+LEFT JOIN ADDR_CODES ac ON ac.c_addr_id = b.c_index_addr_id
+WHERE b.c_personid IN ({string.Join(", ", parameterNames)})
+ORDER BY b.c_personid;";
+
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken)) {
+                var item = new PersonListItem(
+                    PersonId: reader.GetInt32(0),
+                    NameChn: reader.IsDBNull(1) ? null : reader.GetString(1),
+                    NameRm: reader.IsDBNull(2) ? null : reader.GetString(2),
+                    IndexYear: reader.IsDBNull(3) ? null : reader.GetInt32(3),
+                    IndexAddress: reader.IsDBNull(4) ? null : reader.GetString(4)
+                );
+                results[item.PersonId] = item;
+            }
+        }
+
+        return orderedIds
+            .Where(results.ContainsKey)
+            .Select(personId => results[personId])
+            .ToArray();
     }
 
     public async Task<PersonDetail?> GetDetailAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
@@ -1170,6 +1256,7 @@ ORDER BY ed.c_year, ed.c_sequence, ed.c_event_code;";
     public async Task<IReadOnlyList<PersonKinshipItem>> GetKinshipsAsync(
         string sqlitePath,
         int personId,
+        bool expandNetwork = false,
         CancellationToken cancellationToken = default
     ) {
         if (string.IsNullOrWhiteSpace(sqlitePath) || !File.Exists(sqlitePath)) {
@@ -1177,15 +1264,21 @@ ORDER BY ed.c_year, ed.c_sequence, ed.c_event_code;";
         }
 
         var builder = new SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = SqliteOpenMode.ReadOnly };
-        var items = new List<PersonKinshipItem>();
 
         await using var connection = new SqliteConnection(builder.ConnectionString);
         await connection.OpenAsync(cancellationToken);
+
+        if (expandNetwork) {
+            return await GetExpandedKinshipsAsync(connection, personId, cancellationToken);
+        }
+
+        var items = new List<PersonKinshipItem>();
 
         await using var command = connection.CreateCommand();
         command.CommandText = @"
 SELECT
     kd.c_kin_id,
+    kc.c_kinrel_simplified,
     kc.c_kinrel_chn,
     kc.c_kinrel,
     kin.c_name_chn,
@@ -1210,21 +1303,493 @@ ORDER BY kd.c_kin_id, kd.c_kin_code;";
         while (await reader.ReadAsync(cancellationToken)) {
             items.Add(new PersonKinshipItem(
                 KinPersonId: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
-                Kinship: JoinDisplay(reader.IsDBNull(1) ? null : reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)),
-                KinNameChn: reader.IsDBNull(3) ? null : reader.GetString(3),
-                KinName: reader.IsDBNull(4) ? null : reader.GetString(4),
-                UpStep: reader.IsDBNull(5) ? null : reader.GetInt32(5),
-                DownStep: reader.IsDBNull(6) ? null : reader.GetInt32(6),
-                MarriageStep: reader.IsDBNull(7) ? null : reader.GetInt32(7),
-                CollateralStep: reader.IsDBNull(8) ? null : reader.GetInt32(8),
-                Source: JoinDisplay(reader.IsDBNull(9) ? null : reader.GetString(9), reader.IsDBNull(10) ? null : reader.GetString(10)),
-                Pages: reader.IsDBNull(11) ? null : reader.GetString(11),
-                Notes: reader.IsDBNull(12) ? null : reader.GetString(12)
+                Kinship: JoinDisplay(reader.IsDBNull(2) ? null : reader.GetString(2), reader.IsDBNull(3) ? null : reader.GetString(3)),
+                KinNameChn: reader.IsDBNull(4) ? null : reader.GetString(4),
+                KinName: reader.IsDBNull(5) ? null : reader.GetString(5),
+                IsDerived: false,
+                UpStep: reader.IsDBNull(6) ? null : reader.GetInt32(6),
+                DownStep: reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                MarriageStep: reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                CollateralStep: reader.IsDBNull(9) ? null : reader.GetInt32(9),
+                Source: JoinDisplay(reader.IsDBNull(10) ? null : reader.GetString(10), reader.IsDBNull(11) ? null : reader.GetString(11)),
+                Pages: reader.IsDBNull(12) ? null : reader.GetString(12),
+                Notes: reader.IsDBNull(13) ? null : reader.GetString(13)
             ));
         }
 
         return items;
     }
+
+    private async Task<IReadOnlyList<PersonKinshipItem>> GetExpandedKinshipsAsync(
+        SqliteConnection connection,
+        int personId,
+        CancellationToken cancellationToken
+    ) {
+        const int maxLoop = 10;
+        const int maxUp = 2;
+        const int maxDown = 2;
+        const int maxMarriage = 1;
+        const int maxCollateral = 1;
+
+        var personNameCache = new Dictionary<int, (string? NameChn, string? Name)>();
+        var edgeCache = new Dictionary<int, IReadOnlyList<KinshipEdge>>();
+        var kinshipDisplayLookup = await LoadKinshipDisplayLookupAsync(connection, cancellationToken);
+        var bestByKinId = new Dictionary<int, KinshipTraversalState>();
+        var frontier = new Dictionary<int, KinshipTraversalState>();
+
+        var rootName = await LoadPersonNameAsync(connection, personId, personNameCache, cancellationToken);
+        var directEdges = await LoadDirectKinshipEdgesAsync(connection, personId, edgeCache, cancellationToken);
+
+        foreach (var edge in directEdges) {
+            if (edge.KinPersonId == personId) {
+                continue;
+            }
+
+            var state = KinshipTraversalState.CreateRoot(edge, rootName);
+            TryAddBest(bestByKinId, state);
+
+            if (IsWithinExpansionLimits(state, maxUp, maxDown, maxMarriage, maxCollateral)) {
+                TryAddBest(frontier, state);
+            }
+        }
+
+        for (var depth = 1; depth < maxLoop && frontier.Count > 0; depth++) {
+            var nextFrontier = new Dictionary<int, KinshipTraversalState>();
+
+            foreach (var current in frontier.Values) {
+                var edges = await LoadDirectKinshipEdgesAsync(connection, current.KinPersonId, edgeCache, cancellationToken);
+                foreach (var edge in edges) {
+                    if (edge.KinPersonId == personId || current.VisitedPersonIds.Contains(edge.KinPersonId)) {
+                        continue;
+                    }
+
+                    var candidate = current.Extend(edge, kinshipDisplayLookup);
+                    if (!IsWithinExpansionLimits(candidate, maxUp, maxDown, maxMarriage, maxCollateral)) {
+                        continue;
+                    }
+
+                    TryAddBest(bestByKinId, candidate);
+                    TryAddBest(nextFrontier, candidate);
+                }
+            }
+
+            frontier = nextFrontier;
+        }
+
+        return bestByKinId.Values
+            .OrderBy(item => item.IsDerived)
+            .ThenBy(item => item.UpStep.GetValueOrDefault() * 1000
+                + item.DownStep.GetValueOrDefault() * 100
+                + item.CollateralStep.GetValueOrDefault() * 10
+                + item.MarriageStep.GetValueOrDefault())
+            .ThenBy(item => item.Distance)
+            .ThenBy(item => item.KinPersonId)
+            .Select(item => item.ToItem())
+            .ToArray();
+    }
+
+    private static async Task<IReadOnlyDictionary<string, string>> LoadKinshipDisplayLookupAsync(
+        SqliteConnection connection,
+        CancellationToken cancellationToken
+    ) {
+        var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+SELECT c_kinrel_simplified, c_kinrel_chn, c_kinrel
+FROM KINSHIP_CODES
+WHERE c_kinrel_simplified IS NOT NULL AND TRIM(c_kinrel_simplified) <> ''
+ORDER BY c_kincode;
+""";
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            var simplified = reader.IsDBNull(0) ? null : reader.GetString(0);
+            if (string.IsNullOrWhiteSpace(simplified) || lookup.ContainsKey(simplified)) {
+                continue;
+            }
+
+            lookup[simplified] = JoinDisplay(
+                reader.IsDBNull(1) ? null : reader.GetString(1),
+                reader.IsDBNull(2) ? null : reader.GetString(2)
+            ) ?? simplified;
+        }
+
+        return lookup;
+    }
+
+    private static bool IsWithinExpansionLimits(KinshipTraversalState state, int maxUp, int maxDown, int maxMarriage, int maxCollateral) {
+        return state.UpStep.GetValueOrDefault() <= maxUp
+            && state.DownStep.GetValueOrDefault() <= maxDown
+            && state.MarriageStep.GetValueOrDefault() <= maxMarriage
+            && state.CollateralStep.GetValueOrDefault() <= maxCollateral;
+    }
+
+    private static void TryAddBest(Dictionary<int, KinshipTraversalState> map, KinshipTraversalState candidate) {
+        if (!map.TryGetValue(candidate.KinPersonId, out var existing) || candidate.IsBetterThan(existing)) {
+            map[candidate.KinPersonId] = candidate;
+        }
+    }
+
+    private async Task<(string? NameChn, string? Name)> LoadPersonNameAsync(
+        SqliteConnection connection,
+        int personId,
+        Dictionary<int, (string? NameChn, string? Name)> cache,
+        CancellationToken cancellationToken
+    ) {
+        if (cache.TryGetValue(personId, out var existing)) {
+            return existing;
+        }
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+SELECT c_name_chn, c_name
+FROM BIOG_MAIN
+WHERE c_personid = $personId
+LIMIT 1;
+""";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        var value = await reader.ReadAsync(cancellationToken)
+            ? (
+                reader.IsDBNull(0) ? null : reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetString(1)
+            )
+            : (null, null);
+
+        cache[personId] = value;
+        return value;
+    }
+
+    private async Task<IReadOnlyList<KinshipEdge>> LoadDirectKinshipEdgesAsync(
+        SqliteConnection connection,
+        int personId,
+        Dictionary<int, IReadOnlyList<KinshipEdge>> cache,
+        CancellationToken cancellationToken
+    ) {
+        if (cache.TryGetValue(personId, out var existing)) {
+            return existing;
+        }
+
+        var items = new List<KinshipEdge>();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+SELECT
+    kd.c_kin_id,
+    kc.c_kinrel_simplified,
+    kc.c_kinrel_chn,
+    kc.c_kinrel,
+    kin.c_name_chn,
+    kin.c_name,
+    kc.c_upstep,
+    kc.c_dwnstep,
+    kc.c_marstep,
+    kc.c_colstep,
+    src.c_title_chn,
+    src.c_title,
+    kd.c_pages,
+    kd.c_notes
+FROM KIN_DATA kd
+LEFT JOIN KINSHIP_CODES kc ON kc.c_kincode = kd.c_kin_code
+LEFT JOIN BIOG_MAIN kin ON kin.c_personid = kd.c_kin_id
+LEFT JOIN TEXT_CODES src ON src.c_textid = kd.c_source
+WHERE kd.c_personid = $personId
+ORDER BY kd.c_kin_id, kd.c_kin_code;";
+        command.Parameters.AddWithValue("$personId", personId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            items.Add(new KinshipEdge(
+                KinPersonId: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                RawKinship: reader.IsDBNull(1) ? null : reader.GetString(1),
+                Kinship: JoinDisplay(reader.IsDBNull(2) ? null : reader.GetString(2), reader.IsDBNull(3) ? null : reader.GetString(3)),
+                KinNameChn: reader.IsDBNull(4) ? null : reader.GetString(4),
+                KinName: reader.IsDBNull(5) ? null : reader.GetString(5),
+                UpStep: reader.IsDBNull(6) ? null : reader.GetInt32(6),
+                DownStep: reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                MarriageStep: reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                CollateralStep: reader.IsDBNull(9) ? null : reader.GetInt32(9),
+                Source: JoinDisplay(reader.IsDBNull(10) ? null : reader.GetString(10), reader.IsDBNull(11) ? null : reader.GetString(11)),
+                Pages: reader.IsDBNull(12) ? null : reader.GetString(12),
+                Notes: reader.IsDBNull(13) ? null : reader.GetString(13)
+            ));
+        }
+
+        cache[personId] = items;
+        return items;
+    }
+
+    private sealed record KinshipEdge(
+        int KinPersonId,
+        string? RawKinship,
+        string? Kinship,
+        string? KinNameChn,
+        string? KinName,
+        int? UpStep,
+        int? DownStep,
+        int? MarriageStep,
+        int? CollateralStep,
+        string? Source,
+        string? Pages,
+        string? Notes
+    );
+
+    private sealed record KinshipTraversalState(
+        int KinPersonId,
+        string? RawKinship,
+        string? Kinship,
+        string? KinNameChn,
+        string? KinName,
+        bool IsDerived,
+        int? UpStep,
+        int? DownStep,
+        int? MarriageStep,
+        int? CollateralStep,
+        string? Source,
+        string? Pages,
+        string? PathDescription,
+        string? SupplementalNotes,
+        string? Notes,
+        int Distance,
+        HashSet<int> VisitedPersonIds
+    ) {
+        public static KinshipTraversalState CreateRoot(KinshipEdge edge, (string? NameChn, string? Name) rootName) {
+            var rootLabel = JoinDisplay(rootName.NameChn, rootName.Name);
+            var kinLabel = JoinDisplay(edge.KinNameChn, edge.KinName);
+            var pathDescription = BuildRootPath(rootLabel, kinLabel, edge.Kinship);
+            var notes = BuildNotes(pathDescription, edge.Notes, null, edge.RawKinship, edge.Kinship);
+
+            return new KinshipTraversalState(
+                edge.KinPersonId,
+                edge.RawKinship,
+                edge.Kinship,
+                edge.KinNameChn,
+                edge.KinName,
+                false,
+                edge.UpStep,
+                edge.DownStep,
+                edge.MarriageStep,
+                edge.CollateralStep,
+                edge.Source,
+                edge.Pages,
+                pathDescription,
+                edge.Notes,
+                notes,
+                1,
+                new HashSet<int> { edge.KinPersonId }
+            );
+        }
+
+        public KinshipTraversalState Extend(KinshipEdge edge, IReadOnlyDictionary<string, string> kinshipDisplayLookup) {
+            var combinedRawKinship = $"{RawKinship ?? string.Empty}{edge.RawKinship ?? string.Empty}";
+            var reduction = ReduceKinship(
+                combinedRawKinship,
+                UpStep.GetValueOrDefault() + edge.UpStep.GetValueOrDefault(),
+                DownStep.GetValueOrDefault() + edge.DownStep.GetValueOrDefault(),
+                MarriageStep.GetValueOrDefault() + edge.MarriageStep.GetValueOrDefault(),
+                CollateralStep.GetValueOrDefault() + edge.CollateralStep.GetValueOrDefault()
+            );
+
+            var kinship = ResolveKinshipDisplay(reduction.RawKinship, kinshipDisplayLookup);
+            if (string.IsNullOrWhiteSpace(kinship)) {
+                kinship = string.IsNullOrWhiteSpace(Kinship)
+                    ? edge.Kinship
+                    : string.IsNullOrWhiteSpace(edge.Kinship)
+                        ? Kinship
+                        : $"{Kinship} > {edge.Kinship}";
+            }
+
+            var currentLabel = JoinDisplay(KinNameChn, KinName);
+            var nextLabel = JoinDisplay(edge.KinNameChn, edge.KinName);
+            var pathDescription = AppendPath(PathDescription, nextLabel, edge.Kinship);
+            var supplementalNotes = AppendSupplementalNotes(SupplementalNotes, edge.Notes);
+            var notes = BuildNotes(pathDescription, supplementalNotes, combinedRawKinship, reduction.RawKinship, kinship);
+
+            var visited = new HashSet<int>(VisitedPersonIds) { edge.KinPersonId };
+
+            return new KinshipTraversalState(
+                edge.KinPersonId,
+                reduction.RawKinship,
+                kinship,
+                edge.KinNameChn,
+                edge.KinName,
+                true,
+                reduction.UpStep,
+                reduction.DownStep,
+                reduction.MarriageStep,
+                reduction.CollateralStep,
+                edge.Source,
+                edge.Pages,
+                pathDescription,
+                supplementalNotes,
+                notes,
+                Distance + 1,
+                visited
+            );
+        }
+
+        public bool IsBetterThan(KinshipTraversalState other) {
+            var metricCompare = CompareMetrics(this, other);
+            if (metricCompare != 0) {
+                return metricCompare < 0;
+            }
+
+            var distanceCompare = Distance.CompareTo(other.Distance);
+            if (distanceCompare != 0) {
+                return distanceCompare < 0;
+            }
+
+            var notesCompare = (Notes?.Length ?? int.MaxValue).CompareTo(other.Notes?.Length ?? int.MaxValue);
+            if (notesCompare != 0) {
+                return notesCompare < 0;
+            }
+
+            return string.Compare(Kinship, other.Kinship, StringComparison.OrdinalIgnoreCase) < 0;
+        }
+
+        public PersonKinshipItem ToItem() {
+            return new PersonKinshipItem(
+                KinPersonId,
+                Kinship,
+                KinNameChn,
+                KinName,
+                IsDerived,
+                UpStep,
+                DownStep,
+                MarriageStep,
+                CollateralStep,
+                Source,
+                Pages,
+                Notes
+            );
+        }
+
+        private static KinshipReductionState ReduceKinship(string rawKinship, int upStep, int downStep, int marriageStep, int collateralStep) {
+            if (string.IsNullOrWhiteSpace(rawKinship)) {
+                return new KinshipReductionState(rawKinship, upStep, downStep, marriageStep, collateralStep);
+            }
+
+            var current = rawKinship;
+            var changed = true;
+            while (changed && current.Length >= 2) {
+                changed = false;
+                var target = current[^2..];
+                if (!KinshipReductionRules.TryGetValue(target, out var rule)) {
+                    continue;
+                }
+
+                current = current[..^2] + rule.Replacement;
+                upStep += rule.UpChange;
+                downStep += rule.DownChange;
+                collateralStep += rule.CollateralChange;
+                marriageStep += rule.MarriageChange;
+                changed = true;
+            }
+
+            return new KinshipReductionState(current, upStep, downStep, marriageStep, collateralStep);
+        }
+
+        private static string? ResolveKinshipDisplay(string? rawKinship, IReadOnlyDictionary<string, string> kinshipDisplayLookup) {
+            if (string.IsNullOrWhiteSpace(rawKinship)) {
+                return rawKinship;
+            }
+
+            return kinshipDisplayLookup.TryGetValue(rawKinship, out var display)
+                ? display
+                : rawKinship.Length == 1
+                    ? rawKinship
+                    : null;
+        }
+
+        private static int CompareMetrics(KinshipTraversalState left, KinshipTraversalState right) {
+            var leftScore = left.UpStep.GetValueOrDefault() * 1000
+                + left.DownStep.GetValueOrDefault() * 100
+                + left.CollateralStep.GetValueOrDefault() * 10
+                + left.MarriageStep.GetValueOrDefault();
+            var rightScore = right.UpStep.GetValueOrDefault() * 1000
+                + right.DownStep.GetValueOrDefault() * 100
+                + right.CollateralStep.GetValueOrDefault() * 10
+                + right.MarriageStep.GetValueOrDefault();
+            return leftScore.CompareTo(rightScore);
+        }
+
+        private static string? BuildNotes(
+            string? pathDescription,
+            string? supplementalNotes,
+            string? originalRawKinship,
+            string? reducedRawKinship,
+            string? reducedKinship
+        ) {
+            var combined = pathDescription;
+
+            if (!string.IsNullOrWhiteSpace(originalRawKinship) &&
+                !string.IsNullOrWhiteSpace(reducedKinship) &&
+                (!string.Equals(originalRawKinship, reducedRawKinship, StringComparison.OrdinalIgnoreCase) ||
+                 !string.Equals(originalRawKinship, reducedKinship, StringComparison.OrdinalIgnoreCase))) {
+                combined = string.IsNullOrWhiteSpace(combined)
+                    ? $"{originalRawKinship} => {reducedKinship}"
+                    : $"{combined}{Environment.NewLine}{originalRawKinship} => {reducedKinship}";
+            }
+
+            return string.IsNullOrWhiteSpace(supplementalNotes)
+                ? combined
+                : string.IsNullOrWhiteSpace(combined)
+                    ? supplementalNotes
+                    : $"{combined}{Environment.NewLine}{supplementalNotes}";
+        }
+
+        private static string? BuildRootPath(string? rootLabel, string? kinLabel, string? kinship) {
+            var path = string.IsNullOrWhiteSpace(rootLabel)
+                ? kinLabel
+                : string.IsNullOrWhiteSpace(kinLabel)
+                    ? rootLabel
+                    : $"{rootLabel} > {kinLabel}";
+
+            return string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(kinship)
+                ? path
+                : $"{path} ({kinship})";
+        }
+
+        private static string? AppendPath(string? priorPath, string? nextLabel, string? kinship) {
+            var segment = string.IsNullOrWhiteSpace(nextLabel)
+                ? null
+                : string.IsNullOrWhiteSpace(kinship)
+                    ? nextLabel
+                    : $"{nextLabel} ({kinship})";
+
+            return string.IsNullOrWhiteSpace(priorPath)
+                ? segment
+                : string.IsNullOrWhiteSpace(segment)
+                    ? priorPath
+                    : $"{priorPath} > {segment}";
+        }
+
+        private static string? AppendSupplementalNotes(string? priorNotes, string? nextNotes) {
+            return string.IsNullOrWhiteSpace(priorNotes)
+                ? nextNotes
+                : string.IsNullOrWhiteSpace(nextNotes)
+                    ? priorNotes
+                    : $"{priorNotes}{Environment.NewLine}{nextNotes}";
+        }
+    }
+
+    private sealed record KinshipReductionRule(
+        string Replacement,
+        int UpChange,
+        int DownChange,
+        int CollateralChange,
+        int MarriageChange
+    );
+
+    private sealed record KinshipReductionState(
+        string RawKinship,
+        int UpStep,
+        int DownStep,
+        int MarriageStep,
+        int CollateralStep
+    );
 
     public async Task<IReadOnlyList<PersonAssociationItem>> GetAssociationsAsync(
         string sqlitePath,

@@ -109,6 +109,8 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["db_index.output_completed"] = "Recommended office/postings performance indexes have been added.",
             ["dialog.select_sqlite"] = "Select CBDB SQLite file",
             ["browser.window_title"] = "Person Browser",
+            ["browser.load_from_file"] = "Load from File",
+            ["browser.csv_or_text_files"] = "CSV or Text Files",
             ["browser.search"] = "Search",
             ["browser.clear"] = "Clear",
             ["browser.history_back"] = "Back",
@@ -238,7 +240,11 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["browser.event_address"] = "Address",
             ["browser.event_text"] = "Event Text",
             ["browser.kinship_none"] = "The selected person has no kinship records.",
+            ["browser.kinship_expand_network"] = "Expand kin of kin",
             ["browser.kinship_relation"] = "Kinship",
+            ["browser.kinship_data_type"] = "Data Type",
+            ["browser.kinship_direct"] = "Direct",
+            ["browser.kinship_derived"] = "Derived",
             ["browser.kinship_person"] = "Related Person",
             ["browser.kinship_steps"] = "Steps",
             ["browser.jump_to_person"] = "Go To",
@@ -277,7 +283,9 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["browser.male"] = "Male",
             ["browser.female"] = "Female",
             ["browser.unknown"] = "Unknown",
-            ["browser.no_data_to_export"] = "There is no data to export."
+            ["browser.no_data_to_export"] = "There is no data to export.",
+            ["browser.no_valid_person_ids"] = "No valid person IDs were found in the selected file.",
+            ["browser.no_matching_person_ids"] = "No matching people were found for the imported person IDs."
         },
         [UiLanguage.TraditionalChinese] = new(StringComparer.OrdinalIgnoreCase) {
             ["window.title"] = "導航面板",
@@ -382,6 +390,8 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["db_index.output_completed"] = "已加入任官查詢建議效能索引。",
             ["dialog.select_sqlite"] = "選擇 CBDB SQLite 檔案",
             ["browser.window_title"] = "人物瀏覽",
+            ["browser.load_from_file"] = "讀取檔案",
+            ["browser.csv_or_text_files"] = "CSV 或文字檔",
             ["browser.search"] = "查詢",
             ["browser.clear"] = "清除",
             ["browser.history_back"] = "返回",
@@ -511,7 +521,11 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["browser.event_address"] = "地點",
             ["browser.event_text"] = "事件內容",
             ["browser.kinship_none"] = "所選人物無親屬記錄。",
+            ["browser.kinship_expand_network"] = "展開親屬的親屬",
             ["browser.kinship_relation"] = "親屬關係",
+            ["browser.kinship_data_type"] = "資料類型",
+            ["browser.kinship_direct"] = "直接",
+            ["browser.kinship_derived"] = "推導",
             ["browser.kinship_person"] = "相關人物",
             ["browser.kinship_steps"] = "步數",
             ["browser.jump_to_person"] = "跳轉",
@@ -550,7 +564,9 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["browser.male"] = "男",
             ["browser.female"] = "女",
             ["browser.unknown"] = "未詳",
-            ["browser.no_data_to_export"] = "目前沒有可匯出的資料。"
+            ["browser.no_data_to_export"] = "目前沒有可匯出的資料。",
+            ["browser.no_valid_person_ids"] = "所選檔案中找不到有效的人物 ID。",
+            ["browser.no_matching_person_ids"] = "匯入的人物 ID 沒有對應到任何人物。"
         },
         [UiLanguage.SimplifiedChinese] = new(StringComparer.OrdinalIgnoreCase) {
             ["window.title"] = "导航面板",
@@ -655,6 +671,8 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["db_index.output_completed"] = "已加入任官查询建议性能索引。",
             ["dialog.select_sqlite"] = "选择 CBDB SQLite 文件",
             ["browser.window_title"] = "人物浏览",
+            ["browser.load_from_file"] = "读取文件",
+            ["browser.csv_or_text_files"] = "CSV 或文本文件",
             ["browser.search"] = "查询",
             ["browser.clear"] = "清除",
             ["browser.history_back"] = "返回",
@@ -784,7 +802,11 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["browser.event_address"] = "地点",
             ["browser.event_text"] = "事件内容",
             ["browser.kinship_none"] = "所选人物无亲属记录。",
+            ["browser.kinship_expand_network"] = "展开亲属的亲属",
             ["browser.kinship_relation"] = "亲属关系",
+            ["browser.kinship_data_type"] = "资料类型",
+            ["browser.kinship_direct"] = "直接",
+            ["browser.kinship_derived"] = "推导",
             ["browser.kinship_person"] = "相关人物",
             ["browser.kinship_steps"] = "步数",
             ["browser.jump_to_person"] = "跳转",
@@ -823,7 +845,9 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["browser.male"] = "男",
             ["browser.female"] = "女",
             ["browser.unknown"] = "未详",
-            ["browser.no_data_to_export"] = "目前没有可导出的数据。"
+            ["browser.no_data_to_export"] = "目前没有可导出的数据。",
+            ["browser.no_valid_person_ids"] = "所选文件中找不到有效的人物 ID。",
+            ["browser.no_matching_person_ids"] = "导入的人物 ID 没有对应到任何人物。"
         }
     };
 

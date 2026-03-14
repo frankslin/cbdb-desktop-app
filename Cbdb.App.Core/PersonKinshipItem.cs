@@ -5,6 +5,7 @@ public sealed record PersonKinshipItem(
     string? Kinship,
     string? KinNameChn,
     string? KinName,
+    bool IsDerived,
     int? UpStep,
     int? DownStep,
     int? MarriageStep,

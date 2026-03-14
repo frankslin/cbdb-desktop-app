@@ -34,6 +34,7 @@ public partial class PersonBrowserWindow : Window {
     private TextBox _txtKeyword = null!;
     private Button _btnHistoryBack = null!;
     private Button _btnHistoryForward = null!;
+    private Button _btnLoadFromFile = null!;
     private Button _btnSearch = null!;
     private Button _btnClear = null!;
     private Button _btnSaveToFile = null!;
@@ -135,6 +136,7 @@ public partial class PersonBrowserWindow : Window {
     private Border _kinshipLoadingHost = null!;
     private TextBlock _txtKinshipLoading = null!;
     private TextBlock _txtKinshipEmpty = null!;
+    private CheckBox _chkExpandKinshipNetwork = null!;
     private StackPanel _kinshipPanel = null!;
     private Border _associationsLoadingHost = null!;
     private TextBlock _txtAssociationsLoading = null!;
@@ -183,6 +185,7 @@ public partial class PersonBrowserWindow : Window {
     private int _personHistoryIndex = -1;
     private bool _suppressHistoryPush;
     private bool _isRestoringHistory;
+    private bool _expandKinshipNetwork;
 
     public PersonBrowserWindow() : this(string.Empty, new AppLocalizationService()) {
     }
@@ -217,6 +220,7 @@ public partial class PersonBrowserWindow : Window {
         Title = T("browser.window_title");
         ToolTip.SetTip(_btnHistoryBack, T("browser.history_back"));
         ToolTip.SetTip(_btnHistoryForward, T("browser.history_forward"));
+        _btnLoadFromFile.Content = T("browser.load_from_file");
         _btnSearch.Content = T("browser.search");
         _btnClear.Content = T("browser.clear");
         _btnSaveToFile.Content = T("browser.save_to_file");
@@ -279,6 +283,8 @@ public partial class PersonBrowserWindow : Window {
         RenderStatuses();
         _txtKinshipLoading.Text = loadingText;
         _txtKinshipEmpty.Text = _currentKinships.Count == 0 ? T("browser.kinship_none") : string.Empty;
+        _chkExpandKinshipNetwork.Content = T("browser.kinship_expand_network");
+        _chkExpandKinshipNetwork.IsChecked = _expandKinshipNetwork;
         RenderKinships();
         _txtAssociationsLoading.Text = loadingText;
         _txtAssociationsEmpty.Text = _currentAssociations.Count == 0 ? T("browser.associations_none") : string.Empty;
@@ -300,6 +306,71 @@ public partial class PersonBrowserWindow : Window {
 
     private async void BtnSearch_Click(object? sender, RoutedEventArgs e) {
         await SearchAsync();
+    }
+
+    private async void BtnLoadFromFile_Click(object? sender, RoutedEventArgs e) {
+        if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
+            _txtRecord.Text = T("browser.no_selection");
+            return;
+        }
+
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions {
+            Title = T("browser.load_from_file"),
+            AllowMultiple = false,
+            FileTypeFilter = new List<FilePickerFileType> {
+                new(T("browser.csv_or_text_files")) {
+                    Patterns = new[] { "*.csv", "*.txt" }
+                }
+            }
+        });
+
+        var path = files.FirstOrDefault()?.TryGetLocalPath();
+        if (string.IsNullOrWhiteSpace(path)) {
+            return;
+        }
+
+        try {
+            var content = await File.ReadAllTextAsync(path, Encoding.UTF8);
+            var personIds = PersonIdImportParser.Parse(content);
+            if (personIds.Count == 0) {
+                _people.Clear();
+                _currentKeyword = null;
+                _nextOffset = 0;
+                _hasMore = false;
+                ClearDetail();
+                _txtRecord.Text = T("browser.no_valid_person_ids");
+                return;
+            }
+
+            _btnLoadFromFile.IsEnabled = false;
+            _btnSearch.IsEnabled = false;
+            _btnClear.IsEnabled = false;
+
+            var rows = await _personBrowserService.GetPeopleByIdsAsync(_sqlitePath, personIds);
+            _people.Clear();
+            foreach (var row in rows) {
+                _people.Add(row);
+            }
+
+            _currentKeyword = null;
+            _txtKeyword.Text = string.Empty;
+            _nextOffset = _people.Count;
+            _hasMore = false;
+            ClearDetail();
+            UpdateRecordText();
+
+            if (_people.Count > 0) {
+                _gridPeople.SelectedIndex = 0;
+            } else {
+                _txtRecord.Text = T("browser.no_matching_person_ids");
+            }
+        } catch (Exception ex) {
+            _txtRecord.Text = ex.Message;
+        } finally {
+            _btnLoadFromFile.IsEnabled = true;
+            _btnSearch.IsEnabled = true;
+            _btnClear.IsEnabled = true;
+        }
     }
 
     private async void BtnClear_Click(object? sender, RoutedEventArgs e) {
@@ -520,6 +591,7 @@ public partial class PersonBrowserWindow : Window {
             Events: _currentEvents.ToList(),
             Statuses: _currentStatuses.ToList(),
             Kinships: _currentKinships.ToList(),
+            ExpandKinshipNetwork: _expandKinshipNetwork,
             Associations: _currentAssociations.ToList(),
             Possessions: _currentPossessions.ToList(),
             Sources: _currentSources.ToList(),
@@ -567,6 +639,8 @@ public partial class PersonBrowserWindow : Window {
             _currentEvents = state.Events;
             _currentStatuses = state.Statuses;
             _currentKinships = state.Kinships;
+            _expandKinshipNetwork = state.ExpandKinshipNetwork;
+            _chkExpandKinshipNetwork.IsChecked = _expandKinshipNetwork;
             _currentAssociations = state.Associations;
             _currentPossessions = state.Possessions;
             _currentSources = state.Sources;
@@ -854,9 +928,13 @@ public partial class PersonBrowserWindow : Window {
     }
 
     private async Task LoadKinshipsAsync(int personId) {
+        await LoadKinshipsAsync(personId, _expandKinshipNetwork);
+    }
+
+    private async Task LoadKinshipsAsync(int personId, bool expandNetwork) {
         await PrepareTabLoadAsync("kinship");
         try {
-            _currentKinships = await Task.Run(() => _personBrowserService.GetKinshipsAsync(_sqlitePath, personId));
+            _currentKinships = await Task.Run(() => _personBrowserService.GetKinshipsAsync(_sqlitePath, personId, expandNetwork));
         } catch (Exception ex) {
             _currentKinships = Array.Empty<PersonKinshipItem>();
             _txtRecord.Text = ex.Message;
@@ -975,7 +1053,7 @@ public partial class PersonBrowserWindow : Window {
                 await LoadStatusesAsync(_selectedPersonId.Value);
                 break;
             case "kinship":
-                await LoadKinshipsAsync(_selectedPersonId.Value);
+                await LoadKinshipsAsync(_selectedPersonId.Value, _expandKinshipNetwork);
                 break;
             case "associations":
                 await LoadAssociationsAsync(_selectedPersonId.Value);
@@ -1430,6 +1508,24 @@ public partial class PersonBrowserWindow : Window {
         }
     }
 
+    private async void ChkExpandKinshipNetwork_Changed(object? sender, RoutedEventArgs e) {
+        if (_isRestoringHistory) {
+            return;
+        }
+
+        _expandKinshipNetwork = _chkExpandKinshipNetwork.IsChecked == true;
+        _loadedPersonTabs.Remove("kinship");
+        _relatedTabPages["kinship"] = 0;
+
+        if (_selectedPersonId.HasValue && ReferenceEquals(_mainTabs.SelectedItem, _tabKinship)) {
+            await LoadKinshipsAsync(_selectedPersonId.Value, _expandKinshipNetwork);
+        } else {
+            RenderKinships();
+        }
+
+        ReplaceCurrentHistoryState();
+    }
+
     private Control BuildAddressCard(PersonAddressItem item) {
         var root = new StackPanel {
             Spacing = 8
@@ -1660,12 +1756,13 @@ public partial class PersonBrowserWindow : Window {
 
     private Control BuildKinshipCard(PersonKinshipItem item) {
         var primaryGrid = new Grid {
-            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
+            ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,160,Auto,*"),
             RowDefinitions = new RowDefinitions("Auto,Auto")
         };
 
         AddReadOnlyField(primaryGrid, 0, 0, T("browser.kinship_relation"), item.Kinship);
-        AddReadOnlyField(primaryGrid, 0, 2, T("browser.kinship_steps"), FormatKinshipSteps(item));
+        AddReadOnlyField(primaryGrid, 0, 2, T("browser.kinship_data_type"), item.IsDerived ? T("browser.kinship_derived") : T("browser.kinship_direct"));
+        AddReadOnlyField(primaryGrid, 0, 4, T("browser.kinship_steps"), FormatKinshipSteps(item));
 
         var relatedRow = new Grid {
             ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,90,Auto"),
@@ -2751,6 +2848,7 @@ public partial class PersonBrowserWindow : Window {
         _txtKeyword = this.FindControl<TextBox>("TxtKeyword") ?? throw new InvalidOperationException("TxtKeyword not found.");
         _btnHistoryBack = this.FindControl<Button>("BtnHistoryBack") ?? throw new InvalidOperationException("BtnHistoryBack not found.");
         _btnHistoryForward = this.FindControl<Button>("BtnHistoryForward") ?? throw new InvalidOperationException("BtnHistoryForward not found.");
+        _btnLoadFromFile = this.FindControl<Button>("BtnLoadFromFile") ?? throw new InvalidOperationException("BtnLoadFromFile not found.");
         _btnSearch = this.FindControl<Button>("BtnSearch") ?? throw new InvalidOperationException("BtnSearch not found.");
         _btnClear = this.FindControl<Button>("BtnClear") ?? throw new InvalidOperationException("BtnClear not found.");
         _btnSaveToFile = this.FindControl<Button>("BtnSaveToFile") ?? throw new InvalidOperationException("BtnSaveToFile not found.");
@@ -2856,6 +2954,7 @@ public partial class PersonBrowserWindow : Window {
         _kinshipLoadingHost = this.FindControl<Border>("KinshipLoadingHost") ?? throw new InvalidOperationException("KinshipLoadingHost not found.");
         _txtKinshipLoading = this.FindControl<TextBlock>("TxtKinshipLoading") ?? throw new InvalidOperationException("TxtKinshipLoading not found.");
         _txtKinshipEmpty = this.FindControl<TextBlock>("TxtKinshipEmpty") ?? throw new InvalidOperationException("TxtKinshipEmpty not found.");
+        _chkExpandKinshipNetwork = this.FindControl<CheckBox>("ChkExpandKinshipNetwork") ?? throw new InvalidOperationException("ChkExpandKinshipNetwork not found.");
         _kinshipPanel = this.FindControl<StackPanel>("KinshipPanel") ?? throw new InvalidOperationException("KinshipPanel not found.");
         _associationsLoadingHost = this.FindControl<Border>("AssociationsLoadingHost") ?? throw new InvalidOperationException("AssociationsLoadingHost not found.");
         _txtAssociationsLoading = this.FindControl<TextBlock>("TxtAssociationsLoading") ?? throw new InvalidOperationException("TxtAssociationsLoading not found.");
@@ -2998,6 +3097,7 @@ public partial class PersonBrowserWindow : Window {
         IReadOnlyList<PersonEventItem> Events,
         IReadOnlyList<PersonStatusItem> Statuses,
         IReadOnlyList<PersonKinshipItem> Kinships,
+        bool ExpandKinshipNetwork,
         IReadOnlyList<PersonAssociationItem> Associations,
         IReadOnlyList<PersonPossessionItem> Possessions,
         IReadOnlyList<PersonSourceItem> Sources,

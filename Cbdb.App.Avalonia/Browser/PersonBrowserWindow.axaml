@@ -49,7 +49,7 @@
     </Style>
   </Window.Styles>
   <Grid Margin="8" RowDefinitions="Auto,*">
-    <Grid ColumnDefinitions="36,36,*,92,92">
+    <Grid ColumnDefinitions="36,36,*,104,104">
         <Button x:Name="BtnHistoryBack"
                 Grid.Column="0"
                 Width="32"
@@ -71,10 +71,10 @@
         <TextBox x:Name="TxtKeyword"
                  Grid.Column="2"
                  Height="30"
-                 Margin="0,0,8,0"
+                 Margin="0,0,12,0"
                  VerticalContentAlignment="Center"
                  KeyDown="TxtKeyword_KeyDown" />
-        <Button x:Name="BtnSearch" Grid.Column="3" Height="30" Margin="0,0,8,0" Click="BtnSearch_Click" />
+        <Button x:Name="BtnSearch" Grid.Column="3" Height="30" Margin="0,0,10,0" Click="BtnSearch_Click" />
         <Button x:Name="BtnClear" Grid.Column="4" Height="30" Click="BtnClear_Click" />
     </Grid>
 
@@ -105,9 +105,10 @@
             </DataGrid.Columns>
           </DataGrid>
 
-          <Grid Grid.Row="2" Margin="2,6,2,2" ColumnDefinitions="*,Auto">
+          <Grid Grid.Row="2" Margin="2,6,2,2" ColumnDefinitions="*,Auto,Auto">
             <TextBlock x:Name="TxtRecord" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#333" />
-            <Button x:Name="BtnSaveToFile" Grid.Column="1" Height="32" MinWidth="98" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnSaveToFile_Click" />
+            <Button x:Name="BtnSaveToFile" Grid.Column="1" Height="32" MinWidth="98" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnSaveToFile_Click" />
+            <Button x:Name="BtnLoadFromFile" Grid.Column="2" Height="32" MinWidth="98" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnLoadFromFile_Click" />
           </Grid>
         </Grid>
       </Border>
@@ -468,6 +469,11 @@
                       <ProgressBar IsIndeterminate="True" Height="6" />
                     </StackPanel>
                   </Border>
+                  <CheckBox x:Name="ChkExpandKinshipNetwork"
+                            Margin="0,8,0,0"
+                            IsChecked="False"
+                            Checked="ChkExpandKinshipNetwork_Changed"
+                            Unchecked="ChkExpandKinshipNetwork_Changed" />
                   <TextBlock x:Name="TxtKinshipEmpty" Margin="0,8,0,0" Foreground="#666" TextWrapping="Wrap" />
                   <StackPanel x:Name="KinshipPanel" Margin="0,8,0,0" Spacing="8" />
                   <StackPanel x:Name="KinshipPager" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">

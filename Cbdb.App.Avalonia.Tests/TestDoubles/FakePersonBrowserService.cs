@@ -219,7 +219,7 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
     };
 
     private static readonly IReadOnlyList<PersonKinshipItem> Kinships = new[] {
-        new PersonKinshipItem(3, "兄 / Elder Brother", "蘇轍", "Su Zhe", 0, 0, 0, 1, "宋史", "20", "Sample kinship note")
+        new PersonKinshipItem(3, "兄 / Elder Brother", "蘇轍", "Su Zhe", false, 0, 0, 0, 1, "宋史", "20", "Sample kinship note")
     };
 
     private static readonly IReadOnlyList<PersonStatusItem> Statuses = new[] {
@@ -294,6 +294,16 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
         return Task.FromResult<IReadOnlyList<PersonListItem>>(filtered.Skip(offset).Take(limit).ToArray());
     }
 
+    public Task<IReadOnlyList<PersonListItem>> GetPeopleByIdsAsync(string sqlitePath, IReadOnlyList<int> personIds, CancellationToken cancellationToken = default) {
+        var filtered = personIds
+            .Distinct()
+            .Select(personId => People.FirstOrDefault(person => person.PersonId == personId))
+            .Where(person => person is not null)
+            .Cast<PersonListItem>()
+            .ToArray();
+        return Task.FromResult<IReadOnlyList<PersonListItem>>(filtered);
+    }
+
     public Task<PersonDetail?> GetDetailAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
         return Task.FromResult<PersonDetail?>(personId == Detail.PersonId ? Detail : null);
     }
@@ -322,7 +332,7 @@ internal sealed class FakePersonBrowserService : IPersonBrowserService {
         return Task.FromResult(personId == Detail.PersonId ? Events : Array.Empty<PersonEventItem>());
     }
 
-    public Task<IReadOnlyList<PersonKinshipItem>> GetKinshipsAsync(string sqlitePath, int personId, CancellationToken cancellationToken = default) {
+    public Task<IReadOnlyList<PersonKinshipItem>> GetKinshipsAsync(string sqlitePath, int personId, bool expandNetwork = false, CancellationToken cancellationToken = default) {
         return Task.FromResult(personId == Detail.PersonId ? Kinships : Array.Empty<PersonKinshipItem>());
     }
 
