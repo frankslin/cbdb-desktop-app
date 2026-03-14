@@ -1,0 +1,36 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.DatabaseIndexProgressWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Width="520"
+    Height="220"
+    CanResize="False"
+    ShowInTaskbar="False"
+    WindowStartupLocation="CenterOwner"
+    Background="#F6F6F6">
+  <Border Padding="20" Background="#F6F6F6">
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+      <TextBlock x:Name="TxtTitle"
+                 FontSize="24"
+                 FontWeight="Bold"
+                 Foreground="#133FB5" />
+      <TextBlock x:Name="TxtBody"
+                 Grid.Row="1"
+                 Margin="0,16,0,0"
+                 TextWrapping="Wrap"
+                 FontSize="15"
+                 LineHeight="24" />
+      <ProgressBar x:Name="ProgressMain"
+                   Grid.Row="2"
+                   Margin="0,16,0,0"
+                   Height="18"
+                   Minimum="0"
+                   Maximum="1"
+                   Value="0" />
+      <TextBlock x:Name="TxtStep"
+                 Grid.Row="3"
+                 Margin="0,12,0,0"
+                 Foreground="#555" />
+    </Grid>
+  </Border>
+</Window>

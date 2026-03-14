@@ -32,6 +32,7 @@ public partial class MainWindow : Window {
     };
 
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
+    private readonly IDatabaseIndexService _databaseIndexService = new SqliteDatabaseIndexService();
     private readonly AppLocalizationService _localizationService = new();
 
     private Button _btnLangEn = null!;
@@ -288,6 +289,7 @@ public partial class MainWindow : Window {
                 : result.Message;
 
             if (result.Success) {
+                await EnsureRecommendedIndexesAsync(_sqlitePath, _txtOutput.Text);
                 await AppSettingsStore.SaveLastSqlitePathAsync(_sqlitePath);
             }
         } catch (Exception ex) {
@@ -421,6 +423,7 @@ public partial class MainWindow : Window {
             _sqlitePath = normalizedPath;
             _txtStatus.Text = T("status.connected");
             _txtOutput.Text = $"{result.Message}{Environment.NewLine}{_sqlitePath}";
+            await EnsureRecommendedIndexesAsync(_sqlitePath, _txtOutput.Text);
 
             if (persistOnSuccess) {
                 await AppSettingsStore.SaveLastSqlitePathAsync(_sqlitePath);
@@ -474,5 +477,76 @@ public partial class MainWindow : Window {
         }
 
         return string.Empty;
+    }
+
+    private async Task EnsureRecommendedIndexesAsync(string sqlitePath, string baseOutputText) {
+        var check = await _databaseIndexService.CheckRecommendedIndexesAsync(sqlitePath);
+        if (check.HasAllIndexes) {
+            _txtStatus.Text = T("status.connected");
+            _txtOutput.Text = baseOutputText;
+            return;
+        }
+
+        var prompt = new ConfirmActionWindow(
+            _localizationService,
+            T("db_index.prompt_title"),
+            string.Format(
+                T("db_index.prompt_body"),
+                check.MissingIndexNames.Count,
+                string.Join(Environment.NewLine, check.MissingIndexNames)
+            )
+        );
+
+        var accepted = await prompt.ShowDialog<bool?>(this);
+        if (accepted != true) {
+            _txtStatus.Text = T("status.connected");
+            _txtOutput.Text = $"{baseOutputText}{Environment.NewLine}{string.Format(T("db_index.skipped"), check.MissingIndexNames.Count)}";
+            return;
+        }
+
+        var progressWindow = new DatabaseIndexProgressWindow(_localizationService);
+        progressWindow.UpdateProgress(
+            T("db_index.progress_running"),
+            string.Format(T("db_index.progress_step"), 0, check.MissingIndexNames.Count, "-"),
+            0,
+            check.MissingIndexNames.Count
+        );
+
+        var progressDialogTask = progressWindow.ShowDialog(this);
+        var progress = new Progress<DatabaseIndexProgress>(update => {
+            progressWindow.UpdateProgress(
+                T("db_index.progress_running"),
+                string.Format(T("db_index.progress_step"), update.CompletedSteps, update.TotalSteps, update.IndexName),
+                update.CompletedSteps,
+                update.TotalSteps
+            );
+        });
+
+        try {
+            _txtStatus.Text = T("status.checking");
+            await Task.Run(() => _databaseIndexService.EnsureRecommendedIndexesAsync(sqlitePath, progress));
+            progressWindow.UpdateProgress(
+                T("db_index.completed"),
+                string.Format(
+                    T("db_index.progress_step"),
+                    check.MissingIndexNames.Count,
+                    check.MissingIndexNames.Count,
+                    check.MissingIndexNames.Last()
+                ),
+                check.MissingIndexNames.Count,
+                check.MissingIndexNames.Count
+            );
+            progressWindow.Close();
+            await progressDialogTask;
+
+            _txtStatus.Text = T("status.connected");
+            _txtOutput.Text = $"{baseOutputText}{Environment.NewLine}{T("db_index.output_completed")}";
+        } catch (Exception ex) {
+            progressWindow.Close();
+            await progressDialogTask;
+
+            _txtStatus.Text = T("status.failed");
+            _txtOutput.Text = $"{baseOutputText}{Environment.NewLine}{ex.Message}";
+        }
     }
 }
