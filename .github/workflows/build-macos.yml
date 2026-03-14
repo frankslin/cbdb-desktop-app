@@ -36,8 +36,8 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore
-        run: dotnet restore Cbdb.WindowsApp.sln --configfile NuGet.Config
+      - name: Restore Avalonia tests
+        run: dotnet restore Cbdb.App.Avalonia.Tests/Cbdb.App.Avalonia.Tests.csproj --configfile NuGet.Config
 
       - name: Run Avalonia tests
         run: >
