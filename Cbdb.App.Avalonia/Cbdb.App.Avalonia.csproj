@@ -34,9 +34,23 @@
     <Version>0.2.1-rc1</Version>
     <AssemblyVersion>0.2.1.0</AssemblyVersion>
     <FileVersion>0.2.1.0</FileVersion>
-    <InformationalVersion>773ca6</InformationalVersion>
+    <InformationalVersion>unknown</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
+
+  <Target Name="SetInformationalVersionFromGit" BeforeTargets="GenerateAssemblyInfo">
+    <Exec Command="git rev-parse --short HEAD"
+          ConsoleToMSBuild="true"
+          IgnoreExitCode="true"
+          StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" ItemName="_GitShortShaOutput" />
+      <Output TaskParameter="ExitCode" PropertyName="_GitShortShaExitCode" />
+    </Exec>
+
+    <PropertyGroup Condition="'$(_GitShortShaExitCode)' == '0' and '@(_GitShortShaOutput)' != ''">
+      <InformationalVersion>$([System.String]::Copy('@(_GitShortShaOutput)').Trim())</InformationalVersion>
+    </PropertyGroup>
+  </Target>
 
 </Project>
