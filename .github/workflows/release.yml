@@ -12,8 +12,32 @@ permissions:
   contents: write
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  test-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Avalonia tests
+        run: dotnet restore Cbdb.App.Avalonia.Tests/Cbdb.App.Avalonia.Tests.csproj --configfile NuGet.Config
+
+      - name: Run Avalonia tests
+        run: >
+          dotnet test Cbdb.App.Avalonia.Tests/Cbdb.App.Avalonia.Tests.csproj
+          -c Release
+          --no-restore
+          -p:UseSharedCompilation=false
+          -maxcpucount:1
+          -nodeReuse:false
+
+  test-macos:
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -38,7 +62,7 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    needs: test
+    needs: test-windows
     env:
       RELEASE_VERSION: ${{ inputs.version }}
 
@@ -103,7 +127,7 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    needs: test
+    needs: test-macos
     strategy:
       fail-fast: false
       matrix:
@@ -136,8 +160,8 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore Avalonia app
-        run: dotnet restore Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj --configfile NuGet.Config
+      - name: Restore Avalonia tests
+        run: dotnet restore Cbdb.App.Avalonia.Tests/Cbdb.App.Avalonia.Tests.csproj --configfile NuGet.Config
 
       - name: Publish Avalonia app
         run: >
@@ -252,6 +276,9 @@ jobs:
       GH_TOKEN: ${{ github.token }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download win-x64 asset
         uses: actions/download-artifact@v4
         with:
