@@ -39,6 +39,15 @@ jobs:
       - name: Restore Avalonia app
         run: dotnet restore Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj --configfile NuGet.Config
 
+      - name: Run Avalonia tests
+        run: >
+          dotnet test Cbdb.App.Avalonia.Tests/Cbdb.App.Avalonia.Tests.csproj
+          -c Release
+          --no-restore
+          -p:UseSharedCompilation=false
+          -maxcpucount:1
+          -nodeReuse:false
+
       - name: Publish Avalonia app
         run: >
           dotnet publish Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj
