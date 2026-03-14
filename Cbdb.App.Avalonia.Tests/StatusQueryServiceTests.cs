@@ -291,9 +291,7 @@ LIMIT {limit};
 
     private static void TryDelete(string path) {
         try {
-            if (File.Exists(path)) {
-                File.Delete(path);
-            }
+            TestSqliteFileHelper.Delete(path);
         } catch {
         }
     }

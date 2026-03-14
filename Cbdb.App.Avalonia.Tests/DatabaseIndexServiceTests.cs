@@ -19,7 +19,7 @@ public sealed class DatabaseIndexServiceTests {
             Assert.Contains("idx_posted_to_office_personid_posting_office_seq", result.MissingIndexNames);
             Assert.Contains("idx_posted_to_addr_personid_posting_office_addr", result.MissingIndexNames);
         } finally {
-            File.Delete(sqlitePath);
+            TestSqliteFileHelper.Delete(sqlitePath);
         }
     }
 
@@ -45,7 +45,7 @@ public sealed class DatabaseIndexServiceTests {
             Assert.Contains("idx_posted_to_office_personid_posting_office_seq", createdIndexes);
             Assert.Contains("idx_posted_to_addr_personid_posting_office_addr", createdIndexes);
         } finally {
-            File.Delete(sqlitePath);
+            TestSqliteFileHelper.Delete(sqlitePath);
         }
     }
 

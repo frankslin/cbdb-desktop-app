@@ -170,6 +170,6 @@ public sealed class PersonBrowserWindowTests {
         Assert.True(File.Exists(writingsScreenshotPath), "Writings tab screenshot artifact was not written.");
 
         window.Close();
-        File.Delete(sqlitePath);
+        TestSqliteFileHelper.Delete(sqlitePath);
     }
 }

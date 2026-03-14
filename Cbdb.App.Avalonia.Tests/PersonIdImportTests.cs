@@ -50,7 +50,7 @@ bad
             Assert.Equal("丙", rows[0].NameChn);
             Assert.Equal("甲地", rows[1].IndexAddress);
         } finally {
-            File.Delete(sqlitePath);
+            TestSqliteFileHelper.Delete(sqlitePath);
         }
     }
 

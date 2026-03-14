@@ -34,7 +34,7 @@ public sealed class PersonBrowserKinshipTests {
             Assert.Contains("甲 / Jia > 乙 / Yi (父 / father) > 丙 / Bing (兄 / elder brother)", indirect.Notes ?? string.Empty);
             Assert.DoesNotContain("乙 / Yi > 乙 / Yi", indirect.Notes ?? string.Empty);
         } finally {
-            File.Delete(sqlitePath);
+            TestSqliteFileHelper.Delete(sqlitePath);
         }
     }
 
@@ -56,7 +56,7 @@ public sealed class PersonBrowserKinshipTests {
             Assert.Equal(1, reduced.CollateralStep);
             Assert.Contains("BB => 兄弟 / brother", reduced.Notes ?? string.Empty);
         } finally {
-            File.Delete(sqlitePath);
+            TestSqliteFileHelper.Delete(sqlitePath);
         }
     }
 
