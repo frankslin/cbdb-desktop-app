@@ -20,6 +20,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read app version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj | head -n 1)"
+          if [ -z "${version}" ]; then
+            echo "Could not read <Version> from Cbdb.App.Avalonia.csproj" >&2
+            exit 1
+          fi
+          echo "APP_VERSION=${version}" >> "$GITHUB_ENV"
+
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
@@ -88,7 +99,7 @@ jobs:
               <key>CFBundlePackageType</key>
               <string>APPL</string>
               <key>CFBundleShortVersionString</key>
-              <string>0.1.0</string>
+              <string>${{ env.APP_VERSION }}</string>
               <key>CFBundleVersion</key>
               <string>${{ github.run_number }}</string>
               <key>LSMinimumSystemVersion</key>
@@ -123,11 +134,11 @@ jobs:
 
           runtime="${{ matrix.runtime }}"
           archive_dir="artifacts/publish/${runtime}"
-          ditto -c -k --sequesterRsrc --keepParent "${archive_dir}/Cbdb.app" "${archive_dir}/Cbdb-0.1.0-${runtime}.zip"
+          ditto -c -k --sequesterRsrc --keepParent "${archive_dir}/Cbdb.app" "${archive_dir}/Cbdb-${APP_VERSION}-${runtime}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cbdb-0.1.0-${{ matrix.runtime }}
-          path: artifacts/publish/${{ matrix.runtime }}/Cbdb-0.1.0-${{ matrix.runtime }}.zip
+          name: cbdb-${{ env.APP_VERSION }}-${{ matrix.runtime }}
+          path: artifacts/publish/${{ matrix.runtime }}/Cbdb-${{ env.APP_VERSION }}-${{ matrix.runtime }}.zip
           if-no-files-found: error

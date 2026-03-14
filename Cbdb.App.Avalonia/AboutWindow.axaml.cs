@@ -31,11 +31,16 @@ public partial class AboutWindow : Window {
     private void ApplyLocalization() {
         Title = _localizationService.Get("about.title");
         _txtTitle.Text = "CBDB";
-        var version = Assembly.GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
-            ?? "0.0.0";
-        _txtBody.Text = string.Format(_localizationService.Get("about.version"), version)
+        var assembly = Assembly.GetExecutingAssembly();
+        var version = assembly.GetName().Version is { } assemblyVersion
+            ? $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}"
+            : "0.0.0";
+        var informationalVersion = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        var displayVersion = string.IsNullOrWhiteSpace(informationalVersion)
+            ? version
+            : $"{version} ({informationalVersion})";
+        _txtBody.Text = displayVersion
             + Environment.NewLine + Environment.NewLine
             + _localizationService.Get("about.body");
         _btnClose.Content = _localizationService.Get("about.close");
