@@ -49,7 +49,7 @@
     </Style>
   </Window.Styles>
   <Grid Margin="8" RowDefinitions="Auto,*">
-    <Grid ColumnDefinitions="36,36,*,104,104">
+    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
         <Button x:Name="BtnHistoryBack"
                 Grid.Column="0"
                 Width="32"
@@ -71,11 +71,12 @@
         <TextBox x:Name="TxtKeyword"
                  Grid.Column="2"
                  Height="30"
+                 MinWidth="260"
                  Margin="0,0,12,0"
                  VerticalContentAlignment="Center"
                  KeyDown="TxtKeyword_KeyDown" />
-        <Button x:Name="BtnSearch" Grid.Column="3" Height="30" Margin="0,0,10,0" Click="BtnSearch_Click" />
-        <Button x:Name="BtnClear" Grid.Column="4" Height="30" Click="BtnClear_Click" />
+        <Button x:Name="BtnSearch" Grid.Column="3" Height="30" MinWidth="88" Margin="0,0,8,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnSearch_Click" />
+        <Button x:Name="BtnClear" Grid.Column="4" Height="30" MinWidth="88" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnClear_Click" />
     </Grid>
 
     <Grid Grid.Row="1" Margin="0,8,0,0" ColumnDefinitions="4*,6,7*">

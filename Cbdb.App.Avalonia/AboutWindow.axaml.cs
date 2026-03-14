@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Cbdb.App.Avalonia.Localization;
+using System.Reflection;
 
 namespace Cbdb.App.Avalonia;
 
@@ -30,7 +31,13 @@ public partial class AboutWindow : Window {
     private void ApplyLocalization() {
         Title = _localizationService.Get("about.title");
         _txtTitle.Text = "CBDB";
-        _txtBody.Text = _localizationService.Get("about.body");
+        var version = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
+            ?? "0.0.0";
+        _txtBody.Text = string.Format(_localizationService.Get("about.version"), version)
+            + Environment.NewLine + Environment.NewLine
+            + _localizationService.Get("about.body");
         _btnClose.Content = _localizationService.Get("about.close");
     }
 
