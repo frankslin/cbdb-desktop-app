@@ -68,9 +68,11 @@ public partial class StatusQueryWindow : Window {
         _localizationService.LanguageChanged += HandleLanguageChanged;
         Closed += (_, _) => _localizationService.LanguageChanged -= HandleLanguageChanged;
 
-        _chkUseIndexYear.IsChecked = true;
+        _chkUseIndexYear.IsChecked = false;
         _txtIndexYearFrom.Text = "-200";
         _txtIndexYearTo.Text = "1911";
+        _chkUseIndexYear.IsCheckedChanged += ChkUseIndexYear_IsCheckedChanged;
+        UpdateIndexYearEnabledState();
 
         ApplyLocalization();
         Opened += StatusQueryWindow_Opened;
@@ -190,6 +192,10 @@ public partial class StatusQueryWindow : Window {
         UpdateStatusBarCounts();
     }
 
+    private void ChkUseIndexYear_IsCheckedChanged(object? sender, RoutedEventArgs e) {
+        UpdateIndexYearEnabledState();
+    }
+
     private async void BtnSelectStatuses_Click(object? sender, RoutedEventArgs e) {
         if (_statusOptions.Count == 0) {
             await LoadStatusOptionsAsync();
@@ -224,6 +230,13 @@ public partial class StatusQueryWindow : Window {
     private void BtnClearPlaces_Click(object? sender, RoutedEventArgs e) {
         _selectedPlaceIds.Clear();
         UpdateSelectedPlacesText();
+    }
+
+    private void UpdateIndexYearEnabledState() {
+        var isEnabled = _chkUseIndexYear.IsChecked == true;
+        _txtIndexYearFrom.IsEnabled = isEnabled;
+        _txtIndexYearTo.IsEnabled = isEnabled;
+        _lblIndexYearTo.IsEnabled = isEnabled;
     }
 
     private async void BtnRunQuery_Click(object? sender, RoutedEventArgs e) {

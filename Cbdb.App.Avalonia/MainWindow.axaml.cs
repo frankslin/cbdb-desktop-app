@@ -53,6 +53,7 @@ public partial class MainWindow : Window {
     private Button _btnDownloadLatestData = null!;
     private Button _btnChangeIndexAddress = null!;
     private Button _btnUsersGuide = null!;
+    private Button _btnAbout = null!;
     private Button _btnExit = null!;
     private TextBlock _txtHeaderMain = null!;
     private TextBlock _txtStatus = null!;
@@ -101,6 +102,7 @@ public partial class MainWindow : Window {
         _btnRelinkTables.Content = T("button.relink_tables");
         _btnDownloadLatestData.Content = T("button.download_latest_data");
         _btnUsersGuide.Content = T("button.users_guide");
+        _btnAbout.Content = T("button.about");
         _btnExit.Content = T("button.exit");
 
         if (string.IsNullOrWhiteSpace(_txtStatus.Text) || _txtStatus.Text == "Ready" || _txtStatus.Text == "就緒" || _txtStatus.Text == "就绪") {
@@ -339,6 +341,14 @@ public partial class MainWindow : Window {
         }
     }
 
+    private void BtnAbout_Click(object? sender, RoutedEventArgs e) {
+        if (Application.Current is App app) {
+            app.ShowAboutWindow(this);
+            _txtStatus.Text = T("about.title");
+            _txtOutput.Text = T("msg.about_opened");
+        }
+    }
+
     private void BtnExit_Click(object? sender, RoutedEventArgs e) {
         Close();
     }
@@ -372,6 +382,7 @@ public partial class MainWindow : Window {
         _btnDownloadLatestData = this.FindControl<Button>("BtnDownloadLatestData") ?? throw new InvalidOperationException("BtnDownloadLatestData not found.");
         _btnChangeIndexAddress = this.FindControl<Button>("BtnChangeIndexAddress") ?? throw new InvalidOperationException("BtnChangeIndexAddress not found.");
         _btnUsersGuide = this.FindControl<Button>("BtnUsersGuide") ?? throw new InvalidOperationException("BtnUsersGuide not found.");
+        _btnAbout = this.FindControl<Button>("BtnAbout") ?? throw new InvalidOperationException("BtnAbout not found.");
         _btnExit = this.FindControl<Button>("BtnExit") ?? throw new InvalidOperationException("BtnExit not found.");
         _txtHeaderMain = this.FindControl<TextBlock>("TxtHeaderMain") ?? throw new InvalidOperationException("TxtHeaderMain not found.");
         _txtStatus = this.FindControl<TextBlock>("TxtStatus") ?? throw new InvalidOperationException("TxtStatus not found.");

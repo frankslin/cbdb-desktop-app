@@ -36,7 +36,7 @@ public partial class App : Application {
         }
     }
 
-    private void ShowAboutWindow(Window owner) {
+    internal void ShowAboutWindow(Window owner) {
         if (_aboutWindow is { } existingWindow) {
             existingWindow.Activate();
             return;

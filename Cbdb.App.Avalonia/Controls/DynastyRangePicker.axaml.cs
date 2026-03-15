@@ -19,6 +19,8 @@ public partial class DynastyRangePicker : UserControl {
     public DynastyRangePicker() {
         InitializeComponent();
         InitializeControls();
+        _chkUseDynasty.IsCheckedChanged += ChkUseDynasty_IsCheckedChanged;
+        UpdateDynastyEnabledState();
     }
 
     public bool UseDynastyRange => _chkUseDynasty.IsChecked == true;
@@ -90,6 +92,17 @@ public partial class DynastyRangePicker : UserControl {
 
     private void HandleLanguageChanged(object? sender, EventArgs e) {
         ApplyLocalization();
+    }
+
+    private void ChkUseDynasty_IsCheckedChanged(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e) {
+        UpdateDynastyEnabledState();
+    }
+
+    private void UpdateDynastyEnabledState() {
+        var isEnabled = _chkUseDynasty.IsChecked == true;
+        _cmbDynastyFrom.IsEnabled = isEnabled;
+        _cmbDynastyTo.IsEnabled = isEnabled;
+        _lblDynastyTo.IsEnabled = isEnabled;
     }
 
     private void DynastyRangePicker_Unloaded(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e) {

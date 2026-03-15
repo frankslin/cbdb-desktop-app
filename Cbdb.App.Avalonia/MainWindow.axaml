@@ -81,6 +81,7 @@
       <Button x:Name="BtnDownloadLatestData" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnDownloadLatestData_Click" />
       <Button x:Name="BtnChangeIndexAddress" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnChangeIndexAddress_Click" />
       <Button x:Name="BtnUsersGuide" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnUsersGuide_Click" />
+      <Button x:Name="BtnAbout" Classes="side-action" Height="46" Margin="0,0,0,10" Click="BtnAbout_Click" />
       <Button x:Name="BtnExit" Classes="side-action" Height="36" Click="BtnExit_Click" />
     </StackPanel>
 

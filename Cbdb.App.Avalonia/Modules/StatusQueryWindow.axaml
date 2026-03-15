@@ -14,10 +14,17 @@
     <Style Selector="TextBox">
       <Setter Property="MinHeight" Value="30" />
       <Setter Property="Padding" Value="6,4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="Button">
       <Setter Property="MinHeight" Value="32" />
       <Setter Property="Padding" Value="12,4" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="CheckBox">
       <Setter Property="VerticalAlignment" Value="Center" />
@@ -55,28 +62,33 @@
   <Grid Margin="10" RowDefinitions="Auto,*,Auto">
     <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
       <Grid RowDefinitions="Auto,Auto">
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,280,Auto,*,Auto,Auto" RowDefinitions="Auto,Auto,Auto">
-          <TextBlock x:Name="LblPersonKeyword" Grid.Row="0" Grid.Column="0" Margin="0,6,8,0" VerticalAlignment="Center" />
-          <TextBox x:Name="TxtPersonKeyword" Grid.Row="0" Grid.Column="1" Margin="0,0,12,8" />
-          <TextBlock x:Name="LblStatusSelection" Grid.Row="0" Grid.Column="2" Margin="0,6,8,0" VerticalAlignment="Center" />
-          <TextBox x:Name="TxtSelectedStatuses" Grid.Row="0" Grid.Column="3" Margin="0,0,12,8" IsReadOnly="True" />
-          <Button x:Name="BtnSelectStatuses" Grid.Row="0" Grid.Column="4" Margin="0,0,8,8" Click="BtnSelectStatuses_Click" />
-          <Button x:Name="BtnClearStatuses" Grid.Row="0" Grid.Column="5" Margin="0,0,0,8" Click="BtnClearStatuses_Click" />
+        <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto">
+          <WrapPanel Grid.Row="0" Margin="0,0,0,8" VerticalAlignment="Center" ItemHeight="32">
+            <TextBlock x:Name="LblPersonKeyword" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtPersonKeyword" Width="280" Margin="0,0,12,0" />
+            <TextBlock x:Name="LblStatusSelection" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtSelectedStatuses" Width="420" Margin="0,0,12,0" IsReadOnly="True" />
+            <Button x:Name="BtnSelectStatuses" Margin="0,0,8,0" Click="BtnSelectStatuses_Click" />
+            <Button x:Name="BtnClearStatuses" Click="BtnClearStatuses_Click" />
+          </WrapPanel>
 
-          <TextBlock x:Name="LblPlaceSelection" Grid.Row="1" Grid.Column="0" Margin="0,6,8,0" VerticalAlignment="Center" />
-          <TextBox x:Name="TxtSelectedPlaces" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,0,12,8" IsReadOnly="True" />
-          <Button x:Name="BtnSelectPlaces" Grid.Row="1" Grid.Column="4" Margin="0,0,8,8" Click="BtnSelectPlaces_Click" />
-          <Button x:Name="BtnClearPlaces" Grid.Row="1" Grid.Column="5" Margin="0,0,0,8" Click="BtnClearPlaces_Click" />
+          <WrapPanel Grid.Row="1" Margin="0,0,0,8" VerticalAlignment="Center" ItemHeight="32">
+            <TextBlock x:Name="LblPlaceSelection" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtSelectedPlaces" Width="760" Margin="0,0,12,0" IsReadOnly="True" />
+            <Button x:Name="BtnSelectPlaces" Margin="0,0,8,0" Click="BtnSelectPlaces_Click" />
+            <Button x:Name="BtnClearPlaces" Margin="0,0,12,0" Click="BtnClearPlaces_Click" />
+            <CheckBox x:Name="ChkIncludeSubUnits" VerticalAlignment="Center" />
+          </WrapPanel>
 
-          <CheckBox x:Name="ChkIncludeSubUnits" Grid.Row="2" Grid.Column="0" Margin="0,0,8,0" />
-          <CheckBox x:Name="ChkUseIndexYear" Grid.Row="2" Grid.Column="1" Margin="0,0,8,0" />
-          <Grid Grid.Row="2" Grid.Column="2" Margin="0,0,12,0" ColumnDefinitions="*,Auto,*">
-            <TextBox x:Name="TxtIndexYearFrom" Watermark="-200" />
-            <TextBlock x:Name="LblIndexYearTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
-            <TextBox x:Name="TxtIndexYearTo" Grid.Column="2" Watermark="1911" />
-          </Grid>
-
-          <controls:DynastyRangePicker x:Name="DynastyPicker" Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="3" />
+          <WrapPanel Grid.Row="2" VerticalAlignment="Center" ItemHeight="32">
+            <CheckBox x:Name="ChkUseIndexYear" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <Grid Width="210" Margin="0,0,12,0" ColumnDefinitions="*,Auto,*">
+              <TextBox x:Name="TxtIndexYearFrom" Watermark="-200" />
+              <TextBlock x:Name="LblIndexYearTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
+              <TextBox x:Name="TxtIndexYearTo" Grid.Column="2" Watermark="1911" />
+            </Grid>
+            <controls:DynastyRangePicker x:Name="DynastyPicker" Width="520" />
+          </WrapPanel>
         </Grid>
 
         <Grid Grid.Row="1" Margin="0,10,0,0" ColumnDefinitions="Auto,Auto,Auto,Auto,*">

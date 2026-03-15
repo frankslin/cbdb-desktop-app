@@ -2,8 +2,8 @@
 
 This repository currently contains two desktop shells with different platform targets:
 
-- `Cbdb.App.Desktop`: WPF, Windows only
-- `Cbdb.App.Avalonia`: Avalonia, cross-platform shell for macOS and Windows, and the current Windows CI publish target
+- `Cbdb.App.Desktop`: WPF, Windows only, kept only as legacy reference and no longer included in `Cbdb.WindowsApp.sln`
+- `Cbdb.App.Avalonia`: Avalonia, cross-platform shell for macOS and Windows, and the current publish target
 
 Shared libraries:
 
@@ -17,7 +17,7 @@ Shared libraries:
 | `Cbdb.App.Core` | Supported | Supported |
 | `Cbdb.App.Data` | Supported | Supported |
 | `Cbdb.App.Avalonia` | Supported | Supported |
-| `Cbdb.App.Desktop` | Not supported | Supported |
+| `Cbdb.App.Desktop` | Not supported | Reference only |
 
 ## Prerequisites
 
@@ -45,6 +45,13 @@ git clone https://github.com/frankslin/cbdb-windows-app
 cd cbdb-windows-app
 dotnet restore
 ```
+
+The solution now restores only:
+
+- `Cbdb.App.Core`
+- `Cbdb.App.Data`
+- `Cbdb.App.Avalonia`
+- `Cbdb.App.Avalonia.Tests`
 
 If you are using a local SDK unpacked outside the default install path, ensure `dotnet` is on `PATH` first.
 
@@ -75,7 +82,7 @@ You can build and run:
 
 You cannot build or run:
 
-- `Cbdb.App.Desktop` because it targets `net8.0-windows` and WPF
+- `Cbdb.App.Desktop` because it targets `net8.0-windows` and WPF, and it is no longer part of the solution
 
 ### Build on macOS
 
@@ -115,22 +122,21 @@ dotnet run --project ./Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj
 
 ### What You Can Test on Windows
 
-You can build and run:
+You can build and run from the solution:
 
 - `Cbdb.App.Core`
 - `Cbdb.App.Data`
 - `Cbdb.App.Avalonia`
-- `Cbdb.App.Desktop`
+- `Cbdb.App.Avalonia.Tests`
+
+You can still inspect `Cbdb.App.Desktop` as legacy reference material, but it is no longer part of the normal build/release path.
 
 ### Build on Windows
 
 PowerShell:
 
 ```powershell
-dotnet build .\Cbdb.App.Core\Cbdb.App.Core.csproj -c Debug
-dotnet build .\Cbdb.App.Data\Cbdb.App.Data.csproj -c Debug
-dotnet build .\Cbdb.App.Avalonia\Cbdb.App.Avalonia.csproj -c Debug
-dotnet build .\Cbdb.App.Desktop\Cbdb.App.Desktop.csproj -c Debug
+dotnet build .\Cbdb.WindowsApp.sln -c Debug
 ```
 
 ### Run on Windows
@@ -141,12 +147,6 @@ Run Avalonia shell:
 dotnet run --project .\Cbdb.App.Avalonia\Cbdb.App.Avalonia.csproj
 ```
 
-Run WPF app:
-
-```powershell
-dotnet run --project .\Cbdb.App.Desktop\Cbdb.App.Desktop.csproj
-```
-
 ### Manual Test Checklist on Windows
 
 For Avalonia:
@@ -154,24 +154,11 @@ For Avalonia:
 1. Run the Avalonia app.
 2. Repeat the same language, SQLite picker, health check, external link, and user guide checks listed in the macOS section.
 
-For WPF:
-
-1. Run the WPF desktop app.
-2. Confirm the main navigation window opens.
-3. Switch among English, Traditional Chinese, and Simplified Chinese.
-4. Open the bundled SQLite database.
-5. Confirm database health check succeeds.
-6. Open the Person Browser module.
-7. Verify person search returns rows.
-8. Select a person and verify summary/details populate.
-9. Open one or two related tabs and confirm data loads.
-10. Open one query shell window and confirm it launches.
-
 ### Expected Windows Result
 
-- Both Avalonia and WPF apps should build.
+- The Avalonia app and test project should build from the solution.
 - Windows CI publishes the Avalonia app as the packaged `win-x64` artifact.
-- WPF remains available for local comparison and migration reference.
+- `Cbdb.App.Desktop` remains available only for local comparison and migration reference.
 
 ## Known Issues and Boundaries
 
@@ -201,7 +188,7 @@ dotnet restore
 
 ### Windows project fails on macOS
 
-That is expected. `Cbdb.App.Desktop` targets Windows only.
+That is expected. `Cbdb.App.Desktop` targets Windows only and is no longer part of the solution build.
 
 ### SQLite health check fails
 

@@ -33,10 +33,14 @@ SELECT
 FROM DYNASTIES
 ORDER BY
     CASE
+        WHEN TRIM(COALESCE(c_dynasty_chn, '')) IN ('未詳', '未详')
+          OR LOWER(TRIM(COALESCE(c_dynasty, ''))) IN ('unknown', '[unknown]')
+        THEN 0
         WHEN TRIM(COALESCE(c_dynasty_chn, '')) IN ('朝鮮', '朝鲜', '韓國', '韩国')
-          OR LOWER(TRIM(COALESCE(c_dynasty, ''))) IN ('choson', 'joseon', 'korea', 'south korea')
-        THEN 1
-        ELSE 0
+          OR TRIM(COALESCE(c_dynasty_chn, '')) IN ('新羅', '新罗')
+          OR LOWER(TRIM(COALESCE(c_dynasty, ''))) IN ('choson', 'joseon', 'korea', 'south korea', 'silla')
+        THEN 2
+        ELSE 1
     END,
     CASE WHEN c_start IS NULL THEN 1 ELSE 0 END,
     c_start,

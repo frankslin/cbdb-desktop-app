@@ -310,21 +310,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          release_notes="$(cat <<EOF
-          CBDB ${RELEASE_VERSION}
-
-          - cbdb-${RELEASE_VERSION}-win-x64.zip
-          - cbdb-${RELEASE_VERSION}-osx-arm64.zip
-          - cbdb-${RELEASE_VERSION}-osx-x64.zip
-          EOF
-          )"
+          if [ ! -f "RELEASE_NOTES.md" ]; then
+            echo "RELEASE_NOTES.md not found" >&2
+            exit 1
+          fi
           gh release create "v${RELEASE_VERSION}" \
             artifacts/release/cbdb-${RELEASE_VERSION}-win-x64.zip \
             artifacts/release/cbdb-${RELEASE_VERSION}-osx-arm64.zip \
             artifacts/release/cbdb-${RELEASE_VERSION}-osx-x64.zip \
             --target "${GITHUB_SHA}" \
             --title "CBDB ${RELEASE_VERSION}" \
-            --notes "${release_notes}"
+            --notes-file "RELEASE_NOTES.md"
 
       - name: Write release summary
         shell: bash
