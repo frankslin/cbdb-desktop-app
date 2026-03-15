@@ -9,18 +9,21 @@
 
 ## Current Scope
 - Main navigation window exists.
-- Person browser is the primary implemented module and current main area of active work.
-- Query-module shell windows exist for the major modules, but they are still scaffolding rather than full Access-equivalent implementations.
+- Person browser and Status query are the two currently usable end-user modules.
+- Other query-module windows still exist mostly as scaffolding rather than full Access-equivalent implementations.
 - Database is expected to be read from the app-local `data` directory.
 
 ## Current Progress
 - Main window has been built and localized.
 - Home page module buttons were redesigned from a single vertical stack into a more compact grid of large buttons.
 - The error-report button opens the Harvard error-report page in the system browser.
+- The main window now includes an explicit `About` entry in addition to the app menu path.
 - Locale-specific UI fonts are in place:
   - Traditional Chinese: `Microsoft JhengHei UI`
   - Simplified Chinese: `Microsoft YaHei UI`
   - English: `Segoe UI`
+- The app is currently forced to light mode for readability.
+  - Dark mode is not supported yet.
 - Person browser supports:
   - searching by person-name fields and alt names
   - paged loading on the left list
@@ -28,6 +31,11 @@
   - resizable left/right split layout
   - right-side summary panel
   - related tabs with lazy loading and loading indicators
+- Person browser also now supports:
+  - importing person lists from `CSV` or `TXT`
+  - exporting person lists to file
+  - expanded kinship browsing that can include kin-of-kin relationships
+  - direct vs derived kinship labeling
 - Person list currently shows:
   - `c_personid`
   - Chinese name
@@ -82,6 +90,9 @@
   - Possessions
   - Sources
   - Institutions
+- Kinship tab behavior now reflects an important Access pattern:
+  - it can optionally expand beyond direct `KIN_DATA` rows
+  - simple kinship reduction rules are currently hardcoded in code rather than loaded from a table
 - Addresses tab now renders each address record as a repeated form rather than a generic grid.
 - Associations tab now renders each association record as a repeated form rather than a placeholder.
 - Associations tab currently groups each record into:
@@ -101,6 +112,33 @@
   - pages
   - notes
 - In the current Avalonia address tab, all read-only fields except `Notes` are intentionally single-line.
+- Status Query now supports:
+  - hierarchical status category selection based on `STATUS_TYPES` and `STATUS_CODE_TYPE_REL`
+  - place selection
+  - optional inclusion of subordinate places
+  - index-year filtering
+  - dynasty-range filtering
+  - record and person result tabs
+  - person-id export
+  - status-code CSV export
+- Reusable query-side picker components now exist for:
+  - dynasty ranges
+  - place selection
+  - hierarchical status selection
+- Dynasty ordering rules currently include:
+  - chronological ordering for normal dynasties
+  - `[unknown] / 未詳` at the beginning
+  - `新羅 / 朝鮮 / 韓國` grouped at the end
+- A reusable SQLite fixture database now exists under `Cbdb.App.Avalonia.Tests/Fixtures/latest-fixture.sqlite3`.
+- Release packaging now includes:
+  - `THIRD-PARTY-LICENSES.md`
+  - release notes read from `RELEASE_NOTES.md`
+- The repository now has:
+  - a dedicated manual `release.yml`
+  - test gating before build/package steps
+  - platform-specific release tests for Windows and macOS
+- `Cbdb.App.Desktop` is no longer part of the solution.
+  - The directory remains only as legacy Access-porting and form-design reference material.
 
 ## What Is Not Stable Yet
 - Person browser data enrichment still relies on a generic lookup pipeline and is not fully Access-like yet.
@@ -124,6 +162,12 @@
     - Postings
   - Real-database UI scenarios and screenshot baseline diffing are not wired yet.
 - The newly ported `Associations`, `Entry`, `Events`, `Status`, `Kinship`, and `Possessions` tabs are stable repeated-form summaries, but they are not yet field-for-field Access-equivalent layouts.
+- `Person Browser` and `Status Query` are usable, but not yet feature-complete relative to Access.
+- `Status Query` still lacks many of the broader Access workflows:
+  - GIS / KML export
+  - Neo4j export
+  - Access-style place import workflows
+  - some of the richer scratch-table-derived output fields
 - The Associations tab is only partially aligned with Access.
   - It now follows the main Access subform grouping, but the detailed layout is still an approximation rather than a control-for-control replica of `ASSOC_DATA_2 Subform`.
   - Some Access fields are still summarized into merged display values instead of being shown as fully discrete Access-style controls.
@@ -142,6 +186,8 @@
 - `apply_patch` has been unreliable in this workspace, especially on Windows/XAML-heavy files.
 - CRLF handling has been fragile during scripted replacements.
   - Literal `` `r`n `` has accidentally been written into source files before.
+- Avalonia `ComboBox` behavior on macOS can differ from Windows in subtle layout ways.
+  - Dropdown sizing that looks fixed on Windows may still shift on macOS unless the control width and item template width are both constrained.
 - Person detail loading is sensitive to SQL column order.
   - Several regressions came from changing selected columns without updating reader indexes consistently.
   - When possible, avoid expanding positional reader logic unless the SQL and indexes are updated together.
@@ -152,6 +198,12 @@
   - enrich many cells one-by-one via lookup queries
 - Generic per-cell lookup is workable for correctness but not for performance.
   - The long-term fix is per-tab SQL with joins, or at minimum column-level/batch caching.
+- SQLite integration tests on Windows runners can fail if temporary databases are deleted before pooled connections are fully released.
+  - Use `SqliteConnection.ClearAllPools()` plus retry-based cleanup in tests.
+- GitHub Actions runner behavior has been a recurring source of friction.
+  - `setup-dotnet@v5` may download an extra runtime in addition to the requested SDK.
+  - macOS restore/build jobs should avoid restoring the old desktop project.
+  - Release jobs that call `gh release create` need a checkout step to provide `.git` context.
 - Headless UI tests currently work best with injected fake services.
   - The production `PersonBrowserWindow` still guards on `sqlitePath` existence before searching.
   - If adding more headless tests, either pass a real test database path or create a temporary placeholder file when using fake services.
@@ -169,6 +221,11 @@
 - If Chinese text appears garbled, stop feature work and repair encoding first.
 - Avoid introducing duplicate representations of the same field in both the summary panel and Basic Information tab unless that duplication is explicitly intended.
 - For Avalonia dialog/action buttons, center button text both horizontally and vertically by default.
+- For query filter rows in Avalonia, prefer explicit horizontal flow layouts that match the actual grouping semantics.
+  - Example: person + status on one line, place + subordinate-place option on one line, time filters on one line.
+- For optional filter toggles, disable dependent inputs when the toggle is off instead of leaving them visually active.
+- For reusable picker controls, keep behavior rules inside the control when possible.
+  - Example: `DynastyRangePicker` owns its own enable/disable behavior.
 - For Avalonia modal/info windows with potentially long body text, keep action buttons fixed and use a scrollable body area rather than letting content push buttons out of view.
 - For Avalonia UI regression work, prefer extending `Cbdb.App.Avalonia.Tests` instead of relying on manual visual checks.
 - When adding UI tests, produce both:
@@ -177,12 +234,14 @@
 - Keep headless UI tests deterministic.
   - Prefer fixture-backed fake services for layout and interaction checks.
   - Use real SQLite-backed tests only when the goal is data integration rather than UI shape.
+- For module migration sequencing, prefer modules that can reuse the existing query shell and picker patterns.
+  - `Entry` is currently the best next candidate after `Status`.
 
 ## High-Priority Next Steps
-- Finish populating the remaining Basic Information fields so the structured form is fully backed by real data.
+- Keep refining `Person Browser` and `Status Query` toward closer Access equivalence.
+- Implement the next query module, with `Entry` currently the recommended next target.
 - Continue improving code-field display to match the Access app more closely.
 - Optimize related-tab loading by replacing the generic per-cell lookup path for the heaviest tabs with dedicated SQL.
 - Continue refining the Associations and Addresses tabs toward closer Access-equivalent layouts and display semantics.
-- Continue aligning the remaining query modules with the Access manual and screenshots.
-- Expand the headless Avalonia UI test suite beyond the initial person-browser scenario.
-- Commit this `AGENTS.md` into the repository so future contributors get the current project state directly after clone.
+- Expand the headless Avalonia UI test suite with more fixture-backed query and module coverage.
+- Continue tightening release automation and documentation so packaged builds remain reproducible and self-describing.
