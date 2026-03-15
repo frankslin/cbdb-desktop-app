@@ -61,6 +61,7 @@ public partial class MainWindow : Window {
 
     private string _sqlitePath = string.Empty;
     private PersonBrowserWindow? _personBrowserWindow;
+    private EntryQueryWindow? _entryQueryWindow;
     private StatusQueryWindow? _statusQueryWindow;
 
     internal AppLocalizationService LocalizationService => _localizationService;
@@ -217,6 +218,37 @@ public partial class MainWindow : Window {
             window.Show();
             _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
             _txtOutput.Text = T("msg.browser_opened");
+            return;
+        }
+
+        if (key == "module.entry") {
+            if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
+                _txtStatus.Text = T("status.failed");
+                _txtOutput.Text = T("msg.sqlite_missing");
+                return;
+            }
+
+            if (_entryQueryWindow is { } existingWindow) {
+                if (existingWindow.WindowState == WindowState.Minimized) {
+                    existingWindow.WindowState = WindowState.Normal;
+                }
+
+                existingWindow.Activate();
+                _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+                _txtOutput.Text = T("msg.entry_query_opened");
+                return;
+            }
+
+            var window = new EntryQueryWindow(_sqlitePath, _localizationService);
+            _entryQueryWindow = window;
+            window.Closed += (_, _) => {
+                if (ReferenceEquals(_entryQueryWindow, window)) {
+                    _entryQueryWindow = null;
+                }
+            };
+            window.Show(this);
+            _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+            _txtOutput.Text = T("msg.entry_query_opened");
             return;
         }
 
