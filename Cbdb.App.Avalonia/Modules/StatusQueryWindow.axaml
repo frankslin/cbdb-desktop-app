@@ -87,7 +87,7 @@
               <TextBlock x:Name="LblIndexYearTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
               <TextBox x:Name="TxtIndexYearTo" Grid.Column="2" Watermark="1911" />
             </Grid>
-            <controls:DynastyRangePicker x:Name="DynastyPicker" Width="520" />
+            <controls:DynastyRangePicker x:Name="DynastyPicker" />
           </WrapPanel>
         </Grid>
 
