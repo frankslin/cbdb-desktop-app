@@ -125,11 +125,14 @@
               <d:DataGridTextColumn Binding="{Binding Association}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding AssociatePerson}" Width="150" />
               <d:DataGridTextColumn Binding="{Binding Institution}" Width="160" />
+              <d:DataGridTextColumn Binding="{Binding ExamField}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding EntryAddressId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding EntryAddress}" Width="180" />
               <d:DataGridTextColumn Binding="{Binding EntryXCoord}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding EntryYCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding EntryXyCount}" Width="80" />
               <d:DataGridTextColumn Binding="{Binding ParentalStatus}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding AttemptCount}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding Source}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding Pages}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding Notes}" Width="220" />

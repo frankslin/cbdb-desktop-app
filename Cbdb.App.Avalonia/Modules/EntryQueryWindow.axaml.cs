@@ -168,15 +168,18 @@ public partial class EntryQueryWindow : Window {
         ((DataGridTextColumn)rc[17]).Header = T("browser.entry_association");
         ((DataGridTextColumn)rc[18]).Header = T("browser.entry_associate_person");
         ((DataGridTextColumn)rc[19]).Header = T("browser.entry_institution");
-        ((DataGridTextColumn)rc[20]).Header = T("browser.address_id");
-        ((DataGridTextColumn)rc[21]).Header = T("browser.entry_address");
-        ((DataGridTextColumn)rc[22]).Header = "X";
-        ((DataGridTextColumn)rc[23]).Header = "Y";
-        ((DataGridTextColumn)rc[24]).Header = T("browser.entry_parental_status");
-        ((DataGridTextColumn)rc[25]).Header = T("browser.source_title");
-        ((DataGridTextColumn)rc[26]).Header = T("browser.address_pages");
-        ((DataGridTextColumn)rc[27]).Header = T("browser.notes");
-        ((DataGridTextColumn)rc[28]).Header = T("browser.entry_posting_notes");
+        ((DataGridTextColumn)rc[20]).Header = T("browser.entry_exam_field");
+        ((DataGridTextColumn)rc[21]).Header = T("browser.address_id");
+        ((DataGridTextColumn)rc[22]).Header = T("browser.entry_address");
+        ((DataGridTextColumn)rc[23]).Header = "X";
+        ((DataGridTextColumn)rc[24]).Header = "Y";
+        ((DataGridTextColumn)rc[25]).Header = "XY";
+        ((DataGridTextColumn)rc[26]).Header = T("browser.entry_parental_status");
+        ((DataGridTextColumn)rc[27]).Header = T("browser.entry_attempt_count");
+        ((DataGridTextColumn)rc[28]).Header = T("browser.source_title");
+        ((DataGridTextColumn)rc[29]).Header = T("browser.address_pages");
+        ((DataGridTextColumn)rc[30]).Header = T("browser.notes");
+        ((DataGridTextColumn)rc[31]).Header = T("browser.entry_posting_notes");
 
         var pc = _gridPeople.Columns;
         ((DataGridTextColumn)pc[0]).Header = T("browser.grid_person_id");

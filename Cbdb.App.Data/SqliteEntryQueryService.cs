@@ -253,11 +253,14 @@ SELECT
         ELSE COALESCE(assoc.c_name_chn, assoc.c_name)
     END AS associate_person_label,
     COALESCE(sinc.c_inst_name_hz, sinc.c_inst_name_py) AS institution_label,
+    ed.c_exam_field,
     ed.c_entry_addr_id,
     COALESCE(entry_addr.c_name_chn, entry_addr.c_name) AS entry_address,
     entry_addr.x_coord,
     entry_addr.y_coord,
+    xy.xy_count,
     COALESCE(psc.c_parental_status_desc_chn, psc.c_parental_status_desc) AS parental_status_label,
+    ed.c_attempt_count,
     COALESCE(src.c_title_chn, src.c_title) AS source_label,
     ed.c_pages,
     ed.c_notes,
@@ -277,6 +280,14 @@ LEFT JOIN ASSOC_CODES ac ON ac.c_assoc_code = ed.c_assoc_code
 LEFT JOIN BIOG_MAIN assoc ON assoc.c_personid = ed.c_assoc_id
 LEFT JOIN SOCIAL_INSTITUTION_NAME_CODES sinc ON sinc.c_inst_name_code = ed.c_inst_name_code
 LEFT JOIN ADDR_CODES entry_addr ON entry_addr.c_addr_id = ed.c_entry_addr_id
+LEFT JOIN (
+    SELECT
+        c_entry_addr_id,
+        COUNT(DISTINCT c_personid) AS xy_count
+    FROM ENTRY_DATA
+    WHERE c_entry_addr_id IS NOT NULL
+    GROUP BY c_entry_addr_id
+) xy ON xy.c_entry_addr_id = ed.c_entry_addr_id
 LEFT JOIN PARENTAL_STATUS_CODES psc ON psc.c_parental_status_code = ed.c_parental_status_code
 LEFT JOIN TEXT_CODES src ON src.c_textid = ed.c_source
 WHERE 1 = 1
@@ -347,15 +358,18 @@ LIMIT $limit;
                 Association: reader.IsDBNull(20) ? null : reader.GetString(20),
                 AssociatePerson: reader.IsDBNull(21) ? null : reader.GetString(21),
                 Institution: reader.IsDBNull(22) ? null : reader.GetString(22),
-                EntryAddressId: reader.IsDBNull(23) ? null : reader.GetInt32(23),
-                EntryAddress: reader.IsDBNull(24) ? null : reader.GetString(24),
-                EntryXCoord: reader.IsDBNull(25) ? null : reader.GetDouble(25),
-                EntryYCoord: reader.IsDBNull(26) ? null : reader.GetDouble(26),
-                ParentalStatus: reader.IsDBNull(27) ? null : reader.GetString(27),
-                Source: reader.IsDBNull(28) ? null : reader.GetString(28),
-                Pages: reader.IsDBNull(29) ? null : reader.GetString(29),
-                Notes: reader.IsDBNull(30) ? null : reader.GetString(30),
-                PostingNotes: reader.IsDBNull(31) ? null : reader.GetString(31)
+                ExamField: reader.IsDBNull(23) ? null : reader.GetString(23),
+                EntryAddressId: reader.IsDBNull(24) ? null : reader.GetInt32(24),
+                EntryAddress: reader.IsDBNull(25) ? null : reader.GetString(25),
+                EntryXCoord: reader.IsDBNull(26) ? null : reader.GetDouble(26),
+                EntryYCoord: reader.IsDBNull(27) ? null : reader.GetDouble(27),
+                EntryXyCount: reader.IsDBNull(28) ? 0 : reader.GetInt32(28),
+                ParentalStatus: reader.IsDBNull(29) ? null : reader.GetString(29),
+                AttemptCount: reader.IsDBNull(30) ? null : reader.GetInt32(30),
+                Source: reader.IsDBNull(31) ? null : reader.GetString(31),
+                Pages: reader.IsDBNull(32) ? null : reader.GetString(32),
+                Notes: reader.IsDBNull(33) ? null : reader.GetString(33),
+                PostingNotes: reader.IsDBNull(34) ? null : reader.GetString(34)
             ));
         }
 
