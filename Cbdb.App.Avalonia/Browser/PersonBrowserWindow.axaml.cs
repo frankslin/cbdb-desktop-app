@@ -332,20 +332,29 @@ public partial class PersonBrowserWindow : Window {
         try {
             var content = await File.ReadAllTextAsync(path, Encoding.UTF8);
             var personIds = PersonIdImportParser.Parse(content);
-            if (personIds.Count == 0) {
-                _people.Clear();
-                _currentKeyword = null;
-                _nextOffset = 0;
-                _hasMore = false;
-                ClearDetail();
-                _txtRecord.Text = T("browser.no_valid_person_ids");
-                return;
-            }
+            await LoadPeopleByIdsAsync(personIds, T("browser.no_valid_person_ids"));
+        } catch (Exception ex) {
+            _txtRecord.Text = ex.Message;
+        }
+    }
 
+    public async Task LoadPeopleByIdsAsync(IReadOnlyList<int> personIds, string? emptyInputMessage = null) {
+        if (personIds.Count == 0) {
+            _people.Clear();
+            _currentKeyword = null;
+            _nextOffset = 0;
+            _hasMore = false;
+            ClearDetail();
+            _txtRecord.Text = emptyInputMessage ?? T("browser.no_valid_person_ids");
+            return;
+        }
+
+        try {
             _btnLoadFromFile.IsEnabled = false;
             _btnSearch.IsEnabled = false;
             _btnClear.IsEnabled = false;
 
+            ReplaceCurrentHistoryState();
             var rows = await _personBrowserService.GetPeopleByIdsAsync(_sqlitePath, personIds);
             _people.Clear();
             foreach (var row in rows) {
@@ -357,15 +366,27 @@ public partial class PersonBrowserWindow : Window {
             _nextOffset = _people.Count;
             _hasMore = false;
             ClearDetail();
-            UpdateRecordText();
 
             if (_people.Count > 0) {
-                _gridPeople.SelectedIndex = 0;
+                var first = _people[0];
+                _isRestoringHistory = true;
+                try {
+                    _gridPeople.SelectedItem = first;
+                    _gridPeople.ScrollIntoView(first, _colPersonId);
+                } finally {
+                    _isRestoringHistory = false;
+                }
+
+                var loaded = await LoadSelectedPersonAsync(first, suppressHistoryPush: true);
+                if (loaded) {
+                    PushCurrentHistoryState();
+                } else {
+                    ClearDetail();
+                    UpdateRecordText();
+                }
             } else {
                 _txtRecord.Text = T("browser.no_matching_person_ids");
             }
-        } catch (Exception ex) {
-            _txtRecord.Text = ex.Message;
         } finally {
             _btnLoadFromFile.IsEnabled = true;
             _btnSearch.IsEnabled = true;
@@ -457,20 +478,31 @@ public partial class PersonBrowserWindow : Window {
             return;
         }
 
+        try {
+            await LoadSelectedPersonAsync(selected, suppressHistoryPush: false);
+        } catch (Exception ex) {
+            _txtRecord.Text = ex.Message;
+        }
+    }
+
+    private async Task<bool> LoadSelectedPersonAsync(PersonListItem selected, bool suppressHistoryPush) {
         _selectedPersonId = selected.PersonId;
 
+        var previousSuppress = _suppressHistoryPush;
+        _suppressHistoryPush = suppressHistoryPush;
         try {
             var detail = await _personBrowserService.GetDetailAsync(_sqlitePath, selected.PersonId);
             if (detail is null) {
                 ClearDetail();
-                return;
+                return false;
             }
 
             DisplayDetail(detail);
             await EnsureSelectedTabLoadedAsync();
             RecordHistory(selected.PersonId);
-        } catch (Exception ex) {
-            _txtRecord.Text = ex.Message;
+            return true;
+        } finally {
+            _suppressHistoryPush = previousSuppress;
         }
     }
 
@@ -549,6 +581,16 @@ public partial class PersonBrowserWindow : Window {
             return;
         }
 
+        if (_personHistoryIndex < _personHistory.Count - 1) {
+            _personHistory.RemoveRange(_personHistoryIndex + 1, _personHistory.Count - (_personHistoryIndex + 1));
+        }
+
+        _personHistory.Add(CaptureCurrentState());
+        _personHistoryIndex = _personHistory.Count - 1;
+        UpdateHistoryButtons();
+    }
+
+    private void PushCurrentHistoryState() {
         if (_personHistoryIndex < _personHistory.Count - 1) {
             _personHistory.RemoveRange(_personHistoryIndex + 1, _personHistory.Count - (_personHistoryIndex + 1));
         }

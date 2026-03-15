@@ -287,6 +287,35 @@ public partial class MainWindow : Window {
         _txtOutput.Text = key == "module.browser" ? T("msg.browser_todo") : string.Format(T("msg.module_todo"), moduleLabel);
     }
 
+    internal async Task OpenPersonBrowserWithIdsAsync(IReadOnlyList<int> personIds) {
+        if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
+            _txtStatus.Text = T("status.failed");
+            _txtOutput.Text = T("msg.sqlite_missing");
+            return;
+        }
+
+        if (_personBrowserWindow is not { } window) {
+            window = new PersonBrowserWindow(_sqlitePath, _localizationService);
+            _personBrowserWindow = window;
+            window.Closed += (_, _) => {
+                if (ReferenceEquals(_personBrowserWindow, window)) {
+                    _personBrowserWindow = null;
+                }
+            };
+            window.Show();
+        } else {
+            if (window.WindowState == WindowState.Minimized) {
+                window.WindowState = WindowState.Normal;
+            }
+
+            window.Activate();
+        }
+
+        await window.LoadPeopleByIdsAsync(personIds, T("browser.no_valid_person_ids"));
+        _txtStatus.Text = string.Format(T("status.module_selected"), T("module.browser"));
+        _txtOutput.Text = T("msg.browser_loaded_query_results");
+    }
+
     private async void BtnRelinkTables_Click(object? sender, RoutedEventArgs e) {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions {
             Title = T("dialog.select_sqlite"),

@@ -47,6 +47,7 @@ public partial class EntryQueryWindow : Window {
     private Button _btnRunQuery = null!;
     private Button _btnSavePersonIds = null!;
     private Button _btnSaveEntryCodes = null!;
+    private Button _btnOpenInBrowser = null!;
     private Button _btnClose = null!;
     private TabItem _tabRecords = null!;
     private TabItem _tabPeople = null!;
@@ -100,6 +101,7 @@ public partial class EntryQueryWindow : Window {
         _btnRunQuery = this.FindControl<Button>("BtnRunQuery") ?? throw new InvalidOperationException("BtnRunQuery not found.");
         _btnSavePersonIds = this.FindControl<Button>("BtnSavePersonIds") ?? throw new InvalidOperationException("BtnSavePersonIds not found.");
         _btnSaveEntryCodes = this.FindControl<Button>("BtnSaveEntryCodes") ?? throw new InvalidOperationException("BtnSaveEntryCodes not found.");
+        _btnOpenInBrowser = this.FindControl<Button>("BtnOpenInBrowser") ?? throw new InvalidOperationException("BtnOpenInBrowser not found.");
         _btnClose = this.FindControl<Button>("BtnClose") ?? throw new InvalidOperationException("BtnClose not found.");
         _tabRecords = this.FindControl<TabItem>("TabRecords") ?? throw new InvalidOperationException("TabRecords not found.");
         _tabPeople = this.FindControl<TabItem>("TabPeople") ?? throw new InvalidOperationException("TabPeople not found.");
@@ -142,6 +144,7 @@ public partial class EntryQueryWindow : Window {
         _btnRunQuery.Content = T("entry_query.run_query");
         _btnSavePersonIds.Content = T("entry_query.save_person_ids");
         _btnSaveEntryCodes.Content = T("entry_query.save_entry_codes");
+        _btnOpenInBrowser.Content = T("query.open_in_browser");
         _btnClose.Content = T("button.exit");
         _tabRecords.Header = T("entry_query.tab_records");
         _tabPeople.Header = T("entry_query.tab_people");
@@ -326,6 +329,18 @@ public partial class EntryQueryWindow : Window {
             _txtStatusBar.Text = string.Format(T("entry_query.saved_entry_codes"), selectedOptions.Count, path);
         } catch (Exception ex) {
             _txtStatusBar.Text = ex.Message;
+        }
+    }
+
+    private async void BtnOpenInBrowser_Click(object? sender, RoutedEventArgs e) {
+        if (_people.Count == 0) {
+            _txtStatusBar.Text = T("browser.no_data_to_export");
+            return;
+        }
+
+        if (Owner is MainWindow mainWindow) {
+            await mainWindow.OpenPersonBrowserWithIdsAsync(_people.Select(person => person.PersonId).ToList());
+            _txtStatusBar.Text = T("query.loaded_into_browser");
         }
     }
 
