@@ -1,13 +1,31 @@
 <UserControl
     x:Class="Cbdb.App.Avalonia.Controls.DynastyRangePicker"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="clr-namespace:Cbdb.App.Core;assembly=Cbdb.App.Core">
+  <UserControl.Styles>
+    <Style Selector="ComboBox.dynasty-combo">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+  </UserControl.Styles>
   <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto">
     <CheckBox x:Name="ChkUseDynasty" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" />
     <Grid Grid.Column="1" ColumnDefinitions="*,Auto,*">
-      <ComboBox x:Name="CmbDynastyFrom" />
+      <ComboBox x:Name="CmbDynastyFrom" Classes="dynasty-combo">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="core:DynastyOption">
+            <TextBlock Text="{Binding DisplayLabel}" TextTrimming="CharacterEllipsis" MaxLines="1" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
       <TextBlock x:Name="LblDynastyTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
-      <ComboBox x:Name="CmbDynastyTo" Grid.Column="2" />
+      <ComboBox x:Name="CmbDynastyTo" Grid.Column="2" Classes="dynasty-combo">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="core:DynastyOption">
+            <TextBlock Text="{Binding DisplayLabel}" TextTrimming="CharacterEllipsis" MaxLines="1" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
     </Grid>
   </Grid>
 </UserControl>
