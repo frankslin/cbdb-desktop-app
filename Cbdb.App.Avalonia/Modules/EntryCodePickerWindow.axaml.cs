@@ -98,7 +98,6 @@ public partial class EntryCodePickerWindow : Window {
         _btnFind.Content = T("entry_query.search");
         _btnFindNext.Content = T("entry_query.find_next");
         _txtCategoryHeader.Text = T("entry_query.category_tree");
-        _btnSelectVisible.Content = T("entry_query.select_all");
         _btnClearVisible.Content = T("entry_query.clear_visible");
         _btnClearAll.Content = T("entry_query.clear_all");
         _btnCancel.Content = T("entry_query.cancel");
@@ -136,12 +135,18 @@ public partial class EntryCodePickerWindow : Window {
     private void BtnApply_Click(object? sender, RoutedEventArgs e) => Close(true);
 
     private void BtnSelectVisible_Click(object? sender, RoutedEventArgs e) {
-        if (_activeTypeNode.IsRoot) {
+        var visibleOptions = GetVisibleOptions();
+        if (visibleOptions.Count == 0) {
             return;
         }
 
-        foreach (var option in GetVisibleOptions()) {
-            _selectedCodes.Add(option.Code);
+        var shouldSelectAll = visibleOptions.Any(option => !_selectedCodes.Contains(option.Code));
+        foreach (var option in visibleOptions) {
+            if (shouldSelectAll) {
+                _selectedCodes.Add(option.Code);
+            } else {
+                _selectedCodes.Remove(option.Code);
+            }
         }
 
         RenderOptions();
@@ -232,8 +237,12 @@ public partial class EntryCodePickerWindow : Window {
     private void RenderOptions() {
         _entryOptionHost.Children.Clear();
         _txtCurrentType.Text = GetTypeNodeLabel(_activeTypeNode);
+        var visibleOptions = GetVisibleOptions();
+        _btnSelectVisible.Content = visibleOptions.Count > 0 && visibleOptions.All(option => _selectedCodes.Contains(option.Code))
+            ? T("entry_query.deselect_all")
+            : T("entry_query.select_all");
 
-        foreach (var option in GetVisibleOptions()) {
+        foreach (var option in visibleOptions) {
             var row = new Border {
                 Background = string.Equals(option.Code, _highlightedEntryCode, StringComparison.OrdinalIgnoreCase)
                     ? new SolidColorBrush(Color.Parse("#FFF3BF"))

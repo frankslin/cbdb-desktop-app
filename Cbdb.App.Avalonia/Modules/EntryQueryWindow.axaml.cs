@@ -361,17 +361,21 @@ public partial class EntryQueryWindow : Window {
             return;
         }
 
-        var labels = _entryOptions
+        var selectedOptions = _entryOptions
             .Where(option => _selectedEntryCodes.Contains(option.Code))
-            .Select(option => option.DisplayLabel)
-            .Take(3)
             .ToList();
 
-        var suffix = _selectedEntryCodes.Count > labels.Count
-            ? string.Format(T("entry_query.more_selected"), _selectedEntryCodes.Count - labels.Count)
-            : string.Empty;
+        if (selectedOptions.Count == 1) {
+            _txtSelectedEntries.Text = selectedOptions[0].DisplayLabel;
+            return;
+        }
 
-        _txtSelectedEntries.Text = string.Join("; ", labels) + suffix;
+        if (selectedOptions.Count == _entryOptions.Count && _entryOptions.Count > 0) {
+            _txtSelectedEntries.Text = T("entry_query.all_entries");
+            return;
+        }
+
+        _txtSelectedEntries.Text = T("entry_query.multi_select");
     }
 
     private void UpdateSelectedPlacesText() {
