@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Core;
 
@@ -22,7 +23,7 @@ public partial class EntryCodePickerWindow : Window {
     private Button _btnFind = null!;
     private Button _btnFindNext = null!;
     private TextBlock _txtCategoryHeader = null!;
-    private StackPanel _typeTreeHost = null!;
+    private TreeView _typeTreeView = null!;
     private Button _btnSelectVisible = null!;
     private Button _btnClearVisible = null!;
     private TextBlock _txtCurrentType = null!;
@@ -36,6 +37,7 @@ public partial class EntryCodePickerWindow : Window {
     private string? _highlightedEntryCode;
     private List<string> _searchMatches = new();
     private int _searchMatchIndex = -1;
+    private bool _preserveHighlightOnTreeSelection;
 
     public EntryCodePickerWindow()
         : this(
@@ -80,7 +82,8 @@ public partial class EntryCodePickerWindow : Window {
         _btnFind = this.FindControl<Button>("BtnFind") ?? throw new InvalidOperationException("BtnFind not found.");
         _btnFindNext = this.FindControl<Button>("BtnFindNext") ?? throw new InvalidOperationException("BtnFindNext not found.");
         _txtCategoryHeader = this.FindControl<TextBlock>("TxtCategoryHeader") ?? throw new InvalidOperationException("TxtCategoryHeader not found.");
-        _typeTreeHost = this.FindControl<StackPanel>("TypeTreeHost") ?? throw new InvalidOperationException("TypeTreeHost not found.");
+        _typeTreeView = this.FindControl<TreeView>("TypeTreeView") ?? throw new InvalidOperationException("TypeTreeView not found.");
+        _typeTreeView.SelectionChanged += TypeTreeView_SelectionChanged;
         _btnSelectVisible = this.FindControl<Button>("BtnSelectVisible") ?? throw new InvalidOperationException("BtnSelectVisible not found.");
         _btnClearVisible = this.FindControl<Button>("BtnClearVisible") ?? throw new InvalidOperationException("BtnClearVisible not found.");
         _txtCurrentType = this.FindControl<TextBlock>("TxtCurrentType") ?? throw new InvalidOperationException("TxtCurrentType not found.");
@@ -165,79 +168,60 @@ public partial class EntryCodePickerWindow : Window {
     }
 
     private void RenderTypeTree() {
-        _typeTreeHost.Children.Clear();
-        _typeTreeHost.Children.Add(BuildTypeButton(_pickerData.Root, 0));
-
-        foreach (var topNode in _pickerData.Root.Children) {
-            _typeTreeHost.Children.Add(BuildNodeControl(topNode, 0));
-        }
+        _typeTreeView.ItemsSource = _pickerData.Root.Children.Select(BuildTreeItem).ToList();
     }
 
-    private Control BuildNodeControl(EntryTypeNode node, int level) {
-        if (node.Children.Count == 0) {
-            return BuildTypeButton(node, level);
-        }
-
-        var expander = new Expander {
-            IsExpanded = _expandedTypeCodes.Contains(node.Code) || IsDescendantOfActiveNode(node),
-            Header = BuildTypeButton(node, level),
-            Content = BuildChildNodeHost(node, level + 1)
-        };
-
-        expander.Expanded += (_, _) => _expandedTypeCodes.Add(node.Code);
-        expander.Collapsed += (_, _) => _expandedTypeCodes.Remove(node.Code);
-        return expander;
-    }
-
-    private Control BuildChildNodeHost(EntryTypeNode parentNode, int level) {
-        var host = new StackPanel {
-            Margin = new Thickness(14, 2, 0, 0),
-            Spacing = 4
-        };
-
-        foreach (var childNode in parentNode.Children) {
-            host.Children.Add(BuildNodeControl(childNode, level));
-        }
-
-        return host;
-    }
-
-    private Button BuildTypeButton(EntryTypeNode node, int level) {
-        var button = new Button {
-            Content = GetTypeNodeLabel(node),
+    private TreeViewItem BuildTreeItem(EntryTypeNode node) {
+        var item = new TreeViewItem {
+            Header = GetTypeNodeLabel(node),
             Tag = node,
-            HorizontalContentAlignment = HorizontalAlignment.Left,
-            Margin = new Thickness(level * 8, 0, 0, 0),
-            Background = string.Equals(_activeTypeNode.Code, node.Code, StringComparison.OrdinalIgnoreCase)
-                ? new SolidColorBrush(Color.Parse("#D7E9FF"))
-                : Brushes.Transparent,
-            BorderBrush = string.Equals(_activeTypeNode.Code, node.Code, StringComparison.OrdinalIgnoreCase)
-                ? new SolidColorBrush(Color.Parse("#6A9ED8"))
-                : new SolidColorBrush(Color.Parse("#D0D0D0"))
+            IsExpanded = _expandedTypeCodes.Contains(node.Code) || IsDescendantOfActiveNode(node),
+            IsSelected = string.Equals(_activeTypeNode.Code, node.Code, StringComparison.OrdinalIgnoreCase)
         };
-        button.Click += TypeButton_Click;
-        return button;
+
+        item.Expanded += TreeItem_Expanded;
+        item.Collapsed += TreeItem_Collapsed;
+
+        if (node.Children.Count > 0) {
+            item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+        }
+
+        return item;
     }
 
-    private void TypeButton_Click(object? sender, RoutedEventArgs e) {
-        if (sender is not Button { Tag: EntryTypeNode node }) {
+    private void TypeTreeView_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
+        if (_typeTreeView.SelectedItem is not TreeViewItem { Tag: EntryTypeNode node }) {
             return;
         }
 
         _activeTypeNode = node;
-        _highlightedEntryCode = null;
+        if (!_preserveHighlightOnTreeSelection) {
+            _highlightedEntryCode = null;
+        }
         if (node.Children.Count > 0) {
             _expandedTypeCodes.Add(node.Code);
         }
 
-        RenderTypeTree();
         RenderOptions();
+    }
+
+    private void TreeItem_Expanded(object? sender, RoutedEventArgs e) {
+        if (sender is TreeViewItem { Tag: EntryTypeNode node }) {
+            _expandedTypeCodes.Add(node.Code);
+        }
+    }
+
+    private void TreeItem_Collapsed(object? sender, RoutedEventArgs e) {
+        if (sender is TreeViewItem { Tag: EntryTypeNode node }) {
+            _expandedTypeCodes.Remove(node.Code);
+        }
     }
 
     private void RenderOptions() {
         _entryOptionHost.Children.Clear();
         _txtCurrentType.Text = GetTypeNodeLabel(_activeTypeNode);
         var visibleOptions = GetVisibleOptions();
+        Control? highlightedRow = null;
         _btnSelectVisible.Content = visibleOptions.Count > 0 && visibleOptions.All(option => _selectedCodes.Contains(option.Code))
             ? T("entry_query.deselect_all")
             : T("entry_query.select_all");
@@ -289,6 +273,9 @@ public partial class EntryCodePickerWindow : Window {
             grid.Children.Add(textPanel);
             row.Child = grid;
             _entryOptionHost.Children.Add(row);
+            if (string.Equals(option.Code, _highlightedEntryCode, StringComparison.OrdinalIgnoreCase)) {
+                highlightedRow = row;
+            }
         }
 
         if (_entryOptionHost.Children.Count == 0) {
@@ -299,6 +286,9 @@ public partial class EntryCodePickerWindow : Window {
         }
 
         UpdateSummary();
+        if (highlightedRow is not null) {
+            Dispatcher.UIThread.Post(() => highlightedRow.BringIntoView());
+        }
     }
 
     private IReadOnlyList<EntryCodeOption> GetVisibleOptions() {
@@ -348,7 +338,9 @@ public partial class EntryCodePickerWindow : Window {
             }
         }
 
+        _preserveHighlightOnTreeSelection = true;
         RenderTypeTree();
+        _preserveHighlightOnTreeSelection = false;
         RenderOptions();
         _txtSelectionHint.Text = string.Format(T("entry_query.search_result"), _searchMatchIndex + 1, _searchMatches.Count);
     }
