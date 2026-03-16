@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Interactivity;
+using System.Reflection;
 using Cbdb.App.Avalonia.Browser;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Avalonia.Tests.TestDoubles;
@@ -11,6 +13,63 @@ using Xunit;
 namespace Cbdb.App.Avalonia.Tests;
 
 public sealed class PersonBrowserWindowTests {
+    [AvaloniaFact]
+    public async Task LoadPeopleByIdsAsync_ReplacesResults_AndPushesHistoryLayer() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var sqlitePath = Path.Combine(Path.GetTempPath(), "headless-history-fixture.sqlite3");
+        File.WriteAllText(sqlitePath, "fixture");
+
+        var window = new PersonBrowserWindow(sqlitePath, localization, new FakePersonBrowserService());
+        window.Show();
+
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => AvaloniaUiTestHelper.FindRequiredControl<DataGrid>(window, "GridPeople").ItemsSource is not null
+                  && AvaloniaUiTestHelper.FindRequiredControl<DataGrid>(window, "GridPeople").SelectedItem is not null,
+            TimeSpan.FromSeconds(5),
+            "Person list did not finish its initial load."
+        );
+
+        var gridPeople = AvaloniaUiTestHelper.FindRequiredControl<DataGrid>(window, "GridPeople");
+        var btnHistoryBack = AvaloniaUiTestHelper.FindRequiredControl<Button>(window, "BtnHistoryBack");
+        var txtRecord = AvaloniaUiTestHelper.FindRequiredControl<TextBlock>(window, "TxtRecord");
+
+        Assert.Equal(2, ((IEnumerable<object>?)gridPeople.ItemsSource ?? Array.Empty<object>()).Count());
+        Assert.False(btnHistoryBack.IsEnabled);
+
+        await window.LoadPeopleByIdsAsync(new[] { 1 }, "No valid person IDs.");
+
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => (((IEnumerable<object>?)gridPeople.ItemsSource ?? Array.Empty<object>()).Count() == 1)
+                  && gridPeople.SelectedItem is PersonListItem selected
+                  && selected.PersonId == 1
+                  && btnHistoryBack.IsEnabled,
+            TimeSpan.FromSeconds(5),
+            "Imported query-result people did not replace the grid or push history."
+        );
+
+        Assert.Contains("1", txtRecord.Text ?? string.Empty);
+
+        var navigateHistory = typeof(PersonBrowserWindow).GetMethod("NavigateHistoryAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(navigateHistory);
+        var navigateTask = navigateHistory!.Invoke(window, new object?[] { -1 }) as Task;
+        Assert.NotNull(navigateTask);
+        await navigateTask!;
+
+        await AvaloniaUiTestHelper.WaitUntilAsync(
+            () => (((IEnumerable<object>?)gridPeople.ItemsSource ?? Array.Empty<object>()).Count() == 2)
+                  && gridPeople.SelectedItem is PersonListItem selected
+                  && selected.PersonId == 1
+                  && !btnHistoryBack.IsEnabled,
+            TimeSpan.FromSeconds(5),
+            "History back did not restore the previous people result set."
+        );
+
+        window.Close();
+        TestSqliteFileHelper.Delete(sqlitePath);
+    }
+
     [AvaloniaFact]
     public async Task PersonBrowserWindow_LoadsFixtureData_AndRendersLazyTabs() {
         const string testName = nameof(PersonBrowserWindow_LoadsFixtureData_AndRendersLazyTabs);

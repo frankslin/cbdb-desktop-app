@@ -158,31 +158,32 @@ public partial class EntryQueryWindow : Window {
         ((DataGridTextColumn)rc[4]).Header = T("browser.index_year_type");
         ((DataGridTextColumn)rc[5]).Header = T("browser.gender");
         ((DataGridTextColumn)rc[6]).Header = T("browser.dynasty");
-        ((DataGridTextColumn)rc[7]).Header = T("browser.entry_method");
-        ((DataGridTextColumn)rc[8]).Header = T("entry_query.entry_code");
-        ((DataGridTextColumn)rc[9]).Header = T("browser.entry_year");
-        ((DataGridTextColumn)rc[10]).Header = T("browser.entry_nianhao");
-        ((DataGridTextColumn)rc[11]).Header = T("browser.association_nianhao_year");
-        ((DataGridTextColumn)rc[12]).Header = T("browser.association_range");
-        ((DataGridTextColumn)rc[13]).Header = T("browser.entry_exam_rank");
-        ((DataGridTextColumn)rc[14]).Header = T("browser.entry_age");
-        ((DataGridTextColumn)rc[15]).Header = T("browser.entry_kinship");
-        ((DataGridTextColumn)rc[16]).Header = T("browser.entry_kin_person");
-        ((DataGridTextColumn)rc[17]).Header = T("browser.entry_association");
-        ((DataGridTextColumn)rc[18]).Header = T("browser.entry_associate_person");
-        ((DataGridTextColumn)rc[19]).Header = T("browser.entry_institution");
-        ((DataGridTextColumn)rc[20]).Header = T("browser.entry_exam_field");
-        ((DataGridTextColumn)rc[21]).Header = T("browser.address_id");
-        ((DataGridTextColumn)rc[22]).Header = T("browser.entry_address");
-        ((DataGridTextColumn)rc[23]).Header = "X";
-        ((DataGridTextColumn)rc[24]).Header = "Y";
-        ((DataGridTextColumn)rc[25]).Header = "XY";
-        ((DataGridTextColumn)rc[26]).Header = T("browser.entry_parental_status");
-        ((DataGridTextColumn)rc[27]).Header = T("browser.entry_attempt_count");
-        ((DataGridTextColumn)rc[28]).Header = T("browser.source_title");
-        ((DataGridTextColumn)rc[29]).Header = T("browser.address_pages");
-        ((DataGridTextColumn)rc[30]).Header = T("browser.notes");
-        ((DataGridTextColumn)rc[31]).Header = T("browser.entry_posting_notes");
+        ((DataGridTextColumn)rc[7]).Header = T("browser.index_address_type");
+        ((DataGridTextColumn)rc[8]).Header = T("browser.entry_method");
+        ((DataGridTextColumn)rc[9]).Header = T("entry_query.entry_code");
+        ((DataGridTextColumn)rc[10]).Header = T("browser.entry_year");
+        ((DataGridTextColumn)rc[11]).Header = T("browser.entry_nianhao");
+        ((DataGridTextColumn)rc[12]).Header = T("browser.association_nianhao_year");
+        ((DataGridTextColumn)rc[13]).Header = T("browser.association_range");
+        ((DataGridTextColumn)rc[14]).Header = T("browser.entry_exam_rank");
+        ((DataGridTextColumn)rc[15]).Header = T("browser.entry_age");
+        ((DataGridTextColumn)rc[16]).Header = T("browser.entry_kinship");
+        ((DataGridTextColumn)rc[17]).Header = T("browser.entry_kin_person");
+        ((DataGridTextColumn)rc[18]).Header = T("browser.entry_association");
+        ((DataGridTextColumn)rc[19]).Header = T("browser.entry_associate_person");
+        ((DataGridTextColumn)rc[20]).Header = T("browser.entry_institution");
+        ((DataGridTextColumn)rc[21]).Header = T("browser.entry_exam_field");
+        ((DataGridTextColumn)rc[22]).Header = T("browser.address_id");
+        ((DataGridTextColumn)rc[23]).Header = T("browser.entry_address");
+        ((DataGridTextColumn)rc[24]).Header = "X";
+        ((DataGridTextColumn)rc[25]).Header = "Y";
+        ((DataGridTextColumn)rc[26]).Header = "XY";
+        ((DataGridTextColumn)rc[27]).Header = T("browser.entry_parental_status");
+        ((DataGridTextColumn)rc[28]).Header = T("browser.entry_attempt_count");
+        ((DataGridTextColumn)rc[29]).Header = T("browser.source_title");
+        ((DataGridTextColumn)rc[30]).Header = T("browser.address_pages");
+        ((DataGridTextColumn)rc[31]).Header = T("browser.notes");
+        ((DataGridTextColumn)rc[32]).Header = T("browser.entry_posting_notes");
 
         var pc = _gridPeople.Columns;
         ((DataGridTextColumn)pc[0]).Header = T("browser.grid_person_id");
@@ -194,12 +195,13 @@ public partial class EntryQueryWindow : Window {
         ((DataGridTextColumn)pc[6]).Header = T("browser.dynasty");
         ((DataGridTextColumn)pc[7]).Header = T("browser.address_id");
         ((DataGridTextColumn)pc[8]).Header = T("browser.grid_index_address");
-        ((DataGridTextColumn)pc[9]).Header = T("browser.address_id");
-        ((DataGridTextColumn)pc[10]).Header = T("browser.entry_address");
-        ((DataGridTextColumn)pc[11]).Header = "X";
-        ((DataGridTextColumn)pc[12]).Header = "Y";
-        ((DataGridTextColumn)pc[13]).Header = "XY";
-        ((DataGridTextColumn)pc[14]).Header = T("entry_query.entry_count");
+        ((DataGridTextColumn)pc[9]).Header = T("browser.index_address_type");
+        ((DataGridTextColumn)pc[10]).Header = T("browser.address_id");
+        ((DataGridTextColumn)pc[11]).Header = T("browser.entry_address");
+        ((DataGridTextColumn)pc[12]).Header = "X";
+        ((DataGridTextColumn)pc[13]).Header = "Y";
+        ((DataGridTextColumn)pc[14]).Header = "XY";
+        ((DataGridTextColumn)pc[15]).Header = T("entry_query.entry_count");
 
         UpdateSelectedEntriesText();
         UpdateSelectedPlacesText();
@@ -390,6 +392,12 @@ public partial class EntryQueryWindow : Window {
             return;
         }
 
+        var matchingType = FindMatchingEntryType(_entryPickerData.Root, _selectedEntryCodes);
+        if (matchingType is not null) {
+            _txtSelectedEntries.Text = GetEntryTypeDisplayLabel(matchingType);
+            return;
+        }
+
         _txtSelectedEntries.Text = T("entry_query.multi_select");
     }
 
@@ -417,6 +425,27 @@ public partial class EntryQueryWindow : Window {
     }
 
     private static int ParseInt(string? value, int fallback) => int.TryParse(value?.Trim(), out var parsed) ? parsed : fallback;
+
+    private static EntryTypeNode? FindMatchingEntryType(EntryTypeNode node, IReadOnlyCollection<string> selectedCodes) {
+        foreach (var child in node.Children) {
+            var match = FindMatchingEntryType(child, selectedCodes);
+            if (match is not null) {
+                return match;
+            }
+        }
+
+        return node.IsRoot || node.EntryCodes.Count == 0 || !node.EntryCodes.OrderBy(code => code, StringComparer.OrdinalIgnoreCase).SequenceEqual(selectedCodes.OrderBy(code => code, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase)
+            ? null
+            : node;
+    }
+
+    private static string GetEntryTypeDisplayLabel(EntryTypeNode node) {
+        if (!string.IsNullOrWhiteSpace(node.DescriptionChn) && !string.IsNullOrWhiteSpace(node.Description)) {
+            return $"{node.DescriptionChn} / {node.Description}";
+        }
+
+        return node.DescriptionChn ?? node.Description ?? node.Code;
+    }
 
     private static string? NormalizeText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 

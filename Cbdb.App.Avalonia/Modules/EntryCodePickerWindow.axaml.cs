@@ -227,13 +227,15 @@ public partial class EntryCodePickerWindow : Window {
             : T("entry_query.select_all");
 
         foreach (var option in visibleOptions) {
+            var isSelected = _selectedCodes.Contains(option.Code);
             var row = new Border {
                 Background = string.Equals(option.Code, _highlightedEntryCode, StringComparison.OrdinalIgnoreCase)
                     ? new SolidColorBrush(Color.Parse("#FFF3BF"))
                     : Brushes.Transparent,
                 BorderBrush = new SolidColorBrush(Color.Parse("#E0E0E0")),
                 BorderThickness = new Thickness(0, 0, 0, 1),
-                Padding = new Thickness(4, 3)
+                Padding = new Thickness(4, 3),
+                Cursor = new Cursor(StandardCursorType.Hand)
             };
 
             var grid = new Grid {
@@ -241,7 +243,7 @@ public partial class EntryCodePickerWindow : Window {
             };
 
             var checkBox = new CheckBox {
-                IsChecked = _selectedCodes.Contains(option.Code),
+                IsChecked = isSelected,
                 VerticalAlignment = VerticalAlignment.Top
             };
             checkBox.IsCheckedChanged += (_, _) => {
@@ -252,6 +254,14 @@ public partial class EntryCodePickerWindow : Window {
                 }
 
                 UpdateSummary();
+            };
+            row.PointerPressed += (_, e) => {
+                if (e.Source is CheckBox) {
+                    return;
+                }
+
+                checkBox.IsChecked = checkBox.IsChecked != true;
+                e.Handled = true;
             };
 
             var textPanel = new StackPanel {
@@ -336,6 +346,8 @@ public partial class EntryCodePickerWindow : Window {
             if (node is not null) {
                 _activeTypeNode = node;
             }
+        } else {
+            _activeTypeNode = _pickerData.Root;
         }
 
         _preserveHighlightOnTreeSelection = true;
@@ -347,12 +359,18 @@ public partial class EntryCodePickerWindow : Window {
 
     private void UpdateSummary() {
         _txtSummary.Text = string.Format(T("entry_query.picker_summary"), _selectedCodes.Count, _allOptions.Count);
+        if (_searchMatches.Count > 0 && _searchMatchIndex >= 0) {
+            _txtSelectionHint.Text = string.Format(T("entry_query.search_result"), _searchMatchIndex + 1, _searchMatches.Count);
+            return;
+        }
+
         _txtSelectionHint.Text = string.Format(T("entry_query.picker_visible"), GetVisibleOptions().Count);
     }
 
     private void ResetSearchState() {
         _searchMatches.Clear();
         _searchMatchIndex = -1;
+        _txtSelectionHint.Text = string.Empty;
     }
 
     private static EntryTypeNode? FindNode(EntryTypeNode root, string code) {

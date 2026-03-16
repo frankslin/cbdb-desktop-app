@@ -10,6 +10,7 @@ public sealed record EntryQueryRecord(
     string? Dynasty,
     int? IndexAddressId,
     string? IndexAddress,
+    string? IndexAddressType,
     int Sequence,
     string EntryCode,
     string? EntryMethod,

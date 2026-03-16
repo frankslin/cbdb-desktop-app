@@ -113,6 +113,7 @@
               <d:DataGridTextColumn Binding="{Binding IndexYearType}" Width="110" />
               <d:DataGridTextColumn Binding="{Binding Sex}" Width="64" />
               <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="100" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddressType}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding EntryMethod}" Width="180" />
               <d:DataGridTextColumn Binding="{Binding EntryCode}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding EntryYear}" Width="90" />
@@ -154,6 +155,7 @@
               <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="110" />
               <d:DataGridTextColumn Binding="{Binding IndexAddressId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding IndexAddress}" Width="220" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddressType}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding EntryAddressId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding EntryAddress}" Width="200" />
               <d:DataGridTextColumn Binding="{Binding EntryXCoord}" Width="90" />

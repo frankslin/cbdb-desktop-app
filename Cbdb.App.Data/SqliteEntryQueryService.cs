@@ -233,6 +233,7 @@ SELECT
     COALESCE(d.c_dynasty_chn, d.c_dynasty) AS dynasty_label,
     b.c_index_addr_id,
     COALESCE(index_addr.c_name_chn, index_addr.c_name) AS index_address,
+    COALESCE(iat.c_addr_desc_chn, iat.c_addr_desc) AS index_address_type,
     ed.c_sequence,
     CAST(ed.c_entry_code AS TEXT) AS entry_code,
     COALESCE(ec.c_entry_desc_chn, ec.c_entry_desc) AS entry_label,
@@ -272,6 +273,7 @@ LEFT JOIN ENTRY_CODES ec ON ec.c_entry_code = ed.c_entry_code
 LEFT JOIN DYNASTIES d ON d.c_dy = b.c_dy
 LEFT JOIN ADDR_CODES index_addr ON index_addr.c_addr_id = b.c_index_addr_id
 LEFT JOIN INDEXYEAR_TYPE_CODES iy ON iy.c_index_year_type_code = b.c_index_year_type_code
+LEFT JOIN BIOG_ADDR_CODES iat ON iat.c_addr_type = b.c_index_addr_type_code
 LEFT JOIN NIAN_HAO nh ON nh.c_nianhao_id = ed.c_entry_nh_id
 LEFT JOIN YEAR_RANGE_CODES yr ON yr.c_range_code = ed.c_entry_range
 LEFT JOIN KINSHIP_CODES kc ON kc.c_kincode = ed.c_kin_code
@@ -344,32 +346,33 @@ LIMIT $limit;
                 Dynasty: reader.IsDBNull(6) ? null : reader.GetString(6),
                 IndexAddressId: reader.IsDBNull(7) ? null : reader.GetInt32(7),
                 IndexAddress: reader.IsDBNull(8) ? null : reader.GetString(8),
-                Sequence: reader.IsDBNull(9) ? 0 : reader.GetInt32(9),
-                EntryCode: reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
-                EntryMethod: reader.IsDBNull(11) ? null : reader.GetString(11),
-                EntryYear: reader.IsDBNull(12) ? null : reader.GetInt32(12),
-                Nianhao: reader.IsDBNull(13) ? null : reader.GetString(13),
-                NianhaoYear: reader.IsDBNull(14) ? null : reader.GetInt32(14),
-                Range: reader.IsDBNull(15) ? null : reader.GetString(15),
-                ExamRank: reader.IsDBNull(16) ? null : reader.GetString(16),
-                Age: reader.IsDBNull(17) ? null : reader.GetInt32(17),
-                Kinship: reader.IsDBNull(18) ? null : reader.GetString(18),
-                KinPerson: reader.IsDBNull(19) ? null : reader.GetString(19),
-                Association: reader.IsDBNull(20) ? null : reader.GetString(20),
-                AssociatePerson: reader.IsDBNull(21) ? null : reader.GetString(21),
-                Institution: reader.IsDBNull(22) ? null : reader.GetString(22),
-                ExamField: reader.IsDBNull(23) ? null : reader.GetString(23),
-                EntryAddressId: reader.IsDBNull(24) ? null : reader.GetInt32(24),
-                EntryAddress: reader.IsDBNull(25) ? null : reader.GetString(25),
-                EntryXCoord: reader.IsDBNull(26) ? null : reader.GetDouble(26),
-                EntryYCoord: reader.IsDBNull(27) ? null : reader.GetDouble(27),
-                EntryXyCount: reader.IsDBNull(28) ? 0 : reader.GetInt32(28),
-                ParentalStatus: reader.IsDBNull(29) ? null : reader.GetString(29),
-                AttemptCount: reader.IsDBNull(30) ? null : reader.GetInt32(30),
-                Source: reader.IsDBNull(31) ? null : reader.GetString(31),
-                Pages: reader.IsDBNull(32) ? null : reader.GetString(32),
-                Notes: reader.IsDBNull(33) ? null : reader.GetString(33),
-                PostingNotes: reader.IsDBNull(34) ? null : reader.GetString(34)
+                IndexAddressType: reader.IsDBNull(9) ? null : reader.GetString(9),
+                Sequence: reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
+                EntryCode: reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+                EntryMethod: reader.IsDBNull(12) ? null : reader.GetString(12),
+                EntryYear: reader.IsDBNull(13) ? null : reader.GetInt32(13),
+                Nianhao: reader.IsDBNull(14) ? null : reader.GetString(14),
+                NianhaoYear: reader.IsDBNull(15) ? null : reader.GetInt32(15),
+                Range: reader.IsDBNull(16) ? null : reader.GetString(16),
+                ExamRank: reader.IsDBNull(17) ? null : reader.GetString(17),
+                Age: reader.IsDBNull(18) ? null : reader.GetInt32(18),
+                Kinship: reader.IsDBNull(19) ? null : reader.GetString(19),
+                KinPerson: reader.IsDBNull(20) ? null : reader.GetString(20),
+                Association: reader.IsDBNull(21) ? null : reader.GetString(21),
+                AssociatePerson: reader.IsDBNull(22) ? null : reader.GetString(22),
+                Institution: reader.IsDBNull(23) ? null : reader.GetString(23),
+                ExamField: reader.IsDBNull(24) ? null : reader.GetString(24),
+                EntryAddressId: reader.IsDBNull(25) ? null : reader.GetInt32(25),
+                EntryAddress: reader.IsDBNull(26) ? null : reader.GetString(26),
+                EntryXCoord: reader.IsDBNull(27) ? null : reader.GetDouble(27),
+                EntryYCoord: reader.IsDBNull(28) ? null : reader.GetDouble(28),
+                EntryXyCount: reader.IsDBNull(29) ? 0 : reader.GetInt32(29),
+                ParentalStatus: reader.IsDBNull(30) ? null : reader.GetString(30),
+                AttemptCount: reader.IsDBNull(31) ? null : reader.GetInt32(31),
+                Source: reader.IsDBNull(32) ? null : reader.GetString(32),
+                Pages: reader.IsDBNull(33) ? null : reader.GetString(33),
+                Notes: reader.IsDBNull(34) ? null : reader.GetString(34),
+                PostingNotes: reader.IsDBNull(35) ? null : reader.GetString(35)
             ));
         }
 
@@ -383,7 +386,8 @@ LIMIT $limit;
                 record.Sex,
                 record.Dynasty,
                 record.IndexAddressId,
-                record.IndexAddress
+                record.IndexAddress,
+                record.IndexAddressType
             })
             .Select(group => {
                 var entryAddressId = group.Select(record => record.EntryAddressId).FirstOrDefault(id => id.HasValue);
@@ -405,6 +409,7 @@ LIMIT $limit;
                     Dynasty: group.Key.Dynasty,
                     IndexAddressId: group.Key.IndexAddressId,
                     IndexAddress: group.Key.IndexAddress,
+                    IndexAddressType: group.Key.IndexAddressType,
                     EntryAddressId: entryAddressId,
                     EntryAddress: group.Select(record => record.EntryAddress).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)),
                     EntryXCoord: group.Select(record => record.EntryXCoord).FirstOrDefault(value => value.HasValue),

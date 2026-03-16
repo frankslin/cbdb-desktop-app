@@ -10,6 +10,7 @@ public sealed record EntryQueryPerson(
     string? Dynasty,
     int? IndexAddressId,
     string? IndexAddress,
+    string? IndexAddressType,
     int? EntryAddressId,
     string? EntryAddress,
     double? EntryXCoord,

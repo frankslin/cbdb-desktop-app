@@ -154,12 +154,18 @@ public partial class StatusCodePickerWindow : Window {
     }
 
     private void BtnSelectVisible_Click(object? sender, RoutedEventArgs e) {
-        if (_activeTypeNode.IsRoot) {
+        var visibleOptions = GetVisibleOptions();
+        if (_activeTypeNode.IsRoot || visibleOptions.Count == 0) {
             return;
         }
 
-        foreach (var option in GetVisibleOptions()) {
-            _selectedCodes.Add(option.Code);
+        var shouldSelectAll = visibleOptions.Any(option => !_selectedCodes.Contains(option.Code));
+        foreach (var option in visibleOptions) {
+            if (shouldSelectAll) {
+                _selectedCodes.Add(option.Code);
+            } else {
+                _selectedCodes.Remove(option.Code);
+            }
         }
 
         RenderOptions();
@@ -233,6 +239,9 @@ public partial class StatusCodePickerWindow : Window {
 
         var visibleOptions = GetVisibleOptions();
         Control? highlightedRow = null;
+        _btnSelectVisible.Content = visibleOptions.Count > 0 && visibleOptions.All(option => _selectedCodes.Contains(option.Code))
+            ? T("entry_query.deselect_all")
+            : T("status_query.select_all");
 
         foreach (var option in visibleOptions) {
             var row = new Border {
@@ -241,7 +250,8 @@ public partial class StatusCodePickerWindow : Window {
                     : Brushes.Transparent,
                 BorderBrush = new SolidColorBrush(Color.Parse("#E0E0E0")),
                 BorderThickness = new Thickness(0, 0, 0, 1),
-                Padding = new Thickness(4, 3)
+                Padding = new Thickness(4, 3),
+                Cursor = new Cursor(StandardCursorType.Hand)
             };
 
             var grid = new Grid {
@@ -254,6 +264,14 @@ public partial class StatusCodePickerWindow : Window {
                 VerticalAlignment = VerticalAlignment.Center
             };
             checkBox.IsCheckedChanged += OptionCheckBox_Changed;
+            row.PointerPressed += (_, e) => {
+                if (e.Source is CheckBox) {
+                    return;
+                }
+
+                checkBox.IsChecked = checkBox.IsChecked != true;
+                e.Handled = true;
+            };
 
             var descText = new TextBlock {
                 Text = option.Description ?? option.Code,

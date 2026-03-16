@@ -499,7 +499,9 @@ public partial class PersonBrowserWindow : Window {
 
             DisplayDetail(detail);
             await EnsureSelectedTabLoadedAsync();
-            RecordHistory(selected.PersonId);
+            if (!suppressHistoryPush) {
+                RecordHistory(selected.PersonId);
+            }
             return true;
         } finally {
             _suppressHistoryPush = previousSuppress;

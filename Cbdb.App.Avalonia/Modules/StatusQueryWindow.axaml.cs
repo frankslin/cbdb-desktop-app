@@ -382,17 +382,27 @@ public partial class StatusQueryWindow : Window {
             return;
         }
 
-        var labels = _statusOptions
+        var selectedOptions = _statusOptions
             .Where(option => _selectedStatusCodes.Contains(option.Code))
-            .Select(option => option.DisplayLabel)
-            .Take(3)
             .ToList();
 
-        var suffix = _selectedStatusCodes.Count > labels.Count
-            ? string.Format(T("status_query.more_selected"), _selectedStatusCodes.Count - labels.Count)
-            : string.Empty;
+        if (selectedOptions.Count == 1) {
+            _txtSelectedStatuses.Text = selectedOptions[0].DisplayLabel;
+            return;
+        }
 
-        _txtSelectedStatuses.Text = string.Join("; ", labels) + suffix;
+        if (selectedOptions.Count == _statusOptions.Count && _statusOptions.Count > 0) {
+            _txtSelectedStatuses.Text = T("status_query.all_statuses");
+            return;
+        }
+
+        var matchingType = FindMatchingStatusType(_statusPickerData.Root, _selectedStatusCodes);
+        if (matchingType is not null) {
+            _txtSelectedStatuses.Text = GetStatusTypeDisplayLabel(matchingType);
+            return;
+        }
+
+        _txtSelectedStatuses.Text = T("entry_query.multi_select");
     }
 
     private void UpdateSelectedPlacesText() {
@@ -429,6 +439,27 @@ public partial class StatusQueryWindow : Window {
     private static string EscapeCsv(string? value) {
         var text = value ?? string.Empty;
         return $"\"{text.Replace("\"", "\"\"")}\"";
+    }
+
+    private static StatusTypeNode? FindMatchingStatusType(StatusTypeNode node, IReadOnlyCollection<string> selectedCodes) {
+        foreach (var child in node.Children) {
+            var match = FindMatchingStatusType(child, selectedCodes);
+            if (match is not null) {
+                return match;
+            }
+        }
+
+        return node.IsRoot || node.StatusCodes.Count == 0 || !node.StatusCodes.OrderBy(code => code, StringComparer.OrdinalIgnoreCase).SequenceEqual(selectedCodes.OrderBy(code => code, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase)
+            ? null
+            : node;
+    }
+
+    private static string GetStatusTypeDisplayLabel(StatusTypeNode node) {
+        if (!string.IsNullOrWhiteSpace(node.DescriptionChn) && !string.IsNullOrWhiteSpace(node.Description)) {
+            return $"{node.DescriptionChn} / {node.Description}";
+        }
+
+        return node.DescriptionChn ?? node.Description ?? node.Code;
     }
 
     private string T(string key) => _localizationService.Get(key);
