@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Cbdb.App.Avalonia.Localization;
@@ -163,10 +164,41 @@ public sealed class QueryPickerBehaviorTests {
         }
     }
 
+    [AvaloniaFact]
+    public void PlacePickerWindow_SingleSelectionUpdatesExistingRowState() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var options = new[] {
+            new PlaceOption(1001, "Kaifeng", "開封", "Prefecture", 960, 1127, null, null, null, null, 114.3, 34.8),
+            new PlaceOption(1002, "Hangzhou", "杭州", "Prefecture", 960, 1279, null, null, null, null, 120.1, 30.3)
+        };
+
+        var window = new PlacePickerWindow(localization, options);
+        try {
+            var visibleRows = GetPrivateField<ObservableCollection<PlacePickerWindow.PlaceOptionRow>>(window, "_visibleRows");
+            var firstRow = visibleRows[0];
+
+            InvokePrivate(window, "SetPlaceSelection", firstRow.AddressId, true);
+
+            Assert.Same(firstRow, visibleRows[0]);
+            Assert.True(firstRow.IsSelected);
+            Assert.Equal(new[] { firstRow.AddressId }, window.SelectedPlaceIds);
+        } finally {
+            window.Close();
+        }
+    }
+
     private static void SetPrivateField(object target, string fieldName, object? value) {
         var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(field);
         field!.SetValue(target, value);
+    }
+
+    private static T GetPrivateField<T>(object target, string fieldName) {
+        var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        return Assert.IsType<T>(field!.GetValue(target));
     }
 
     private static void InvokePrivate(object target, string methodName, params object?[] args) {

@@ -32,24 +32,49 @@
     </Border>
 
     <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
-      <Grid RowDefinitions="Auto,Auto,*">
+      <Grid RowDefinitions="Auto,*">
         <TextBlock x:Name="TxtSummary" Foreground="#444" />
-        <Grid Grid.Row="1" Margin="0,10,0,0" ColumnDefinitions="Auto,Auto,*">
-          <Button x:Name="BtnSelectVisible" Click="BtnSelectVisible_Click" />
-          <Button x:Name="BtnInvertVisible" Grid.Column="1" Margin="8,0,0,0" Click="BtnInvertVisible_Click" />
-        </Grid>
-        <ScrollViewer Grid.Row="2" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
-          <StackPanel x:Name="PlaceOptionHost" Spacing="6" />
+        <ScrollViewer Grid.Row="1" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
+          <ItemsControl x:Name="PlaceOptionHost">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border
+                    Background="Transparent"
+                    BorderBrush="LightGray"
+                    BorderThickness="0,0,0,1"
+                    Padding="4,3"
+                    Cursor="Hand"
+                    PointerReleased="PlaceOptionRow_PointerReleased">
+                  <Grid ColumnDefinitions="Auto,*">
+                    <CheckBox
+                        IsChecked="{Binding IsSelected}"
+                        VerticalAlignment="Top"
+                        IsHitTestVisible="False"
+                        Focusable="False" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                      <TextBlock Text="{Binding DisplayLabel}" />
+                      <TextBlock
+                          Text="{Binding DetailLabel}"
+                          Foreground="DimGray"
+                          FontSize="{DynamicResource AppSmallFontSize}"
+                          IsVisible="{Binding HasDetailLabel}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
         </ScrollViewer>
       </Grid>
     </Border>
 
     <Border Grid.Row="2" BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
-      <Grid ColumnDefinitions="*,Auto,Auto,Auto">
-        <TextBlock x:Name="TxtSelectionHint" VerticalAlignment="Center" Foreground="#555" />
-        <Button x:Name="BtnClearAll" Grid.Column="1" Margin="8,0,0,0" Click="BtnClearAll_Click" />
-        <Button x:Name="BtnCancel" Grid.Column="2" Margin="8,0,0,0" Click="BtnCancel_Click" />
-        <Button x:Name="BtnApply" Grid.Column="3" Margin="8,0,0,0" Click="BtnApply_Click" />
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+        <Button x:Name="BtnSelectVisible" Click="BtnSelectVisible_Click" />
+        <Button x:Name="BtnInvertVisible" Grid.Column="1" Margin="8,0,0,0" Click="BtnInvertVisible_Click" />
+        <Button x:Name="BtnClearAll" Grid.Column="3" Margin="8,0,0,0" Click="BtnClearAll_Click" />
+        <Button x:Name="BtnCancel" Grid.Column="4" Margin="8,0,0,0" Click="BtnCancel_Click" />
+        <Button x:Name="BtnApply" Grid.Column="5" Margin="8,0,0,0" Click="BtnApply_Click" />
       </Grid>
     </Border>
   </Grid>
