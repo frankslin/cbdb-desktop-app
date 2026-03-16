@@ -1,6 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Cbdb.App.Avalonia.Localization;
@@ -20,12 +22,17 @@ public partial class PlacePickerWindow : Window {
     private Button _btnRunSearch = null!;
     private Button _btnClearSearch = null!;
     private TextBlock _txtSummary = null!;
+    private Button _btnSelectVisible = null!;
+    private Button _btnInvertVisible = null!;
     private StackPanel _placeOptionHost = null!;
     private TextBlock _txtSelectionHint = null!;
     private Button _btnClearAll = null!;
     private Button _btnCancel = null!;
     private Button _btnApply = null!;
     private string? _activeKeyword;
+    private List<PlaceOption> _visibleOptions = new();
+    private int? _lastToggledAddressId;
+    private List<int>? _stickyVisibleAddressIds;
 
     public PlacePickerWindow()
         : this(new AppLocalizationService(), Array.Empty<PlaceOption>()) {
@@ -63,6 +70,8 @@ public partial class PlacePickerWindow : Window {
         _btnRunSearch = this.FindControl<Button>("BtnRunSearch") ?? throw new InvalidOperationException("BtnRunSearch not found.");
         _btnClearSearch = this.FindControl<Button>("BtnClearSearch") ?? throw new InvalidOperationException("BtnClearSearch not found.");
         _txtSummary = this.FindControl<TextBlock>("TxtSummary") ?? throw new InvalidOperationException("TxtSummary not found.");
+        _btnSelectVisible = this.FindControl<Button>("BtnSelectVisible") ?? throw new InvalidOperationException("BtnSelectVisible not found.");
+        _btnInvertVisible = this.FindControl<Button>("BtnInvertVisible") ?? throw new InvalidOperationException("BtnInvertVisible not found.");
         _placeOptionHost = this.FindControl<StackPanel>("PlaceOptionHost") ?? throw new InvalidOperationException("PlaceOptionHost not found.");
         _txtSelectionHint = this.FindControl<TextBlock>("TxtSelectionHint") ?? throw new InvalidOperationException("TxtSelectionHint not found.");
         _btnClearAll = this.FindControl<Button>("BtnClearAll") ?? throw new InvalidOperationException("BtnClearAll not found.");
@@ -75,6 +84,8 @@ public partial class PlacePickerWindow : Window {
         _txtSearch.Watermark = T("status_query.place_search_placeholder");
         _btnRunSearch.Content = T("status_query.search");
         _btnClearSearch.Content = T("browser.clear");
+        _btnSelectVisible.Content = T("status_query.select_visible");
+        _btnInvertVisible.Content = T("status_query.invert_visible");
         _btnClearAll.Content = T("status_query.clear_all");
         _btnCancel.Content = T("status_query.cancel");
         _btnApply.Content = T("status_query.apply");
@@ -102,11 +113,49 @@ public partial class PlacePickerWindow : Window {
     private void BtnClearSearch_Click(object? sender, RoutedEventArgs e) {
         _txtSearch.Text = string.Empty;
         _activeKeyword = null;
+        _stickyVisibleAddressIds = null;
         RenderOptions();
     }
 
     private void BtnClearAll_Click(object? sender, RoutedEventArgs e) {
         _selectedPlaceIds.Clear();
+        _stickyVisibleAddressIds = null;
+        RenderOptions();
+    }
+
+    private void BtnSelectVisible_Click(object? sender, RoutedEventArgs e) {
+        if (_visibleOptions.Count == 0) {
+            return;
+        }
+
+        _stickyVisibleAddressIds = _visibleOptions.Select(option => option.AddressId).ToList();
+        foreach (var addressId in _visibleOptions.Select(option => option.AddressId).Distinct()) {
+            _selectedPlaceIds.Add(addressId);
+        }
+
+        RenderOptions();
+    }
+
+    private void BtnInvertVisible_Click(object? sender, RoutedEventArgs e) {
+        if (_visibleOptions.Count == 0) {
+            return;
+        }
+
+        _stickyVisibleAddressIds = _visibleOptions.Select(option => option.AddressId).ToList();
+        var visibleAddressIds = _visibleOptions
+            .Select(option => option.AddressId)
+            .Distinct()
+            .ToList();
+        var selectedBeforeInvert = new HashSet<int>(_selectedPlaceIds);
+
+        foreach (var addressId in visibleAddressIds) {
+            if (selectedBeforeInvert.Contains(addressId)) {
+                _selectedPlaceIds.Remove(addressId);
+            } else {
+                _selectedPlaceIds.Add(addressId);
+            }
+        }
+
         RenderOptions();
     }
 
@@ -122,54 +171,98 @@ public partial class PlacePickerWindow : Window {
         _placeOptionHost.Children.Clear();
 
         var keyword = _activeKeyword;
-        var filtered = string.IsNullOrWhiteSpace(keyword)
-            ? BuildDefaultVisibleOptions()
+        _visibleOptions = (string.IsNullOrWhiteSpace(keyword)
+            ? BuildVisibleOptionsWithoutSearch()
             : _allOptions.Where(option =>
                 option.AddressId.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase)
                 || (!string.IsNullOrWhiteSpace(option.Name) && option.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                 || (!string.IsNullOrWhiteSpace(option.NameChn) && option.NameChn.Contains(keyword, StringComparison.OrdinalIgnoreCase))
             )
             .Take(MaxVisibleOptionsWithSearch)
-            .ToList();
+            .ToList());
 
-        foreach (var option in filtered) {
+        foreach (var option in _visibleOptions) {
+            var row = new Border {
+                Background = Brushes.Transparent,
+                BorderBrush = Brushes.LightGray,
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Padding = new Thickness(4, 3),
+                Cursor = new Cursor(StandardCursorType.Hand)
+            };
+
+            var grid = new Grid {
+                ColumnDefinitions = new ColumnDefinitions("Auto,*")
+            };
+
             var checkBox = new CheckBox {
                 Tag = option.AddressId,
-                IsChecked = _selectedPlaceIds.Contains(option.AddressId)
+                IsChecked = _selectedPlaceIds.Contains(option.AddressId),
+                VerticalAlignment = VerticalAlignment.Top,
+                IsHitTestVisible = false,
+                Focusable = false
             };
-            checkBox.Content = BuildOptionContent(option);
-            checkBox.IsCheckedChanged += OptionCheckBox_Changed;
-            _placeOptionHost.Children.Add(checkBox);
+
+            var content = BuildOptionContent(option);
+            Grid.SetColumn(content, 1);
+
+            grid.Children.Add(checkBox);
+            grid.Children.Add(content);
+            row.Child = grid;
+            row.PointerReleased += (_, e) => HandleOptionPointerReleased(option, e);
+            _placeOptionHost.Children.Add(row);
         }
 
-        if (filtered.Count == 0) {
+        if (_visibleOptions.Count == 0) {
             _placeOptionHost.Children.Add(new TextBlock {
                 Text = T("status_query.place_picker_no_match"),
                 Foreground = Brushes.DimGray
             });
         }
 
-        UpdateSummary(filtered.Count);
+        UpdateSummary(_visibleOptions.Count);
     }
 
-    private void OptionCheckBox_Changed(object? sender, RoutedEventArgs e) {
-        if (sender is not CheckBox checkBox || checkBox.Tag is not int addressId) {
+    private void HandleOptionPointerReleased(PlaceOption option, PointerReleasedEventArgs e) {
+        var newState = !_selectedPlaceIds.Contains(option.AddressId);
+        _stickyVisibleAddressIds = _visibleOptions.Select(item => item.AddressId).ToList();
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Shift) && _lastToggledAddressId.HasValue) {
+            ApplyShiftRangeSelection(option.AddressId, newState);
+        } else {
+            SetPlaceSelection(option.AddressId, newState);
+        }
+
+        _lastToggledAddressId = option.AddressId;
+        RenderOptions();
+        e.Handled = true;
+    }
+
+    private void ApplyShiftRangeSelection(int targetAddressId, bool isSelected) {
+        var targetIndex = _visibleOptions.FindIndex(option => option.AddressId == targetAddressId);
+        var anchorIndex = _visibleOptions.FindIndex(option => option.AddressId == _lastToggledAddressId);
+        if (targetIndex < 0 || anchorIndex < 0) {
+            SetPlaceSelection(targetAddressId, isSelected);
             return;
         }
 
-        if (checkBox.IsChecked == true) {
+        var start = Math.Min(anchorIndex, targetIndex);
+        var end = Math.Max(anchorIndex, targetIndex);
+        for (var i = start; i <= end; i++) {
+            SetPlaceSelection(_visibleOptions[i].AddressId, isSelected);
+        }
+    }
+
+    private void SetPlaceSelection(int addressId, bool isSelected) {
+        if (isSelected) {
             _selectedPlaceIds.Add(addressId);
         } else {
             _selectedPlaceIds.Remove(addressId);
         }
-
-        UpdateSummary(GetVisibleCount());
     }
 
     private int GetVisibleCount() {
         var keyword = _activeKeyword;
         return string.IsNullOrWhiteSpace(keyword)
-            ? BuildDefaultVisibleOptions().Count
+            ? BuildVisibleOptionsWithoutSearch().Count
             : _allOptions.Count(option =>
                 option.AddressId.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase)
                 || (!string.IsNullOrWhiteSpace(option.Name) && option.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase))
@@ -178,10 +271,19 @@ public partial class PlacePickerWindow : Window {
 
     private void ApplySearch() {
         _activeKeyword = NormalizeKeyword(_txtSearch.Text);
+        _stickyVisibleAddressIds = null;
         RenderOptions();
     }
 
-    private List<PlaceOption> BuildDefaultVisibleOptions() {
+    private List<PlaceOption> BuildVisibleOptionsWithoutSearch() {
+        if (_stickyVisibleAddressIds is { Count: > 0 }) {
+            return _stickyVisibleAddressIds
+                .Select(addressId => _allOptions.FirstOrDefault(option => option.AddressId == addressId))
+                .Where(option => option is not null)
+                .Cast<PlaceOption>()
+                .ToList();
+        }
+
         var selected = _allOptions
             .Where(option => _selectedPlaceIds.Contains(option.AddressId))
             .ToList();

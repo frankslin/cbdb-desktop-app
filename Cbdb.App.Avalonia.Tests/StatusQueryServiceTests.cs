@@ -80,6 +80,50 @@ INSERT INTO ADDR_BELONGS_DATA (c_addr_id, c_belongs_to, c_firstyear, c_lastyear)
     }
 
     [Fact]
+    public async Task GetPlacesAsync_MergesDuplicateAddressRows_ByAddressId() {
+        var sqlitePath = CreateTempSqlitePath();
+
+        try {
+            await using var connection = await OpenConnectionAsync(sqlitePath);
+            await ExecuteBatchAsync(connection, """
+CREATE TABLE ADDR_CODES (
+    c_addr_id INTEGER PRIMARY KEY,
+    c_name TEXT,
+    c_name_chn TEXT,
+    c_admin_type TEXT,
+    x_coord REAL,
+    y_coord REAL
+);
+CREATE TABLE ADDR_BELONGS_DATA (
+    c_addr_id INTEGER,
+    c_belongs_to INTEGER,
+    c_firstyear INTEGER,
+    c_lastyear INTEGER
+);
+INSERT INTO ADDR_CODES (c_addr_id, c_name, c_name_chn, c_admin_type, x_coord, y_coord) VALUES
+    (10, 'Xu Zhou', '徐州', 'Zhou', 117.188, 34.270),
+    (11, 'Henan Dao', '河南道', 'Dao', NULL, NULL),
+    (12, 'Guide Fu', '歸德府', 'Fu', NULL, NULL);
+INSERT INTO ADDR_BELONGS_DATA (c_addr_id, c_belongs_to, c_firstyear, c_lastyear) VALUES
+    (10, 11, 621, 959),
+    (10, 12, 1235, 1367);
+""");
+
+            var service = new SqlitePlaceLookupService();
+            var places = await service.GetPlacesAsync(sqlitePath);
+
+            var xuzhouRows = places.Where(place => place.AddressId == 10).ToList();
+            var xuzhou = Assert.Single(xuzhouRows);
+            Assert.Equal(621, xuzhou.FirstYear);
+            Assert.Equal(1367, xuzhou.LastYear);
+            Assert.Contains("河南道 / Henan Dao (11)", xuzhou.DetailLabel);
+            Assert.Contains("歸德府 / Guide Fu (12)", xuzhou.DetailLabel);
+        } finally {
+            TryDelete(sqlitePath);
+        }
+    }
+
+    [Fact]
     public async Task QueryAsync_FiltersByPlace_AndIncludesSubordinateUnits() {
         var sqlitePath = CreateTempSqlitePath();
 

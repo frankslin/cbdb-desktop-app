@@ -12,7 +12,7 @@ public sealed class SqlitePlaceLookupService : IPlaceLookupService {
             return Array.Empty<PlaceOption>();
         }
 
-        var places = new List<PlaceOption>();
+        var rows = new List<PlaceRow>();
 
         var builder = new SqliteConnectionStringBuilder {
             DataSource = sqlitePath,
@@ -44,7 +44,7 @@ ORDER BY COALESCE(ac.c_name_chn, ac.c_name), ac.c_addr_id;
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken)) {
-            places.Add(new PlaceOption(
+            rows.Add(new PlaceRow(
                 AddressId: reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
                 Name: reader.IsDBNull(1) ? null : reader.GetString(1),
                 NameChn: reader.IsDBNull(2) ? null : reader.GetString(2),
@@ -59,6 +59,64 @@ ORDER BY COALESCE(ac.c_name_chn, ac.c_name), ac.c_addr_id;
             ));
         }
 
-        return places;
+        return rows
+            .GroupBy(row => row.AddressId)
+            .Select(group => {
+                var first = group.First();
+                var belongsToSummary = string.Join("; ", group
+                    .Select(BuildBelongsToLabel)
+                    .Where(label => !string.IsNullOrWhiteSpace(label))
+                    .Distinct(StringComparer.OrdinalIgnoreCase));
+
+                return new PlaceOption(
+                    AddressId: first.AddressId,
+                    Name: first.Name,
+                    NameChn: first.NameChn,
+                    AdminType: first.AdminType,
+                    FirstYear: group.Where(row => row.FirstYear.HasValue).Select(row => row.FirstYear).Min(),
+                    LastYear: group.Where(row => row.LastYear.HasValue).Select(row => row.LastYear).Max(),
+                    BelongsToId: first.BelongsToId,
+                    BelongsToName: first.BelongsToName,
+                    BelongsToNameChn: first.BelongsToNameChn,
+                    BelongsToSummary: string.IsNullOrWhiteSpace(belongsToSummary) ? null : belongsToSummary,
+                    XCoord: first.XCoord,
+                    YCoord: first.YCoord
+                );
+            })
+            .OrderBy(place => place.NameChn ?? place.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(place => place.AddressId)
+            .ToList();
     }
+
+    private static string? BuildBelongsToLabel(PlaceRow row) {
+        if (row.BelongsToId is null && string.IsNullOrWhiteSpace(row.BelongsToName) && string.IsNullOrWhiteSpace(row.BelongsToNameChn)) {
+            return null;
+        }
+
+        var belongsTo = string.IsNullOrWhiteSpace(row.BelongsToNameChn)
+            ? row.BelongsToName
+            : string.IsNullOrWhiteSpace(row.BelongsToName)
+                ? row.BelongsToNameChn
+                : $"{row.BelongsToNameChn} / {row.BelongsToName}";
+
+        if (row.BelongsToId.HasValue) {
+            belongsTo = $"{belongsTo} ({row.BelongsToId.Value})";
+        }
+
+        return belongsTo;
+    }
+
+    private sealed record PlaceRow(
+        int AddressId,
+        string? Name,
+        string? NameChn,
+        string? AdminType,
+        int? FirstYear,
+        int? LastYear,
+        int? BelongsToId,
+        string? BelongsToName,
+        string? BelongsToNameChn,
+        double? XCoord,
+        double? YCoord
+    );
 }

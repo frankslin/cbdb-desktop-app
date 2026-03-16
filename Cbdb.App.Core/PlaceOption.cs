@@ -10,6 +10,7 @@ public sealed record PlaceOption(
     int? BelongsToId,
     string? BelongsToName,
     string? BelongsToNameChn,
+    string? BelongsToSummary,
     double? XCoord,
     double? YCoord
 ) {
@@ -40,7 +41,9 @@ public sealed record PlaceOption(
                 parts.Add($"{FirstYear?.ToString() ?? "?"}-{LastYear?.ToString() ?? "?"}");
             }
 
-            if (!string.IsNullOrWhiteSpace(BelongsToNameChn) || !string.IsNullOrWhiteSpace(BelongsToName)) {
+            if (!string.IsNullOrWhiteSpace(BelongsToSummary)) {
+                parts.Add($"> {BelongsToSummary}");
+            } else if (!string.IsNullOrWhiteSpace(BelongsToNameChn) || !string.IsNullOrWhiteSpace(BelongsToName)) {
                 var belongsTo = string.IsNullOrWhiteSpace(BelongsToNameChn)
                     ? BelongsToName
                     : string.IsNullOrWhiteSpace(BelongsToName)
