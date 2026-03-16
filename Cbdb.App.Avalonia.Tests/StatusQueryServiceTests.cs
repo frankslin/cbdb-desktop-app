@@ -99,6 +99,7 @@ CREATE TABLE BIOG_MAIN (
     c_index_year INTEGER,
     c_dy INTEGER,
     c_index_addr_id INTEGER,
+    c_index_addr_type_code INTEGER,
     c_female INTEGER,
     c_index_year_type_code INTEGER
 );
@@ -143,6 +144,11 @@ CREATE TABLE ADDR_CODES (
     x_coord REAL,
     y_coord REAL
 );
+CREATE TABLE BIOG_ADDR_CODES (
+    c_addr_type INTEGER PRIMARY KEY,
+    c_addr_desc TEXT,
+    c_addr_desc_chn TEXT
+);
 CREATE TABLE INDEXYEAR_TYPE_CODES (
     c_index_year_type_code INTEGER PRIMARY KEY,
     c_index_year_type_desc TEXT,
@@ -169,6 +175,8 @@ CREATE TABLE ZZZ_BELONGS_TO (
 );
 INSERT INTO DYNASTIES (c_dy, c_dynasty, c_dynasty_chn, c_start, c_end) VALUES
     (1, 'Song', '宋', 960, 1279);
+INSERT INTO BIOG_ADDR_CODES (c_addr_type, c_addr_desc, c_addr_desc_chn) VALUES
+    (7, 'Native place', '籍貫');
 INSERT INTO ADDR_CODES (c_addr_id, c_name, c_name_chn, x_coord, y_coord) VALUES
     (10, 'Fu Zhou', '福州', 119.30, 26.08),
     (11, 'Min County', '閩縣', 119.31, 26.09),
@@ -181,9 +189,9 @@ INSERT INTO TEXT_CODES (c_textid, c_title, c_title_chn) VALUES
     (1, 'Source', '來源');
 INSERT INTO STATUS_CODES (c_status_code, c_status_desc, c_status_desc_chn) VALUES
     (100, 'Official', '官員');
-INSERT INTO BIOG_MAIN (c_personid, c_name, c_name_chn, c_index_year, c_dy, c_index_addr_id, c_female, c_index_year_type_code) VALUES
-    (1, 'Su Shi', '蘇軾', 1080, 1, 11, 0, 1),
-    (2, 'Xin Qiji', '辛棄疾', 1170, 1, 12, 0, 1);
+INSERT INTO BIOG_MAIN (c_personid, c_name, c_name_chn, c_index_year, c_dy, c_index_addr_id, c_index_addr_type_code, c_female, c_index_year_type_code) VALUES
+    (1, 'Su Shi', '蘇軾', 1080, 1, 11, 7, 0, 1),
+    (2, 'Xin Qiji', '辛棄疾', 1170, 1, 12, 7, 0, 1);
 INSERT INTO STATUS_DATA (c_personid, c_status_code, c_sequence, c_firstyear, c_lastyear, c_supplement, c_source, c_pages, c_notes) VALUES
     (1, 100, 1, 1070, 1085, 'A', 1, '12-13', 'note-1'),
     (2, 100, 1, 1160, 1180, 'B', 1, '20', 'note-2');
@@ -223,6 +231,10 @@ INSERT INTO STATUS_DATA (c_personid, c_status_code, c_sequence, c_firstyear, c_l
             Assert.Equal(1, person.PersonId);
             Assert.Equal(11, person.IndexAddressId);
             Assert.Equal("M", person.Sex);
+            Assert.Equal("籍貫", person.IndexAddressType);
+
+            var record = Assert.Single(subordinatePlaceResult.Records);
+            Assert.Equal("籍貫", record.IndexAddressType);
         } finally {
             TryDelete(sqlitePath);
         }

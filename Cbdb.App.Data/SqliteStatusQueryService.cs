@@ -237,6 +237,7 @@ SELECT
     COALESCE(d.c_dynasty_chn, d.c_dynasty) AS dynasty_label,
     b.c_index_addr_id,
     COALESCE(ac.c_name_chn, ac.c_name) AS index_address,
+    COALESCE(iat.c_addr_desc_chn, iat.c_addr_desc) AS index_address_type,
     ac.x_coord,
     ac.y_coord,
     sd.c_sequence,
@@ -261,6 +262,7 @@ LEFT JOIN STATUS_CODES sc ON sc.c_status_code = sd.c_status_code
 LEFT JOIN DYNASTIES d ON d.c_dy = b.c_dy
 LEFT JOIN ADDR_CODES ac ON ac.c_addr_id = b.c_index_addr_id
 LEFT JOIN INDEXYEAR_TYPE_CODES iy ON iy.c_index_year_type_code = b.c_index_year_type_code
+LEFT JOIN BIOG_ADDR_CODES iat ON iat.c_addr_type = b.c_index_addr_type_code
 LEFT JOIN NIAN_HAO nh1 ON nh1.c_nianhao_id = sd.c_fy_nh_code
 LEFT JOIN NIAN_HAO nh2 ON nh2.c_nianhao_id = sd.c_ly_nh_code
 LEFT JOIN YEAR_RANGE_CODES yr1 ON yr1.c_range_code = sd.c_fy_range
@@ -326,23 +328,24 @@ LIMIT $limit;
                 Dynasty: reader.IsDBNull(6) ? null : reader.GetString(6),
                 IndexAddressId: reader.IsDBNull(7) ? null : reader.GetInt32(7),
                 IndexAddress: reader.IsDBNull(8) ? null : reader.GetString(8),
-                XCoord: reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                YCoord: reader.IsDBNull(10) ? null : reader.GetDouble(10),
-                Sequence: reader.IsDBNull(11) ? 0 : reader.GetInt32(11),
-                Status: reader.IsDBNull(12) ? null : reader.GetString(12),
-                StatusCode: reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
-                FirstYear: reader.IsDBNull(14) ? null : reader.GetInt32(14),
-                FirstNianhao: reader.IsDBNull(15) ? null : reader.GetString(15),
-                FirstNianhaoYear: reader.IsDBNull(16) ? null : reader.GetInt32(16),
-                FirstRange: reader.IsDBNull(17) ? null : reader.GetString(17),
-                LastYear: reader.IsDBNull(18) ? null : reader.GetInt32(18),
-                LastNianhao: reader.IsDBNull(19) ? null : reader.GetString(19),
-                LastNianhaoYear: reader.IsDBNull(20) ? null : reader.GetInt32(20),
-                LastRange: reader.IsDBNull(21) ? null : reader.GetString(21),
-                Supplement: reader.IsDBNull(22) ? null : reader.GetString(22),
-                Source: reader.IsDBNull(23) ? null : reader.GetString(23),
-                Pages: reader.IsDBNull(24) ? null : reader.GetString(24),
-                Notes: reader.IsDBNull(25) ? null : reader.GetString(25)
+                IndexAddressType: reader.IsDBNull(9) ? null : reader.GetString(9),
+                XCoord: reader.IsDBNull(10) ? null : reader.GetDouble(10),
+                YCoord: reader.IsDBNull(11) ? null : reader.GetDouble(11),
+                Sequence: reader.IsDBNull(12) ? 0 : reader.GetInt32(12),
+                Status: reader.IsDBNull(13) ? null : reader.GetString(13),
+                StatusCode: reader.IsDBNull(14) ? string.Empty : reader.GetString(14),
+                FirstYear: reader.IsDBNull(15) ? null : reader.GetInt32(15),
+                FirstNianhao: reader.IsDBNull(16) ? null : reader.GetString(16),
+                FirstNianhaoYear: reader.IsDBNull(17) ? null : reader.GetInt32(17),
+                FirstRange: reader.IsDBNull(18) ? null : reader.GetString(18),
+                LastYear: reader.IsDBNull(19) ? null : reader.GetInt32(19),
+                LastNianhao: reader.IsDBNull(20) ? null : reader.GetString(20),
+                LastNianhaoYear: reader.IsDBNull(21) ? null : reader.GetInt32(21),
+                LastRange: reader.IsDBNull(22) ? null : reader.GetString(22),
+                Supplement: reader.IsDBNull(23) ? null : reader.GetString(23),
+                Source: reader.IsDBNull(24) ? null : reader.GetString(24),
+                Pages: reader.IsDBNull(25) ? null : reader.GetString(25),
+                Notes: reader.IsDBNull(26) ? null : reader.GetString(26)
             ));
         }
 
@@ -357,7 +360,8 @@ LIMIT $limit;
                     record.Sex,
                     record.Dynasty,
                     record.IndexAddressId,
-                    record.IndexAddress
+                    record.IndexAddress,
+                    record.IndexAddressType
                 }
             )
             .Select(group => {
@@ -379,6 +383,7 @@ LIMIT $limit;
                 Dynasty: group.Key.Dynasty,
                 IndexAddressId: group.Key.IndexAddressId,
                 IndexAddress: group.Key.IndexAddress,
+                IndexAddressType: group.Key.IndexAddressType,
                 XCoord: group.Select(record => record.XCoord).FirstOrDefault(value => value.HasValue),
                 YCoord: group.Select(record => record.YCoord).FirstOrDefault(value => value.HasValue),
                 XyCount: xyCount,

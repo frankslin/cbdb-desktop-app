@@ -10,6 +10,7 @@ public sealed record StatusQueryRecord(
     string? Dynasty,
     int? IndexAddressId,
     string? IndexAddress,
+    string? IndexAddressType,
     double? XCoord,
     double? YCoord,
     int Sequence,

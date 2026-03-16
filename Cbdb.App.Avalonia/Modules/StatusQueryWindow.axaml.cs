@@ -160,17 +160,18 @@ public partial class StatusQueryWindow : Window {
         ((DataGridTextColumn)_gridRecords.Columns[5]).Header = T("browser.gender");
         ((DataGridTextColumn)_gridRecords.Columns[6]).Header = T("browser.dynasty");
         ((DataGridTextColumn)_gridRecords.Columns[7]).Header = T("browser.address_id");
-        ((DataGridTextColumn)_gridRecords.Columns[8]).Header = T("browser.status_name");
-        ((DataGridTextColumn)_gridRecords.Columns[9]).Header = T("status_query.status_code");
-        ((DataGridTextColumn)_gridRecords.Columns[10]).Header = T("status_query.first_year");
-        ((DataGridTextColumn)_gridRecords.Columns[11]).Header = T("status_query.last_year");
-        ((DataGridTextColumn)_gridRecords.Columns[12]).Header = T("browser.supplement");
-        ((DataGridTextColumn)_gridRecords.Columns[13]).Header = T("browser.source_title");
-        ((DataGridTextColumn)_gridRecords.Columns[14]).Header = T("browser.address_pages");
-        ((DataGridTextColumn)_gridRecords.Columns[15]).Header = T("browser.grid_index_address");
-        ((DataGridTextColumn)_gridRecords.Columns[16]).Header = "X";
-        ((DataGridTextColumn)_gridRecords.Columns[17]).Header = "Y";
-        ((DataGridTextColumn)_gridRecords.Columns[18]).Header = T("browser.notes");
+        ((DataGridTextColumn)_gridRecords.Columns[8]).Header = T("browser.index_address_type");
+        ((DataGridTextColumn)_gridRecords.Columns[9]).Header = T("browser.status_name");
+        ((DataGridTextColumn)_gridRecords.Columns[10]).Header = T("status_query.status_code");
+        ((DataGridTextColumn)_gridRecords.Columns[11]).Header = T("status_query.first_year");
+        ((DataGridTextColumn)_gridRecords.Columns[12]).Header = T("status_query.last_year");
+        ((DataGridTextColumn)_gridRecords.Columns[13]).Header = T("browser.supplement");
+        ((DataGridTextColumn)_gridRecords.Columns[14]).Header = T("browser.source_title");
+        ((DataGridTextColumn)_gridRecords.Columns[15]).Header = T("browser.address_pages");
+        ((DataGridTextColumn)_gridRecords.Columns[16]).Header = T("browser.grid_index_address");
+        ((DataGridTextColumn)_gridRecords.Columns[17]).Header = "X";
+        ((DataGridTextColumn)_gridRecords.Columns[18]).Header = "Y";
+        ((DataGridTextColumn)_gridRecords.Columns[19]).Header = T("browser.notes");
 
         ((DataGridTextColumn)_gridPeople.Columns[0]).Header = T("browser.grid_person_id");
         ((DataGridTextColumn)_gridPeople.Columns[1]).Header = T("browser.grid_name_chn");
@@ -181,10 +182,11 @@ public partial class StatusQueryWindow : Window {
         ((DataGridTextColumn)_gridPeople.Columns[6]).Header = T("browser.dynasty");
         ((DataGridTextColumn)_gridPeople.Columns[7]).Header = T("browser.address_id");
         ((DataGridTextColumn)_gridPeople.Columns[8]).Header = T("browser.grid_index_address");
-        ((DataGridTextColumn)_gridPeople.Columns[9]).Header = "X";
-        ((DataGridTextColumn)_gridPeople.Columns[10]).Header = "Y";
-        ((DataGridTextColumn)_gridPeople.Columns[11]).Header = "XY";
-        ((DataGridTextColumn)_gridPeople.Columns[12]).Header = T("status_query.status_count");
+        ((DataGridTextColumn)_gridPeople.Columns[9]).Header = T("browser.index_address_type");
+        ((DataGridTextColumn)_gridPeople.Columns[10]).Header = "X";
+        ((DataGridTextColumn)_gridPeople.Columns[11]).Header = "Y";
+        ((DataGridTextColumn)_gridPeople.Columns[12]).Header = "XY";
+        ((DataGridTextColumn)_gridPeople.Columns[13]).Header = T("status_query.status_count");
 
         UpdateSelectedStatusesText();
         UpdateSelectedPlacesText();

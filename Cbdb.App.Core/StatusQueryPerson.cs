@@ -10,6 +10,7 @@ public sealed record StatusQueryPerson(
     string? Dynasty,
     int? IndexAddressId,
     string? IndexAddress,
+    string? IndexAddressType,
     double? XCoord,
     double? YCoord,
     int XyCount,
