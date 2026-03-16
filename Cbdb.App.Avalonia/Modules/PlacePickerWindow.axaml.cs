@@ -303,6 +303,11 @@ public partial class PlacePickerWindow : Window {
     }
 
     private static Control BuildOptionContent(PlaceOption option) {
+        var smallFontSize = Application.Current?.Resources.TryGetValue("AppSmallFontSize", out var resource) == true &&
+            resource is double value
+            ? value
+            : 11d;
+
         var stack = new StackPanel {
             Spacing = 2
         };
@@ -315,7 +320,7 @@ public partial class PlacePickerWindow : Window {
             stack.Children.Add(new TextBlock {
                 Text = option.DetailLabel,
                 Foreground = Brushes.DimGray,
-                FontSize = 11
+                FontSize = smallFontSize
             });
         }
 

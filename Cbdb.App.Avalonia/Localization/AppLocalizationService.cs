@@ -1066,5 +1066,19 @@ public sealed class AppLocalizationService : ILocalizationService {
         };
 
         Application.Current.Resources["AppFontFamily"] = new FontFamily(familyName);
+        ApplyFontSizes(language);
+    }
+
+    private static void ApplyFontSizes(UiLanguage language) {
+        if (Application.Current is null) {
+            return;
+        }
+
+        var useLargerChineseUi = OperatingSystem.IsWindows() &&
+            (language == UiLanguage.TraditionalChinese || language == UiLanguage.SimplifiedChinese);
+
+        Application.Current.Resources["AppBodyFontSize"] = useLargerChineseUi ? 14d : 13d;
+        Application.Current.Resources["AppSmallFontSize"] = useLargerChineseUi ? 12d : 11d;
+        Application.Current.Resources["AppTabFontSize"] = useLargerChineseUi ? 14d : 13d;
     }
 }

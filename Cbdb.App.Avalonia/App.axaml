@@ -27,5 +27,8 @@
 
   <Application.Resources>
     <FontFamily x:Key="AppFontFamily">PingFang TC, Microsoft JhengHei UI, sans-serif</FontFamily>
+    <x:Double x:Key="AppBodyFontSize">13</x:Double>
+    <x:Double x:Key="AppSmallFontSize">11</x:Double>
+    <x:Double x:Key="AppTabFontSize">13</x:Double>
   </Application.Resources>
 </Application>
