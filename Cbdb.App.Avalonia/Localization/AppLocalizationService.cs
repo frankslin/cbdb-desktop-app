@@ -1059,6 +1059,8 @@ public sealed class AppLocalizationService : ILocalizationService {
 
         var familyName = language switch {
             UiLanguage.SimplifiedChinese => "PingFang SC, Microsoft YaHei UI, sans-serif",
+            UiLanguage.TraditionalChinese when OperatingSystem.IsWindows() =>
+                "avares://Cbdb.App.Avalonia/Assets/Fonts/NotoSansTC-Regular.ttf#Noto Sans TC, Microsoft JhengHei UI, sans-serif",
             UiLanguage.TraditionalChinese => "PingFang TC, Microsoft JhengHei UI, sans-serif",
             _ => "SF Pro Text, Segoe UI, sans-serif"
         };
