@@ -13,6 +13,7 @@
     <Style Selector="Button.module-tile">
       <Setter Property="Height" Value="74" />
       <Setter Property="Padding" Value="14,10" />
+      <Setter Property="FontSize" Value="18" />
       <Setter Property="Background" Value="#F4F4F4" />
       <Setter Property="BorderBrush" Value="#8E8E8E" />
       <Setter Property="BorderThickness" Value="1" />
@@ -22,6 +23,7 @@
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style Selector="Button.side-action">
+      <Setter Property="FontSize" Value="18" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />

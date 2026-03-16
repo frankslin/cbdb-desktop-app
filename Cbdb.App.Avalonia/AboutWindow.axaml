@@ -20,10 +20,33 @@
                     Margin="0,16,0,16"
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollBarVisibility="Disabled">
-        <TextBlock x:Name="TxtBody"
-                   TextWrapping="Wrap"
-                   FontSize="15"
-                   LineHeight="24" />
+        <StackPanel Spacing="14">
+          <TextBlock x:Name="TxtBody"
+                     TextWrapping="Wrap"
+                     FontSize="15"
+                     LineHeight="24" />
+
+          <Border Background="#FFFFFF"
+                  BorderBrush="#D6D6D6"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Padding="14">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Temporary Font Test"
+                         FontSize="13"
+                         FontWeight="SemiBold"
+                         Foreground="#133FB5" />
+              <TextBlock x:Name="TxtFontDebug"
+                         FontSize="12"
+                         Foreground="#555555"
+                         TextWrapping="Wrap" />
+              <TextBlock x:Name="TxtFontSample"
+                         FontSize="18"
+                         LineHeight="28"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
       </ScrollViewer>
 
       <Button x:Name="BtnClose"

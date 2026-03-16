@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -10,6 +11,8 @@ public partial class AboutWindow : Window {
     private readonly AppLocalizationService _localizationService;
     private TextBlock _txtTitle = null!;
     private TextBlock _txtBody = null!;
+    private TextBlock _txtFontDebug = null!;
+    private TextBlock _txtFontSample = null!;
     private Button _btnClose = null!;
 
     public AboutWindow() : this(new AppLocalizationService()) {
@@ -45,6 +48,14 @@ public partial class AboutWindow : Window {
         _txtBody.Text = displayVersion
             + Environment.NewLine + Environment.NewLine
             + _localizationService.Get("about.body");
+
+        var appFontFamily = Application.Current?.Resources.TryGetValue("AppFontFamily", out var fontFamilyResource) == true
+            ? fontFamilyResource?.ToString()
+            : null;
+        _txtFontDebug.Text = string.IsNullOrWhiteSpace(appFontFamily)
+            ? "AppFontFamily resource: <unavailable>"
+            : $"AppFontFamily resource: {appFontFamily}";
+        _txtFontSample.Text = "繁體中文測試：字體清晰度、邊角、筆畫密度、1234567890 ABC abc";
         _btnClose.Content = _localizationService.Get("about.close");
     }
 
@@ -59,6 +70,8 @@ public partial class AboutWindow : Window {
     private void InitializeControls() {
         _txtTitle = this.FindControl<TextBlock>("TxtTitle") ?? throw new InvalidOperationException("TxtTitle not found.");
         _txtBody = this.FindControl<TextBlock>("TxtBody") ?? throw new InvalidOperationException("TxtBody not found.");
+        _txtFontDebug = this.FindControl<TextBlock>("TxtFontDebug") ?? throw new InvalidOperationException("TxtFontDebug not found.");
+        _txtFontSample = this.FindControl<TextBlock>("TxtFontSample") ?? throw new InvalidOperationException("TxtFontSample not found.");
         _btnClose = this.FindControl<Button>("BtnClose") ?? throw new InvalidOperationException("BtnClose not found.");
     }
 }
