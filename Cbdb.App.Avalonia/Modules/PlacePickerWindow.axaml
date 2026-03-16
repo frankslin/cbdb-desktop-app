@@ -20,6 +20,15 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
+    <Style Selector="Button.map-link">
+      <Setter Property="Width" Value="28" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="8,0,0,0" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
   </Window.Styles>
 
   <Grid Margin="10" RowDefinitions="Auto,*,Auto">
@@ -45,7 +54,7 @@
                     Padding="4,3"
                     Cursor="Hand"
                     PointerReleased="PlaceOptionRow_PointerReleased">
-                  <Grid ColumnDefinitions="Auto,*">
+                  <Grid ColumnDefinitions="Auto,*,Auto">
                     <CheckBox
                         IsChecked="{Binding IsSelected}"
                         VerticalAlignment="Top"
@@ -59,6 +68,19 @@
                           FontSize="{DynamicResource AppSmallFontSize}"
                           IsVisible="{Binding HasDetailLabel}" />
                     </StackPanel>
+                    <Button
+                        Grid.Column="2"
+                        Classes="map-link"
+                        Click="MapButton_Click"
+                        ToolTip.Tip="{Binding MapTooltip}"
+                        Tag="{Binding}"
+                        IsVisible="{Binding HasCoordinates}">
+                      <PathIcon
+                          Width="14"
+                          Height="14"
+                          Foreground="#1F5AA6"
+                          Data="M12 2C8.687 2 6 4.687 6 8c0 4.25 4.61 9.405 5.135 9.98a1.17 1.17 0 0 0 1.73 0C13.39 17.405 18 12.25 18 8c0-3.313-2.687-6-6-6Zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5Z" />
+                    </Button>
                   </Grid>
                 </Border>
               </DataTemplate>

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -95,6 +96,11 @@ public partial class PlacePickerWindow : Window {
         _btnClearAll.Content = T("status_query.clear_all");
         _btnCancel.Content = T("status_query.cancel");
         _btnApply.Content = T("status_query.apply");
+        var mapTooltip = T("status_query.open_in_maps");
+        foreach (var row in _rowsByAddressId.Values) {
+            row.MapTooltip = row.HasCoordinates ? mapTooltip : string.Empty;
+        }
+
         UpdateSummary();
     }
 
@@ -166,6 +172,11 @@ public partial class PlacePickerWindow : Window {
     }
 
     private void PlaceOptionRow_PointerReleased(object? sender, PointerReleasedEventArgs e) {
+        if (e.Source is Button) {
+            e.Handled = true;
+            return;
+        }
+
         if (sender is not Control control || control.DataContext is not PlaceOptionRow row) {
             return;
         }
@@ -181,6 +192,19 @@ public partial class PlacePickerWindow : Window {
 
         _lastToggledAddressId = row.AddressId;
         UpdateSummary(_visibleRows.Count);
+        e.Handled = true;
+    }
+
+    private void MapButton_Click(object? sender, RoutedEventArgs e) {
+        if (sender is not Button {
+                Tag: PlaceOptionRow {
+                    HasCoordinates: true
+                } row
+            }) {
+            return;
+        }
+
+        OpenExternalTarget(row.MapUrl);
         e.Handled = true;
     }
 
@@ -303,6 +327,13 @@ public partial class PlacePickerWindow : Window {
 
     private string T(string key) => _localizationService.Get(key);
 
+    private static void OpenExternalTarget(string target) {
+        Process.Start(new ProcessStartInfo {
+            FileName = target,
+            UseShellExecute = true
+        });
+    }
+
     public sealed class PlaceOptionRow : INotifyPropertyChanged {
         private bool _isSelected;
 
@@ -311,6 +342,10 @@ public partial class PlacePickerWindow : Window {
             DisplayLabel = option.DisplayLabel;
             DetailLabel = option.DetailLabel;
             HasDetailLabel = !string.IsNullOrWhiteSpace(DetailLabel);
+            HasCoordinates = option.XCoord.HasValue && option.YCoord.HasValue;
+            MapUrl = HasCoordinates
+                ? $"https://www.openstreetmap.org/?mlat={option.YCoord!.Value:0.######}&mlon={option.XCoord!.Value:0.######}#map=4/{option.YCoord!.Value:0.######}/{option.XCoord!.Value:0.######}"
+                : string.Empty;
             _isSelected = isSelected;
         }
 
@@ -318,6 +353,21 @@ public partial class PlacePickerWindow : Window {
         public string DisplayLabel { get; }
         public string DetailLabel { get; }
         public bool HasDetailLabel { get; }
+        public bool HasCoordinates { get; }
+        private string _mapTooltip = string.Empty;
+
+        public string MapTooltip {
+            get => _mapTooltip;
+            set {
+                if (string.Equals(_mapTooltip, value, StringComparison.Ordinal)) {
+                    return;
+                }
+
+                _mapTooltip = value;
+                OnPropertyChanged();
+            }
+        }
+        public string MapUrl { get; }
 
         public bool IsSelected {
             get => _isSelected;

@@ -189,6 +189,27 @@ public sealed class QueryPickerBehaviorTests {
         }
     }
 
+    [AvaloniaFact]
+    public void PlacePickerWindow_RowWithCoordinatesBuildsGoogleMapsUrl() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var options = new[] {
+            new PlaceOption(1001, "Kaifeng", "開封", "Prefecture", 960, 1127, null, null, null, null, 114.3, 34.8)
+        };
+
+        var window = new PlacePickerWindow(localization, options);
+        try {
+            var visibleRows = GetPrivateField<ObservableCollection<PlacePickerWindow.PlaceOptionRow>>(window, "_visibleRows");
+            var row = visibleRows[0];
+
+            Assert.True(row.HasCoordinates);
+            Assert.Equal("https://www.openstreetmap.org/?mlat=34.8&mlon=114.3#map=4/34.8/114.3", row.MapUrl);
+        } finally {
+            window.Close();
+        }
+    }
+
     private static void SetPrivateField(object target, string fieldName, object? value) {
         var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(field);

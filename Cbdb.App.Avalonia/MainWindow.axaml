@@ -28,6 +28,22 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
+    <Style Selector="ToggleButton.language-toggle">
+      <Setter Property="Width" Value="42" />
+      <Setter Property="Height" Value="32" />
+      <Setter Property="Padding" Value="0,2" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Background" Value="#F4F4F4" />
+      <Setter Property="BorderBrush" Value="#8E8E8E" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="ToggleButton.language-toggle:checked">
+      <Setter Property="Background" Value="#133FB5" />
+      <Setter Property="BorderBrush" Value="#133FB5" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
   </Window.Styles>
   <Grid Margin="14" ColumnDefinitions="*,200" RowDefinitions="Auto,*,Auto">
     <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,Auto">
@@ -45,9 +61,9 @@
                   Orientation="Horizontal"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Top">
-        <Button x:Name="BtnLangEn" Width="42" Height="32" Padding="0,2" Margin="4,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnLangEn_Click" Content="EN" />
-        <Button x:Name="BtnLangZhHant" Width="42" Height="32" Padding="0,2" Margin="4,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnLangZhHant_Click" Content="繁" />
-        <Button x:Name="BtnLangZhHans" Width="42" Height="32" Padding="0,2" Margin="4,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnLangZhHans_Click" Content="简" />
+        <ToggleButton x:Name="BtnLangEn" Classes="language-toggle" Margin="4,0,0,0" Click="BtnLangEn_Click" Content="EN" />
+        <ToggleButton x:Name="BtnLangZhHant" Classes="language-toggle" Margin="4,0,0,0" Click="BtnLangZhHant_Click" Content="繁" />
+        <ToggleButton x:Name="BtnLangZhHans" Classes="language-toggle" Margin="4,0,0,0" Click="BtnLangZhHans_Click" Content="简" />
       </StackPanel>
     </Grid>
 

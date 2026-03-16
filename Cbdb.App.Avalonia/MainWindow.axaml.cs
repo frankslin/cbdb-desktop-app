@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Controls.Primitives;
 using Cbdb.App.Avalonia.Browser;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Avalonia.Modules;
@@ -35,9 +36,9 @@ public partial class MainWindow : Window {
     private readonly IDatabaseIndexService _databaseIndexService = new SqliteDatabaseIndexService();
     private readonly AppLocalizationService _localizationService = new();
 
-    private Button _btnLangEn = null!;
-    private Button _btnLangZhHant = null!;
-    private Button _btnLangZhHans = null!;
+    private ToggleButton _btnLangEn = null!;
+    private ToggleButton _btnLangZhHant = null!;
+    private ToggleButton _btnLangZhHans = null!;
     private Button _btnModuleBrowser = null!;
     private Button _btnModuleEntry = null!;
     private Button _btnModuleOffice = null!;
@@ -147,19 +148,19 @@ public partial class MainWindow : Window {
     }
 
     private void HighlightLanguageButton() {
-        _btnLangEn.FontWeight = FontWeight.Normal;
-        _btnLangZhHant.FontWeight = FontWeight.Normal;
-        _btnLangZhHans.FontWeight = FontWeight.Normal;
+        _btnLangEn.IsChecked = false;
+        _btnLangZhHant.IsChecked = false;
+        _btnLangZhHans.IsChecked = false;
 
         switch (_localizationService.CurrentLanguage) {
             case UiLanguage.English:
-                _btnLangEn.FontWeight = FontWeight.Bold;
+                _btnLangEn.IsChecked = true;
                 break;
             case UiLanguage.TraditionalChinese:
-                _btnLangZhHant.FontWeight = FontWeight.Bold;
+                _btnLangZhHant.IsChecked = true;
                 break;
             case UiLanguage.SimplifiedChinese:
-                _btnLangZhHans.FontWeight = FontWeight.Bold;
+                _btnLangZhHans.IsChecked = true;
                 break;
         }
     }
@@ -425,9 +426,9 @@ public partial class MainWindow : Window {
     }
 
     private void InitializeControls() {
-        _btnLangEn = this.FindControl<Button>("BtnLangEn") ?? throw new InvalidOperationException("BtnLangEn not found.");
-        _btnLangZhHant = this.FindControl<Button>("BtnLangZhHant") ?? throw new InvalidOperationException("BtnLangZhHant not found.");
-        _btnLangZhHans = this.FindControl<Button>("BtnLangZhHans") ?? throw new InvalidOperationException("BtnLangZhHans not found.");
+        _btnLangEn = this.FindControl<ToggleButton>("BtnLangEn") ?? throw new InvalidOperationException("BtnLangEn not found.");
+        _btnLangZhHant = this.FindControl<ToggleButton>("BtnLangZhHant") ?? throw new InvalidOperationException("BtnLangZhHant not found.");
+        _btnLangZhHans = this.FindControl<ToggleButton>("BtnLangZhHans") ?? throw new InvalidOperationException("BtnLangZhHans not found.");
         _btnModuleBrowser = this.FindControl<Button>("BtnModuleBrowser") ?? throw new InvalidOperationException("BtnModuleBrowser not found.");
         _btnModuleEntry = this.FindControl<Button>("BtnModuleEntry") ?? throw new InvalidOperationException("BtnModuleEntry not found.");
         _btnModuleOffice = this.FindControl<Button>("BtnModuleOffice") ?? throw new InvalidOperationException("BtnModuleOffice not found.");
