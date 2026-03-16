@@ -123,7 +123,13 @@
               <d:DataGridTextColumn Binding="{Binding Status}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding StatusCode}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding FirstYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstNianhao}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding FirstNianhaoYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstRange}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding LastYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastNianhao}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding LastNianhaoYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastRange}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding Supplement}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding Source}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding Pages}" Width="90" />
