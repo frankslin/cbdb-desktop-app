@@ -386,6 +386,8 @@ public partial class StatusCodePickerWindow : Window {
                     _expandedTypeCodes.Add(typeCode[..2]);
                 }
             }
+        } else {
+            _activeTypeNode = _pickerData.Root;
         }
 
         _preserveHighlightOnTreeSelection = true;
