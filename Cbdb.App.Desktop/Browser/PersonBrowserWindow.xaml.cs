@@ -498,7 +498,7 @@ public partial class PersonBrowserWindow : Window {
                 "grid_person_id" => "人物 ID",
                 "grid_name_chn" => "中文姓名",
                 "grid_name_rm" => "拼音",
-                "grid_index_year" => "索引年",
+                "grid_index_year" => "指數年",
                 "grid_index_address" => "索引地址",
                 "field_surname_chn" => "姓（中文）",
                 "field_mingzi_chn" => "名（中文）",
@@ -518,7 +518,7 @@ public partial class PersonBrowserWindow : Window {
                 "unknown" => "未詳",
                 "birth_year" => "出生年",
                 "death_year" => "卒年",
-                "index_year" => "索引年",
+                "index_year" => "指數年",
                 "index_year_type" => "規則類型",
                 "index_year_source" => "來源",
                 "index_address" => "索引地址",
@@ -555,7 +555,7 @@ public partial class PersonBrowserWindow : Window {
                 "grid_person_id" => "人物 ID",
                 "grid_name_chn" => "中文姓名",
                 "grid_name_rm" => "拼音",
-                "grid_index_year" => "索引年",
+                "grid_index_year" => "指数年",
                 "grid_index_address" => "索引地址",
                 "field_surname_chn" => "姓（中文）",
                 "field_mingzi_chn" => "名（中文）",
@@ -575,7 +575,7 @@ public partial class PersonBrowserWindow : Window {
                 "unknown" => "未详",
                 "birth_year" => "出生年",
                 "death_year" => "卒年",
-                "index_year" => "索引年",
+                "index_year" => "指数年",
                 "index_year_type" => "规则类型",
                 "index_year_source" => "来源",
                 "index_address" => "索引地址",
@@ -662,7 +662,6 @@ public partial class PersonBrowserWindow : Window {
         };
     }
 }
-
 
 
 

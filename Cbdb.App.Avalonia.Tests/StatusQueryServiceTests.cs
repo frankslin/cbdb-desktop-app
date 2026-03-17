@@ -228,7 +228,7 @@ INSERT INTO ADDR_CODES (c_addr_id, c_name, c_name_chn, x_coord, y_coord) VALUES
 INSERT INTO ZZZ_BELONGS_TO (c_addr_id, c_belongs_to) VALUES
     (11, 10);
 INSERT INTO INDEXYEAR_TYPE_CODES (c_index_year_type_code, c_index_year_type_desc, c_index_year_type_hz) VALUES
-    (1, 'Index year type', '索引年類型');
+    (1, 'Index year type', '指數年類型');
 INSERT INTO TEXT_CODES (c_textid, c_title, c_title_chn) VALUES
     (1, 'Source', '來源');
 INSERT INTO STATUS_CODES (c_status_code, c_status_desc, c_status_desc_chn) VALUES

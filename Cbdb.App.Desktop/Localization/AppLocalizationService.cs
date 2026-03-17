@@ -215,13 +215,13 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["browser.grid_name"] = "姓名",
             ["browser.grid_name_chn"] = "中文姓名",
             ["browser.grid_name_rm"] = "拼音",
-            ["browser.grid_index_year"] = "索引年",
+            ["browser.grid_index_year"] = "指數年",
             ["browser.grid_index_address"] = "索引地址",
             ["browser.person_id"] = "人物 ID",
             ["browser.name"] = "姓名",
             ["browser.name_chn"] = "中文名",
             ["browser.dynasty"] = "朝代",
-            ["browser.index_year"] = "索引年",
+            ["browser.index_year"] = "指數年",
             ["browser.birth_death"] = "生 / 卒",
             ["browser.gender"] = "性別",
             ["browser.index_address"] = "索引地址",
@@ -290,13 +290,13 @@ public sealed class AppLocalizationService : ILocalizationService {
             ["browser.grid_name"] = "姓名",
             ["browser.grid_name_chn"] = "中文姓名",
             ["browser.grid_name_rm"] = "拼音",
-            ["browser.grid_index_year"] = "索引年",
+            ["browser.grid_index_year"] = "指数年",
             ["browser.grid_index_address"] = "索引地址",
             ["browser.person_id"] = "人物 ID",
             ["browser.name"] = "姓名",
             ["browser.name_chn"] = "中文名",
             ["browser.dynasty"] = "朝代",
-            ["browser.index_year"] = "索引年",
+            ["browser.index_year"] = "指数年",
             ["browser.birth_death"] = "生 / 卒",
             ["browser.gender"] = "性别",
             ["browser.index_address"] = "索引地址",
@@ -363,7 +363,6 @@ public sealed class AppLocalizationService : ILocalizationService {
         Application.Current.Resources["AppFontFamily"] = new FontFamily(familyName);
     }
 }
-
 
 
 
