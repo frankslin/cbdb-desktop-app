@@ -10,21 +10,17 @@ public sealed record OfficeCodeOption(
 ) {
     public string DisplayLabel {
         get {
-            var name = string.IsNullOrWhiteSpace(DescriptionChn)
+            return string.IsNullOrWhiteSpace(DescriptionChn)
                 ? Description ?? Code
                 : string.IsNullOrWhiteSpace(Description)
                     ? DescriptionChn
                     : $"{DescriptionChn} / {Description}";
-
-            var dynasty = string.IsNullOrWhiteSpace(DynastyChn)
-                ? Dynasty
-                : string.IsNullOrWhiteSpace(Dynasty)
-                    ? DynastyChn
-                    : $"{DynastyChn} / {Dynasty}";
-
-            return string.IsNullOrWhiteSpace(dynasty)
-                ? $"{name} ({Code})"
-                : $"{name} [{dynasty}] ({Code})";
         }
     }
+
+    public string? DynastyLabel => string.IsNullOrWhiteSpace(DynastyChn)
+        ? Dynasty
+        : string.IsNullOrWhiteSpace(Dynasty)
+            ? DynastyChn
+            : $"{DynastyChn} / {Dynasty}";
 }

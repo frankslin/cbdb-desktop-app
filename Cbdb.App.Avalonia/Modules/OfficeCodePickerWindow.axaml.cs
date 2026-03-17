@@ -315,8 +315,15 @@ public partial class OfficeCodePickerWindow : Window {
                 FontWeight = FontWeight.SemiBold,
                 TextWrapping = TextWrapping.Wrap
             });
+            var detailParts = new List<string> {
+                $"{T("office_query.office_code")}: {option.Code}"
+            };
+            if (!string.IsNullOrWhiteSpace(option.DynastyLabel)) {
+                detailParts.Add(option.DynastyLabel!);
+            }
+            detailParts.Add($"{T("browser.association_count")}: {option.UsageCount:N0}");
             textPanel.Children.Add(new TextBlock {
-                Text = $"{T("office_query.office_code")}: {option.Code}    {T("browser.association_count")}: {option.UsageCount:N0}",
+                Text = string.Join("    ", detailParts),
                 Foreground = new SolidColorBrush(Color.Parse("#666666"))
             });
 
