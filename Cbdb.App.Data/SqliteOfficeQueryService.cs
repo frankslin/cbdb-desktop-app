@@ -251,10 +251,18 @@ SELECT
     COALESCE(fy_nh.c_nianhao_chn, fy_nh.c_nianhao_pin) AS first_nianhao,
     pto.c_fy_nh_year,
     COALESCE(fy_range.c_range_chn, fy_range.c_range) AS first_range,
+    pto.c_fy_month,
+    pto.c_fy_intercalary,
+    pto.c_fy_day,
+    COALESCE(fy_gz.c_ganzhi_chn, fy_gz.c_ganzhi_py) AS first_ganzhi,
     pto.c_lastyear,
     COALESCE(ly_nh.c_nianhao_chn, ly_nh.c_nianhao_pin) AS last_nianhao,
     pto.c_ly_nh_year,
     COALESCE(ly_range.c_range_chn, ly_range.c_range) AS last_range,
+    pto.c_ly_month,
+    pto.c_ly_intercalary,
+    pto.c_ly_day,
+    COALESCE(ly_gz.c_ganzhi_chn, ly_gz.c_ganzhi_py) AS last_ganzhi,
     COALESCE(sinc.c_inst_name_hz, sinc.c_inst_name_py) AS institution_label,
     pta.c_addr_id,
     COALESCE(office_addr.c_name_chn, office_addr.c_name) AS office_address,
@@ -281,8 +289,10 @@ LEFT JOIN BIOG_ADDR_CODES iat ON iat.c_addr_type = b.c_index_addr_type_code
 LEFT JOIN DYNASTIES person_dy ON person_dy.c_dy = b.c_dy
 LEFT JOIN NIAN_HAO fy_nh ON fy_nh.c_nianhao_id = pto.c_fy_nh_code
 LEFT JOIN YEAR_RANGE_CODES fy_range ON fy_range.c_range_code = pto.c_fy_range
+LEFT JOIN GANZHI_CODES fy_gz ON fy_gz.c_ganzhi_code = pto.c_fy_day_gz
 LEFT JOIN NIAN_HAO ly_nh ON ly_nh.c_nianhao_id = pto.c_ly_nh_code
 LEFT JOIN YEAR_RANGE_CODES ly_range ON ly_range.c_range_code = pto.c_ly_range
+LEFT JOIN GANZHI_CODES ly_gz ON ly_gz.c_ganzhi_code = pto.c_ly_day_gz
 LEFT JOIN SOCIAL_INSTITUTION_NAME_CODES sinc ON sinc.c_inst_name_code = pto.c_inst_name_code
 LEFT JOIN ADDR_CODES office_addr ON office_addr.c_addr_id = pta.c_addr_id
 LEFT JOIN (
@@ -360,19 +370,27 @@ LIMIT $limit;
                 FirstNianhao: reader.IsDBNull(18) ? null : reader.GetString(18),
                 FirstNianhaoYear: reader.IsDBNull(19) ? null : reader.GetInt32(19),
                 FirstRange: reader.IsDBNull(20) ? null : reader.GetString(20),
-                LastYear: reader.IsDBNull(21) ? null : reader.GetInt32(21),
-                LastNianhao: reader.IsDBNull(22) ? null : reader.GetString(22),
-                LastNianhaoYear: reader.IsDBNull(23) ? null : reader.GetInt32(23),
-                LastRange: reader.IsDBNull(24) ? null : reader.GetString(24),
-                Institution: reader.IsDBNull(25) ? null : reader.GetString(25),
-                OfficeAddressId: reader.IsDBNull(26) ? null : reader.GetInt32(26),
-                OfficeAddress: reader.IsDBNull(27) ? null : reader.GetString(27),
-                OfficeXCoord: reader.IsDBNull(28) ? null : reader.GetDouble(28),
-                OfficeYCoord: reader.IsDBNull(29) ? null : reader.GetDouble(29),
-                OfficeXyCount: reader.IsDBNull(30) ? 0 : reader.GetInt32(30),
-                Source: reader.IsDBNull(31) ? null : reader.GetString(31),
-                Pages: reader.IsDBNull(32) ? null : reader.GetString(32),
-                Notes: reader.IsDBNull(33) ? null : reader.GetString(33)
+                FirstMonth: reader.IsDBNull(21) ? null : reader.GetInt32(21),
+                FirstIntercalary: reader.IsDBNull(22) ? null : reader.GetInt32(22) == 1,
+                FirstDay: reader.IsDBNull(23) ? null : reader.GetInt32(23),
+                FirstGanzhi: reader.IsDBNull(24) ? null : reader.GetString(24),
+                LastYear: reader.IsDBNull(25) ? null : reader.GetInt32(25),
+                LastNianhao: reader.IsDBNull(26) ? null : reader.GetString(26),
+                LastNianhaoYear: reader.IsDBNull(27) ? null : reader.GetInt32(27),
+                LastRange: reader.IsDBNull(28) ? null : reader.GetString(28),
+                LastMonth: reader.IsDBNull(29) ? null : reader.GetInt32(29),
+                LastIntercalary: reader.IsDBNull(30) ? null : reader.GetInt32(30) == 1,
+                LastDay: reader.IsDBNull(31) ? null : reader.GetInt32(31),
+                LastGanzhi: reader.IsDBNull(32) ? null : reader.GetString(32),
+                Institution: reader.IsDBNull(33) ? null : reader.GetString(33),
+                OfficeAddressId: reader.IsDBNull(34) ? null : reader.GetInt32(34),
+                OfficeAddress: reader.IsDBNull(35) ? null : reader.GetString(35),
+                OfficeXCoord: reader.IsDBNull(36) ? null : reader.GetDouble(36),
+                OfficeYCoord: reader.IsDBNull(37) ? null : reader.GetDouble(37),
+                OfficeXyCount: reader.IsDBNull(38) ? 0 : reader.GetInt32(38),
+                Source: reader.IsDBNull(39) ? null : reader.GetString(39),
+                Pages: reader.IsDBNull(40) ? null : reader.GetString(40),
+                Notes: reader.IsDBNull(41) ? null : reader.GetString(41)
             ));
         }
 

@@ -125,10 +125,18 @@
               <d:DataGridTextColumn Binding="{Binding FirstNianhao}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding FirstNianhaoYear}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding FirstRange}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstMonth}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding FirstIntercalary}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstDay}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding FirstGanzhi}" Width="100" />
               <d:DataGridTextColumn Binding="{Binding LastYear}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding LastNianhao}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding LastNianhaoYear}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding LastRange}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastMonth}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding LastIntercalary}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastDay}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding LastGanzhi}" Width="100" />
               <d:DataGridTextColumn Binding="{Binding Institution}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding OfficeAddressId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding OfficeAddress}" Width="200" />

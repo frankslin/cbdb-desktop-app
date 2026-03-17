@@ -72,10 +72,18 @@ CREATE TABLE POSTED_TO_OFFICE_DATA (
     c_fy_nh_code INTEGER,
     c_fy_nh_year INTEGER,
     c_fy_range INTEGER,
+    c_fy_month INTEGER,
+    c_fy_intercalary INTEGER,
+    c_fy_day INTEGER,
+    c_fy_day_gz INTEGER,
     c_lastyear INTEGER,
     c_ly_nh_code INTEGER,
     c_ly_nh_year INTEGER,
     c_ly_range INTEGER,
+    c_ly_month INTEGER,
+    c_ly_intercalary INTEGER,
+    c_ly_day INTEGER,
+    c_ly_day_gz INTEGER,
     c_appt_type_code INTEGER,
     c_assume_office_code INTEGER,
     c_inst_code INTEGER,
@@ -116,6 +124,7 @@ CREATE TABLE BIOG_ADDR_CODES (c_addr_type INTEGER PRIMARY KEY, c_addr_desc TEXT,
 CREATE TABLE INDEXYEAR_TYPE_CODES (c_index_year_type_code INTEGER PRIMARY KEY, c_index_year_type_desc TEXT, c_index_year_type_hz TEXT);
 CREATE TABLE NIAN_HAO (c_nianhao_id INTEGER PRIMARY KEY, c_nianhao_chn TEXT, c_nianhao_pin TEXT);
 CREATE TABLE YEAR_RANGE_CODES (c_range_code INTEGER PRIMARY KEY, c_range TEXT, c_range_chn TEXT);
+CREATE TABLE GANZHI_CODES (c_ganzhi_code INTEGER PRIMARY KEY, c_ganzhi_chn TEXT, c_ganzhi_py TEXT);
 CREATE TABLE TEXT_CODES (c_textid INTEGER PRIMARY KEY, c_title TEXT, c_title_chn TEXT);
 CREATE TABLE ZZZ_BELONGS_TO (c_addr_id INTEGER, c_belongs_to INTEGER);
 
@@ -124,6 +133,8 @@ INSERT INTO INDEXYEAR_TYPE_CODES VALUES (1, 'Index Year', '指數年');
 INSERT INTO BIOG_ADDR_CODES VALUES (7, 'Native place', '籍貫');
 INSERT INTO NIAN_HAO VALUES (1, '元祐', 'Yuanyou');
 INSERT INTO YEAR_RANGE_CODES VALUES (1, 'Range', '時限');
+INSERT INTO GANZHI_CODES VALUES (1, '甲子', 'jiazi');
+INSERT INTO GANZHI_CODES VALUES (2, '乙丑', 'yichou');
 INSERT INTO APPOINTMENT_CODES VALUES (1, 'Appointment', '任命');
 INSERT INTO ASSUME_OFFICE_CODES VALUES (1, 'Assume', '到任');
 INSERT INTO OFFICE_CATEGORIES VALUES (1, 'Civil', '文職');
@@ -140,8 +151,8 @@ INSERT INTO OFFICE_TYPE_TREE VALUES ('0', 'All Offices Categories', '所有門�
 INSERT INTO OFFICE_TYPE_TREE VALUES ('01', 'Song Office', '宋代官職', '0');
 INSERT INTO OFFICE_CODE_TYPE_REL VALUES (100, '01');
 INSERT INTO POSTED_TO_OFFICE_DATA VALUES
-    (1, 100, 1000, 1, 1071, 1, 3, 1, 1074, 1, 6, 1, 1, 1, 0, 1, 1, '12-13', 'note-1', 1, 1),
-    (2, 100, 1001, 1, 1171, 1, 2, 1, 1173, 1, 4, 1, 1, 1, 0, 1, 1, '20', 'note-2', 1, 1);
+    (1, 100, 1000, 1, 1071, 1, 3, 1, 4, 1, 15, 1, 1074, 1, 6, 1, 8, 0, 22, 2, 1, 1, 0, 1, 1, '12-13', 'note-1', 1, 1),
+    (2, 100, 1001, 1, 1171, 1, 2, 1, 2, 0, 9, 1, 1173, 1, 4, 1, 5, 0, 11, 2, 1, 1, 0, 1, 1, '20', 'note-2', 1, 1);
 INSERT INTO POSTED_TO_ADDR_DATA VALUES
     (1000, 1, 100, 20),
     (1001, 2, 100, 20);
@@ -169,6 +180,14 @@ INSERT INTO POSTED_TO_ADDR_DATA VALUES
             Assert.Equal("中書省", first.Institution);
             Assert.Equal("臨安", first.OfficeAddress);
             Assert.Equal(2, first.OfficeXyCount);
+            Assert.Equal(4, first.FirstMonth);
+            Assert.True(first.FirstIntercalary);
+            Assert.Equal(15, first.FirstDay);
+            Assert.Equal("甲子", first.FirstGanzhi);
+            Assert.Equal(8, first.LastMonth);
+            Assert.False(first.LastIntercalary);
+            Assert.Equal(22, first.LastDay);
+            Assert.Equal("乙丑", first.LastGanzhi);
 
             var person = Assert.Single(result.People.Where(item => item.PersonId == 1));
             Assert.Equal("臨安", person.OfficeAddress);

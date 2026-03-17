@@ -1,39 +1,55 @@
 # CBDB Windows App Status
 
 ## Project Goal
-- Build a Windows desktop app for browsing and querying the SQLite CBDB database.
-- The app should functionally mirror the existing Access application where practical, while reading directly from the bundled SQLite database in the app repository.
+- Build a desktop app for browsing and querying the SQLite CBDB database.
+- Functionally mirror the existing Access application where practical, while reading directly from SQLite instead of Access tables.
 - `Index Year` rebuild is not needed.
 - `Change Index Address Ranking` and rebuilding `Index Address` are secondary features and can be implemented later.
 - UI must support Traditional Chinese, Simplified Chinese, and English from the start.
 
 ## Current Scope
-- Main navigation window exists.
-- Person browser and Status query are the two currently usable end-user modules.
-- Other query-module windows still exist mostly as scaffolding rather than full Access-equivalent implementations.
-- Database is expected to be read from the app-local `data` directory.
+- Main navigation window exists and is the primary shell.
+- The currently usable end-user modules are:
+  - Person Browser
+  - Status Query
+  - Entry Query
+  - Office Query
+- Other home-page buttons are still placeholders or future modules.
+- The SQLite database is expected to be read from an app-local `data` directory or a relinked dataset path remembered by the app.
 
 ## Current Progress
 - Main window has been built and localized.
-- Home page module buttons were redesigned from a single vertical stack into a more compact grid of large buttons.
+- The home page uses a 2-column grid of large module tiles instead of a single vertical stack.
+- The home page also now includes placeholder tiles for:
+  - `按人群查詢 / Look Up Data on a Group of People`
+  - `Query By Example`
 - The error-report button opens the Harvard error-report page in the system browser.
-- The main window now includes an explicit `About` entry in addition to the app menu path.
+- The main window includes an explicit `About` entry in addition to the app menu path.
 - Locale-specific UI fonts are in place:
-  - Traditional Chinese: `Microsoft JhengHei UI`
+  - Traditional Chinese:
+    - default Windows family fallback: `Microsoft JhengHei UI`
+    - embedded `Noto Sans TC` is available and used for Windows Traditional Chinese UI
   - Simplified Chinese: `Microsoft YaHei UI`
   - English: `Segoe UI`
+- On Windows, Chinese UI font sizes are intentionally one step larger than the previous default.
 - The app is currently forced to light mode for readability.
   - Dark mode is not supported yet.
+- The Avalonia shell remembers the last successfully loaded SQLite file path using the platform-local app-data directory and restores it on next launch only if the health check still succeeds.
+- The app can detect missing recommended SQLite indexes for postings-related queries and prompt the user to add them with a progress window.
+
+## Person Browser
 - Person browser supports:
   - searching by person-name fields and alt names
   - paged loading on the left list
   - Enter-to-search behavior
   - resizable left/right split layout
   - right-side summary panel
-  - related tabs with lazy loading and loading indicators
-- Person browser also now supports:
+  - lazy-loaded related tabs with loading indicators
+- Person browser also supports:
   - importing person lists from `CSV` or `TXT`
   - exporting person lists to file
+  - loading query-result person lists from query windows
+  - adding that imported query result as a new browser-history layer
   - expanded kinship browsing that can include kin-of-kin relationships
   - direct vs derived kinship labeling
 - Person list currently shows:
@@ -71,14 +87,6 @@
   - ethnicity (`ETHNICITY_TRIBE_CODES`)
 - `Index Year Source` summary display has been customized to show:
   - `person id / Chinese full name / English full name`
-- Earliest/latest living year layout was refined so each of earliest and latest uses:
-  - one row for Gregorian year, reign title, and reign year
-  - one separate notes row using a multiline control
-- The Avalonia shell now remembers the last successfully loaded SQLite file path using the platform-local app-data directory, and restores it on next launch only if the health check still succeeds.
-- A headless Avalonia UI test harness now exists in `Cbdb.App.Avalonia.Tests`.
-  - It can open Avalonia windows without a human in the loop.
-  - It supports fixture-backed UI tests for deterministic person-browser coverage.
-  - It can emit screenshot and JSON artifacts under `artifacts/ui-tests/`.
 - The following person-browser tabs now render repeated-form cards instead of placeholders:
   - Associations
   - Alt. Names
@@ -90,28 +98,12 @@
   - Possessions
   - Sources
   - Institutions
-- Kinship tab behavior now reflects an important Access pattern:
+  - Postings
+- Kinship tab behavior reflects an important Access pattern:
   - it can optionally expand beyond direct `KIN_DATA` rows
-  - simple kinship reduction rules are currently hardcoded in code rather than loaded from a table
-- Addresses tab now renders each address record as a repeated form rather than a generic grid.
-- Associations tab now renders each association record as a repeated form rather than a placeholder.
-- Associations tab currently groups each record into:
-  - association core
-  - related people
-  - place and date
-  - context
-  - source and notes
-- Associations tab uses a dedicated SQL query with joins instead of the old generic related-item pipeline.
-- Addresses tab currently includes:
-  - sequence
-  - address type
-  - address name
-  - `BIOG_ADDR_DATA.c_natal` shown using the inherited Access-style `Maternal` label
-  - first/last year summary rows
-  - source
-  - pages
-  - notes
-- In the current Avalonia address tab, all read-only fields except `Notes` are intentionally single-line.
+  - a small set of kinship reduction rules is currently hardcoded in code rather than loaded from a table
+
+## Query Modules
 - Status Query now supports:
   - hierarchical status category selection based on `STATUS_TYPES` and `STATUS_CODE_TYPE_REL`
   - place selection
@@ -121,127 +113,190 @@
   - record and person result tabs
   - person-id export
   - status-code CSV export
+  - loading query-result people into Person Browser
+- Entry Query now supports:
+  - hierarchical entry category selection based on `ENTRY_TYPES` and `ENTRY_CODE_TYPE_REL`
+  - place selection
+  - optional inclusion of subordinate places
+  - index-year filtering
+  - dynasty-range filtering
+  - record and person result tabs
+  - person-id export
+  - entry-code CSV export
+  - loading query-result people into Person Browser
+  - richer result fields than the first draft, including `exam_field`, `attempt_count`, `XY count`, and `Index Address Type`
+- Office Query now supports:
+  - hierarchical office category selection based on `OFFICE_TYPE_TREE` and `OFFICE_CODE_TYPE_REL`
+  - place selection
+  - optional inclusion of subordinate places
+  - index-year filtering
+  - dynasty-range filtering
+  - record and person result tabs
+  - person-id export
+  - office-code CSV export
+  - loading query-result people into Person Browser
+  - office picker search fallback, lazy tree placeholder expansion, and limited visible result sets for performance
+  - record-level posting fields including:
+    - office
+    - office code
+    - appointment type
+    - assume office
+    - category
+    - institution
+    - first/last year
+    - first/last nianhao and reign year
+    - first/last range
+    - first/last month
+    - first/last intercalary flag
+    - first/last day
+    - first/last day ganzhi
+    - office address
+    - XY / XY count
+    - source / pages / notes
 - Reusable query-side picker components now exist for:
   - dynasty ranges
   - place selection
   - hierarchical status selection
+  - hierarchical entry selection
+  - hierarchical office selection
+- Query-window picker behavior has largely converged across `Status`, `Entry`, and `Office`:
+  - tree-based category selection
+  - search result highlighting
+  - search result scroll-into-view
+  - current-category summary text that can collapse to a category label
+  - whole-row toggle on the right-side selection list
+
+## Place and Dynasty Selection
 - Dynasty ordering rules currently include:
   - chronological ordering for normal dynasties
   - `[unknown] / 未詳` at the beginning
   - `新羅 / 朝鮮 / 韓國` grouped at the end
-- A reusable SQLite fixture database now exists under `Cbdb.App.Avalonia.Tests/Fixtures/latest-fixture.sqlite3`.
-- Release packaging now includes:
+- Place selection now uses merged display rows keyed by `AddressId`.
+  - The list no longer shows multiple selectable rows for the same address ID just because it has multiple belongs-to rows.
+- Place selection currently supports:
+  - search by place ID or name
+  - explicit query button and Enter-to-search behavior
+  - batch actions on current visible results
+  - `全選目前結果 / 反選目前結果`
+  - Shift-click range selection
+- Place display rows currently include:
+  - main line in `中文 / English (ID)` form
+  - detail line with address type, time range, belongs-to context, and XY when available
+
+## Testing and Fixtures
+- A headless Avalonia UI test harness exists in `Cbdb.App.Avalonia.Tests`.
+  - It can open Avalonia windows without a human in the loop.
+  - It supports fixture-backed UI tests for deterministic coverage.
+  - It can emit screenshot and JSON artifacts under `artifacts/ui-tests/`.
+- A reusable SQLite fixture database exists under `Cbdb.App.Avalonia.Tests/Fixtures/latest-fixture.sqlite3`.
+- Current automated coverage includes:
+  - person-browser fixture-backed UI paths
+  - kinship expansion / reduction behavior
+  - person-list import parsing and loading
+  - status query service
+  - entry query service
+  - office query service
+  - picker behavior tests for status / entry / office
+  - database-index prompt service behavior
+- Query-result-to-Person-Browser history behavior now has automated coverage.
+
+## Release and Packaging
+- Release packaging includes:
   - `THIRD-PARTY-LICENSES.md`
   - release notes read from `RELEASE_NOTES.md`
-- The repository now has:
+- The repository has:
   - a dedicated manual `release.yml`
   - test gating before build/package steps
   - platform-specific release tests for Windows and macOS
+- GitHub Actions have been updated to Node 24-compatible official action versions.
 - `Cbdb.App.Desktop` is no longer part of the solution.
   - The directory remains only as legacy Access-porting and form-design reference material.
 
 ## What Is Not Stable Yet
-- Person browser data enrichment still relies on a generic lookup pipeline and is not fully Access-like yet.
-- Query-module windows still need substantial implementation work beyond shell layout.
-- The person browser still needs closer alignment with the Access UI and field semantics.
-- Code-field display rules are only partially normalized; more Access-like display behavior is still needed.
-- Related-tab load performance is noticeably slower than tab-count queries and needs optimization.
-- Lazy-loaded Avalonia tabs reduce the initial person-selection stall, but the remaining heavy tabs still need careful loading strategy once they are ported.
-- Headless UI coverage is still minimal.
-  - Current automated coverage is only an initial person-browser path with fixture data.
-  - The fixture-backed lazy-load path now covers:
-    - Addresses
-    - Associations
-    - Alt. Names
-    - Entry
-    - Events
-    - Writings
-    - Status
-    - Kinship
-    - Possessions
-    - Postings
-  - Real-database UI scenarios and screenshot baseline diffing are not wired yet.
-- The newly ported `Associations`, `Entry`, `Events`, `Status`, `Kinship`, and `Possessions` tabs are stable repeated-form summaries, but they are not yet field-for-field Access-equivalent layouts.
-- `Person Browser` and `Status Query` are usable, but not yet feature-complete relative to Access.
-- `Status Query` still lacks many of the broader Access workflows:
+- Person-browser data enrichment still relies partly on a generic lookup pipeline and is not fully Access-like yet.
+- Related-tab content loading is still noticeably slower than the lightweight count queries and needs more dedicated SQL paths.
+- Headless UI coverage is still selective rather than comprehensive.
+  - Real-database screenshot baseline diffing is not wired yet.
+- Associations and Addresses are still only partially aligned with Access.
+- Status Query, Entry Query, and Office Query are usable, but none of them is fully Access-equivalent yet.
+- Status Query still lacks broader Access workflows such as:
   - GIS / KML export
   - Neo4j export
   - Access-style place import workflows
   - some of the richer scratch-table-derived output fields
-- The Associations tab is only partially aligned with Access.
-  - It now follows the main Access subform grouping, but the detailed layout is still an approximation rather than a control-for-control replica of `ASSOC_DATA_2 Subform`.
-  - Some Access fields are still summarized into merged display values instead of being shown as fully discrete Access-style controls.
-  - The current dedicated SQL is correctness-oriented and should still be reviewed for any Access-specific display semantics that need normalization.
-- The Addresses tab is only partially aligned with Access.
-  - First/last year content is still collapsed into summary strings instead of discrete Access-style controls for Gregorian year, reign title, reign year, month, intercalary, day, ganzhi, and range.
-  - Address card layout is only approximate and does not yet mirror `BIOG_ADDR_DATA_2 Subform`.
-  - The `Maternal` label is inherited from Access form naming, but the underlying database field is `BIOG_ADDR_DATA.c_natal`; the final user-facing label is still not fully settled.
-  - Source display is currently simplified into a merged text value rather than a full Access-like field arrangement.
+- Entry Query still needs more Access-equivalent field coverage and workflow polish.
+- Office Query still needs more Access-equivalent field coverage and workflow polish.
+  - The picker is now usable, but the full Access office-query workflow is not complete.
+  - GIS / KML / Neo4j style export paths are not implemented.
+  - Some richer scratch-table-derived output fields are still missing.
+- Query-module implementation quality is now uneven:
+  - `Status`, `Entry`, and `Office` are real modules
+  - several other home-page entries are still scaffolding or placeholders
 
 ## Known Pitfalls
 - Do not casually rewrite files that contain Chinese string literals using PowerShell text replacement.
   - This repeatedly produced mojibake in `Cbdb.App.Desktop/Browser/PersonBrowserWindow.xaml.cs`.
   - The current known-good recovery baseline for that file is commit `3f04536`.
   - If garbling reappears, restore from a known-good commit first and then reapply only minimal safe changes.
-- `apply_patch` has been unreliable in this workspace, especially on Windows/XAML-heavy files.
 - CRLF handling has been fragile during scripted replacements.
   - Literal `` `r`n `` has accidentally been written into source files before.
 - Avalonia `ComboBox` behavior on macOS can differ from Windows in subtle layout ways.
   - Dropdown sizing that looks fixed on Windows may still shift on macOS unless the control width and item template width are both constrained.
+- TreeView interaction in Avalonia can be tricky when combined with custom whole-row expand/collapse behavior.
+  - Parent/child bubbling needs to be handled carefully or parent nodes may collapse when clicking children.
+  - Lazy placeholder children are useful for preserving expand arrows, but they can break expansion if the real child materialization path is wrong.
 - Person detail loading is sensitive to SQL column order.
   - Several regressions came from changing selected columns without updating reader indexes consistently.
   - When possible, avoid expanding positional reader logic unless the SQL and indexes are updated together.
-- Related-tab loading is slow mainly because counts use simple indexed `COUNT(*)` queries, while tab content currently uses a much heavier path:
-  - read table schema
-  - select all columns
-  - load a `DataTable`
-  - enrich many cells one-by-one via lookup queries
-- Generic per-cell lookup is workable for correctness but not for performance.
-  - The long-term fix is per-tab SQL with joins, or at minimum column-level/batch caching.
+- Query services are also sensitive to SQL column order for the same reason.
+  - Office, Entry, and Status query readers all depend on aligned positional indexes.
 - SQLite integration tests on Windows runners can fail if temporary databases are deleted before pooled connections are fully released.
   - Use `SqliteConnection.ClearAllPools()` plus retry-based cleanup in tests.
-- GitHub Actions runner behavior has been a recurring source of friction.
+- GitHub Actions runner behavior remains a recurring source of friction.
   - `setup-dotnet@v5` may download an extra runtime in addition to the requested SDK.
   - macOS restore/build jobs should avoid restoring the old desktop project.
   - Release jobs that call `gh release create` need a checkout step to provide `.git` context.
-- Headless UI tests currently work best with injected fake services.
-  - The production `PersonBrowserWindow` still guards on `sqlitePath` existence before searching.
-  - If adding more headless tests, either pass a real test database path or create a temporary placeholder file when using fake services.
+- Headless UI tests currently work best with deterministic services or stable fixture data.
+  - When using real SQLite-backed tests, prefer the shared fixture database over ad hoc schema fragments unless the case is very narrow.
 
 ## Recommended Working Rules For Future Changes
 - Treat `Cbdb.App.Desktop/Browser/PersonBrowserWindow.xaml.cs` as a high-risk file for encoding damage.
 - Before editing that file, diff against a known-good commit if any Chinese UI text looks suspicious.
-- For code-field display changes, prefer data-layer lookup fixes in `Cbdb.App.Data/SqlitePersonBrowserService.cs` over UI-layer string hacks.
+- For code-field display changes, prefer data-layer lookup fixes in `Cbdb.App.Data/SqlitePersonBrowserService.cs` or the module-specific query service over UI-layer string hacks.
 - For Basic Information tab work, prefer incremental changes and compile after each small step.
 - For Addresses tab work, do not switch back to a `DataGrid`.
 - Continue using repeated form cards for addresses, and align them gradually with the Access subform instead of collapsing date fields into convenience strings permanently.
 - When adding or changing person-detail SQL, verify both:
   - query column order
   - matching `reader.Get*` indexes
+- When adding or changing query-module SQL, verify the same thing.
 - If Chinese text appears garbled, stop feature work and repair encoding first.
 - Avoid introducing duplicate representations of the same field in both the summary panel and Basic Information tab unless that duplication is explicitly intended.
 - For Avalonia dialog/action buttons, center button text both horizontally and vertically by default.
 - For query filter rows in Avalonia, prefer explicit horizontal flow layouts that match the actual grouping semantics.
-  - Example: person + status on one line, place + subordinate-place option on one line, time filters on one line.
+  - Example: person + code selection on one line, place + subordinate-place option on one line, time filters on one line.
 - For optional filter toggles, disable dependent inputs when the toggle is off instead of leaving them visually active.
 - For reusable picker controls, keep behavior rules inside the control when possible.
   - Example: `DynastyRangePicker` owns its own enable/disable behavior.
-- For Avalonia modal/info windows with potentially long body text, keep action buttons fixed and use a scrollable body area rather than letting content push buttons out of view.
+- For modal picker windows with potentially large result sets, avoid rendering the full universe of options at once.
+  - Limit root/category result sets where appropriate, preserve selected items, and make search explicit.
+- For place selection, remember that the selection semantic is `AddressId`, not raw belongs-to rows.
 - For Avalonia UI regression work, prefer extending `Cbdb.App.Avalonia.Tests` instead of relying on manual visual checks.
 - When adding UI tests, produce both:
-  - structure assertions against named controls
-  - visual artifacts when layout regression risk matters
+  - structure assertions against named controls when possible
+  - behavior assertions for search / selection / history paths that have regressed before
 - Keep headless UI tests deterministic.
   - Prefer fixture-backed fake services for layout and interaction checks.
-  - Use real SQLite-backed tests only when the goal is data integration rather than UI shape.
+  - Use real SQLite-backed tests when the goal is data integration rather than UI shape.
 - For module migration sequencing, prefer modules that can reuse the existing query shell and picker patterns.
-  - `Entry` is currently the best next candidate after `Status`.
 
 ## High-Priority Next Steps
-- Keep refining `Person Browser` and `Status Query` toward closer Access equivalence.
-- Implement the next query module, with `Entry` currently the recommended next target.
+- Keep refining `Person Browser`, `Status Query`, `Entry Query`, and `Office Query` toward closer Access equivalence.
 - Continue improving code-field display to match the Access app more closely.
 - Optimize related-tab loading by replacing the generic per-cell lookup path for the heaviest tabs with dedicated SQL.
-- Continue refining the Associations and Addresses tabs toward closer Access-equivalent layouts and display semantics.
+- Continue refining the Associations and Addresses tabs toward closer Access-equivalent layouts and discrete field semantics.
 - Expand the headless Avalonia UI test suite with more fixture-backed query and module coverage.
+- Keep improving `Office Query`, which is currently the newest real query module.
+  - Add more Access-equivalent fields and workflows.
+  - Add more picker and window behavior coverage.
 - Continue tightening release automation and documentation so packaged builds remain reproducible and self-describing.
