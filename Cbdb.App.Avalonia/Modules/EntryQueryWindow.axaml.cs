@@ -41,6 +41,10 @@ public partial class EntryQueryWindow : Window {
     private TextBlock _lblIndexYearTo = null!;
     private TextBox _txtIndexYearFrom = null!;
     private TextBox _txtIndexYearTo = null!;
+    private CheckBox _chkUseEntryYear = null!;
+    private TextBlock _lblEntryYearTo = null!;
+    private TextBox _txtEntryYearFrom = null!;
+    private TextBox _txtEntryYearTo = null!;
     private DynastyRangePicker _dynastyPicker = null!;
     private Button _btnSelectEntries = null!;
     private Button _btnClearEntries = null!;
@@ -72,8 +76,13 @@ public partial class EntryQueryWindow : Window {
         _chkUseIndexYear.IsChecked = false;
         _txtIndexYearFrom.Text = "-200";
         _txtIndexYearTo.Text = "1911";
+        _chkUseEntryYear.IsChecked = false;
+        _txtEntryYearFrom.Text = "-200";
+        _txtEntryYearTo.Text = "1911";
         _chkUseIndexYear.IsCheckedChanged += ChkUseIndexYear_IsCheckedChanged;
+        _chkUseEntryYear.IsCheckedChanged += ChkUseEntryYear_IsCheckedChanged;
         UpdateIndexYearEnabledState();
+        UpdateEntryYearEnabledState();
 
         ApplyLocalization();
         Opened += EntryQueryWindow_Opened;
@@ -95,6 +104,10 @@ public partial class EntryQueryWindow : Window {
         _lblIndexYearTo = this.FindControl<TextBlock>("LblIndexYearTo") ?? throw new InvalidOperationException("LblIndexYearTo not found.");
         _txtIndexYearFrom = this.FindControl<TextBox>("TxtIndexYearFrom") ?? throw new InvalidOperationException("TxtIndexYearFrom not found.");
         _txtIndexYearTo = this.FindControl<TextBox>("TxtIndexYearTo") ?? throw new InvalidOperationException("TxtIndexYearTo not found.");
+        _chkUseEntryYear = this.FindControl<CheckBox>("ChkUseEntryYear") ?? throw new InvalidOperationException("ChkUseEntryYear not found.");
+        _lblEntryYearTo = this.FindControl<TextBlock>("LblEntryYearTo") ?? throw new InvalidOperationException("LblEntryYearTo not found.");
+        _txtEntryYearFrom = this.FindControl<TextBox>("TxtEntryYearFrom") ?? throw new InvalidOperationException("TxtEntryYearFrom not found.");
+        _txtEntryYearTo = this.FindControl<TextBox>("TxtEntryYearTo") ?? throw new InvalidOperationException("TxtEntryYearTo not found.");
         _dynastyPicker = this.FindControl<DynastyRangePicker>("DynastyPicker") ?? throw new InvalidOperationException("DynastyPicker not found.");
         _btnSelectEntries = this.FindControl<Button>("BtnSelectEntries") ?? throw new InvalidOperationException("BtnSelectEntries not found.");
         _btnClearEntries = this.FindControl<Button>("BtnClearEntries") ?? throw new InvalidOperationException("BtnClearEntries not found.");
@@ -139,6 +152,8 @@ public partial class EntryQueryWindow : Window {
         _chkIncludeSubUnits.Content = T("entry_query.include_subunits");
         _chkUseIndexYear.Content = T("entry_query.use_index_year");
         _lblIndexYearTo.Text = T("entry_query.to");
+        _chkUseEntryYear.Content = T("entry_query.use_entry_year");
+        _lblEntryYearTo.Text = T("entry_query.to");
         _btnSelectEntries.Content = T("entry_query.select_entries");
         _btnClearEntries.Content = T("entry_query.clear_entries");
         _btnRunQuery.Content = T("entry_query.run_query");
@@ -213,6 +228,8 @@ public partial class EntryQueryWindow : Window {
     }
 
     private void ChkUseIndexYear_IsCheckedChanged(object? sender, RoutedEventArgs e) => UpdateIndexYearEnabledState();
+
+    private void ChkUseEntryYear_IsCheckedChanged(object? sender, RoutedEventArgs e) => UpdateEntryYearEnabledState();
 
     private async void BtnSelectEntries_Click(object? sender, RoutedEventArgs e) {
         if (_entryOptions.Count == 0) {
@@ -359,6 +376,9 @@ public partial class EntryQueryWindow : Window {
             UseIndexYearRange: _chkUseIndexYear.IsChecked == true,
             IndexYearFrom: ParseInt(_txtIndexYearFrom.Text, -200),
             IndexYearTo: ParseInt(_txtIndexYearTo.Text, 1911),
+            UseEntryYearRange: _chkUseEntryYear.IsChecked == true,
+            EntryYearFrom: ParseInt(_txtEntryYearFrom.Text, -200),
+            EntryYearTo: ParseInt(_txtEntryYearTo.Text, 1911),
             UseDynastyRange: _dynastyPicker.UseDynastyRange,
             DynastyFrom: selectedFrom,
             DynastyTo: selectedTo
@@ -370,6 +390,13 @@ public partial class EntryQueryWindow : Window {
         _txtIndexYearFrom.IsEnabled = isEnabled;
         _txtIndexYearTo.IsEnabled = isEnabled;
         _lblIndexYearTo.IsEnabled = isEnabled;
+    }
+
+    private void UpdateEntryYearEnabledState() {
+        var isEnabled = _chkUseEntryYear.IsChecked == true;
+        _txtEntryYearFrom.IsEnabled = isEnabled;
+        _txtEntryYearTo.IsEnabled = isEnabled;
+        _lblEntryYearTo.IsEnabled = isEnabled;
     }
 
     private void UpdateSelectedEntriesText() {

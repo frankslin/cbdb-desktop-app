@@ -293,6 +293,10 @@ LEFT JOIN (
 LEFT JOIN PARENTAL_STATUS_CODES psc ON psc.c_parental_status_code = ed.c_parental_status_code
 LEFT JOIN TEXT_CODES src ON src.c_textid = ed.c_source
 WHERE 1 = 1
+  AND (
+        $useEntryYear = 0
+        OR ed.c_year BETWEEN $entryYearFrom AND $entryYearTo
+      )
 """;
 
         if (request.EntryCodes.Count > 0) {
@@ -329,6 +333,9 @@ LIMIT $limit;
         command.Parameters.AddWithValue("$useIndexYear", request.UseIndexYearRange ? 1 : 0);
         command.Parameters.AddWithValue("$indexYearFrom", Math.Min(request.IndexYearFrom, request.IndexYearTo));
         command.Parameters.AddWithValue("$indexYearTo", Math.Max(request.IndexYearFrom, request.IndexYearTo));
+        command.Parameters.AddWithValue("$useEntryYear", request.UseEntryYearRange ? 1 : 0);
+        command.Parameters.AddWithValue("$entryYearFrom", Math.Min(request.EntryYearFrom, request.EntryYearTo));
+        command.Parameters.AddWithValue("$entryYearTo", Math.Max(request.EntryYearFrom, request.EntryYearTo));
         command.Parameters.AddWithValue("$useDynasty", request.UseDynastyRange ? 1 : 0);
         command.Parameters.AddWithValue("$dynastyFromStart", request.DynastyFrom?.StartYear is int fromStart ? fromStart : DBNull.Value);
         command.Parameters.AddWithValue("$dynastyToEnd", request.DynastyTo?.EndYear is int toEnd ? toEnd : DBNull.Value);
