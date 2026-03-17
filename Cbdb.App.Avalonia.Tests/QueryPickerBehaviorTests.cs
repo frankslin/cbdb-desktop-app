@@ -165,6 +165,109 @@ public sealed class QueryPickerBehaviorTests {
     }
 
     [AvaloniaFact]
+    public void OfficeCodePickerWindow_SearchWithoutTypeMapping_FallsBackToRootAndKeepsMatchVisible() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var child = new OfficeTypeNode("31", "Civil Office", "文職", Array.Empty<OfficeTypeNode>(), new[] { "O1" });
+        var root = new OfficeTypeNode(OfficePickerData.RootCode, null, null, new[] { child }, new[] { "O1", "X1" });
+        var pickerData = new OfficePickerData(
+            root,
+            new[] {
+                new OfficeCodeOption("O1", "Prefect", "知州", "Song", "宋", 1),
+                new OfficeCodeOption("X1", "Example Office", "示例官職", "Yuan", "元", 1)
+            },
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
+                ["O1"] = "31"
+            }
+        );
+
+        var window = new OfficeCodePickerWindow(localization, pickerData);
+        try {
+            var txtSearch = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSearch");
+            txtSearch.Text = "Example Office";
+
+            InvokePrivate(window, "RunSearch", false);
+
+            var txtCurrentType = AvaloniaUiTestHelper.FindRequiredControl<TextBlock>(window, "TxtCurrentType");
+            var host = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "OfficeOptionHost");
+
+            Assert.Equal(localization.Get("office_query.category_root"), txtCurrentType.Text);
+            Assert.Contains(host.Children, childControl =>
+                childControl is Border border &&
+                border.Child is Grid grid &&
+                grid.Children.OfType<StackPanel>()
+                    .SelectMany(panel => panel.Children.OfType<TextBlock>())
+                    .Any(text => string.Equals(text.Text, "示例官職 / Example Office", StringComparison.Ordinal)));
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void OfficeCodePickerWindow_RootView_LimitsVisibleOptionsButKeepsSelectedItems() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var options = Enumerable.Range(1, 260)
+            .Select(index => new OfficeCodeOption(
+                $"O{index}",
+                $"Office {index}",
+                $"官職{index}",
+                null,
+                null,
+                index))
+            .ToArray();
+
+        var pickerData = new OfficePickerData(
+            new OfficeTypeNode(OfficePickerData.RootCode, null, null, Array.Empty<OfficeTypeNode>(), options.Select(option => option.Code).ToArray()),
+            options,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+
+        var window = new OfficeCodePickerWindow(localization, pickerData, new[] { "O250" });
+        try {
+            var host = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "OfficeOptionHost");
+
+            Assert.Equal(200, host.Children.Count);
+            Assert.Contains(host.Children, childControl =>
+                childControl is Border border &&
+                border.Child is Grid grid &&
+                grid.Children.OfType<StackPanel>()
+                    .SelectMany(panel => panel.Children.OfType<TextBlock>())
+                    .Any(text => string.Equals(text.Text, "官職250 / Office 250", StringComparison.Ordinal)));
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void OfficeCodePickerWindow_ShowsCodeAndDynastyInSecondaryDetailText() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var pickerData = new OfficePickerData(
+            new OfficeTypeNode(OfficePickerData.RootCode, null, null, Array.Empty<OfficeTypeNode>(), new[] { "O1" }),
+            new[] {
+                new OfficeCodeOption("O1", "Prefect", "知州", "Song", "宋", 12)
+            },
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+
+        var window = new OfficeCodePickerWindow(localization, pickerData);
+        try {
+            var host = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "OfficeOptionHost");
+            var row = Assert.IsType<Border>(Assert.Single(host.Children));
+            var grid = Assert.IsType<Grid>(row.Child);
+            var textPanel = Assert.Single(grid.Children.OfType<StackPanel>());
+            var textBlocks = textPanel.Children.OfType<TextBlock>().ToArray();
+
+            Assert.Equal("知州 / Prefect", textBlocks[0].Text);
+            Assert.Equal("Office Code: O1    宋 / Song    Count: 12", textBlocks[1].Text);
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void PlacePickerWindow_SingleSelectionUpdatesExistingRowState() {
         var localization = new AppLocalizationService();
         localization.SetLanguage(UiLanguage.English);
