@@ -130,6 +130,7 @@
   - place selection
   - optional inclusion of subordinate places
   - index-year filtering
+  - office-year filtering
   - dynasty-range filtering
   - record and person result tabs
   - person-id export
@@ -151,7 +152,8 @@
     - first/last day
     - first/last day ganzhi
     - office address
-    - XY / XY count
+    - place coordinates
+    - people-at-place count
     - source / pages / notes
 - Reusable query-side picker components now exist for:
   - dynasty ranges
@@ -165,6 +167,7 @@
   - search result scroll-into-view
   - current-category summary text that can collapse to a category label
   - whole-row toggle on the right-side selection list
+  - `Office` now also has test coverage for category-summary behavior in the main query window
 
 ## Place and Dynasty Selection
 - Dynasty ordering rules currently include:
@@ -182,6 +185,8 @@
 - Place display rows currently include:
   - main line in `中文 / English (ID)` form
   - detail line with address type, time range, belongs-to context, and XY when available
+- Query-result tables no longer label address-level person counts as `XY`.
+  - The user-facing label is now `People at Place / 同地點人物數 / 同地点人物数`.
 
 ## Testing and Fixtures
 - A headless Avalonia UI test harness exists in `Cbdb.App.Avalonia.Tests`.
@@ -197,6 +202,8 @@
   - entry query service
   - office query service
   - picker behavior tests for status / entry / office
+  - office-year filtering in office query
+  - office query window category-summary behavior
   - database-index prompt service behavior
 - Query-result-to-Person-Browser history behavior now has automated coverage.
 
@@ -227,6 +234,7 @@
 - Entry Query still needs more Access-equivalent field coverage and workflow polish.
 - Office Query still needs more Access-equivalent field coverage and workflow polish.
   - The picker is now usable, but the full Access office-query workflow is not complete.
+  - Office and people place workflows are still simplified compared with Access.
   - GIS / KML / Neo4j style export paths are not implemented.
   - Some richer scratch-table-derived output fields are still missing.
 - Query-module implementation quality is now uneven:
@@ -298,5 +306,6 @@
 - Expand the headless Avalonia UI test suite with more fixture-backed query and module coverage.
 - Keep improving `Office Query`, which is currently the newest real query module.
   - Add more Access-equivalent fields and workflows.
+  - Continue aligning office-place / people-place semantics with Access.
   - Add more picker and window behavior coverage.
 - Continue tightening release automation and documentation so packaged builds remain reproducible and self-describing.

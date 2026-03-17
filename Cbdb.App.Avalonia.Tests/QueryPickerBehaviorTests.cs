@@ -87,6 +87,43 @@ public sealed class QueryPickerBehaviorTests {
     }
 
     [AvaloniaFact]
+    public void OfficeQueryWindow_ShowsCategorySummary_WhenSelectionMatchesType() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var child = new OfficeTypeNode("31", "Civil Office", "文職", Array.Empty<OfficeTypeNode>(), new[] { "O1", "O2" });
+        var extra = new OfficeTypeNode("32", "Military Office", "武職", Array.Empty<OfficeTypeNode>(), new[] { "O3" });
+        var root = new OfficeTypeNode(OfficePickerData.RootCode, null, null, new[] { child, extra }, new[] { "O1", "O2", "O3" });
+        var pickerData = new OfficePickerData(
+            root,
+            new[] {
+                new OfficeCodeOption("O1", "Prefect", "知州", "Song", "宋", 1),
+                new OfficeCodeOption("O2", "Vice Prefect", "通判", "Song", "宋", 1),
+                new OfficeCodeOption("O3", "Commander", "都統", "Song", "宋", 1)
+            },
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
+                ["O1"] = "31",
+                ["O2"] = "31",
+                ["O3"] = "32"
+            }
+        );
+
+        var window = new OfficeQueryWindow(string.Empty, localization);
+        try {
+            SetPrivateField(window, "_officePickerData", pickerData);
+            SetPrivateField(window, "_officeOptions", pickerData.AllOfficeCodes);
+            SetPrivateField(window, "_selectedOfficeCodes", new List<string> { "O1", "O2" });
+
+            InvokePrivate(window, "UpdateSelectedOfficesText");
+
+            var textBox = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedOffices");
+            Assert.Equal("文職 / Civil Office", textBox.Text);
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void EntryCodePickerWindow_SearchWithoutTypeMapping_FallsBackToRootAndKeepsMatchVisible() {
         var localization = new AppLocalizationService();
         localization.SetLanguage(UiLanguage.English);

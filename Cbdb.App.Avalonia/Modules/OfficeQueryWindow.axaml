@@ -87,6 +87,12 @@
               <TextBlock x:Name="LblIndexYearTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
               <TextBox x:Name="TxtIndexYearTo" Grid.Column="2" Watermark="1911" />
             </Grid>
+            <CheckBox x:Name="ChkUseOfficeYear" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <Grid Width="210" Margin="0,0,12,0" ColumnDefinitions="*,Auto,*">
+              <TextBox x:Name="TxtOfficeYearFrom" Watermark="-200" />
+              <TextBlock x:Name="LblOfficeYearTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
+              <TextBox x:Name="TxtOfficeYearTo" Grid.Column="2" Watermark="1911" />
+            </Grid>
             <controls:DynastyRangePicker x:Name="DynastyPicker" />
           </WrapPanel>
         </Grid>
@@ -104,8 +110,9 @@
     <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
       <TabControl>
         <TabItem x:Name="TabRecords">
-          <d:DataGrid x:Name="GridRecords" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" CanUserReorderColumns="False" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <d:DataGrid x:Name="GridRecords" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" CanUserReorderColumns="False" ScrollViewer.HorizontalScrollBarVisibility="Auto">
             <d:DataGrid.Columns>
+              <d:DataGridTextColumn Binding="{Binding PostingId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding PersonId}" Width="76" />
               <d:DataGridTextColumn Binding="{Binding NameChn}" Width="120" />
               <d:DataGridTextColumn Binding="{Binding Name}" Width="150" />
@@ -114,7 +121,6 @@
               <d:DataGridTextColumn Binding="{Binding Sex}" Width="64" />
               <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="100" />
               <d:DataGridTextColumn Binding="{Binding IndexAddressType}" Width="140" />
-              <d:DataGridTextColumn Binding="{Binding PostingId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding Sequence}" Width="80" />
               <d:DataGridTextColumn Binding="{Binding Office}" Width="220" />
               <d:DataGridTextColumn Binding="{Binding OfficeCode}" Width="90" />

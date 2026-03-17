@@ -305,6 +305,13 @@ LEFT JOIN (
 ) xy ON xy.c_addr_id = pta.c_addr_id
 LEFT JOIN TEXT_CODES src ON src.c_textid = pto.c_source
 WHERE 1 = 1
+  AND (
+        $useOfficeYear = 0
+        OR (
+            ($officeYearFrom IS NULL OR pto.c_firstyear >= $officeYearFrom)
+            AND ($officeYearTo IS NULL OR pto.c_lastyear <= $officeYearTo)
+        )
+      )
 """;
 
         if (request.OfficeCodes.Count > 0) {
@@ -341,6 +348,9 @@ LIMIT $limit;
         command.Parameters.AddWithValue("$useIndexYear", request.UseIndexYearRange ? 1 : 0);
         command.Parameters.AddWithValue("$indexYearFrom", Math.Min(request.IndexYearFrom, request.IndexYearTo));
         command.Parameters.AddWithValue("$indexYearTo", Math.Max(request.IndexYearFrom, request.IndexYearTo));
+        command.Parameters.AddWithValue("$useOfficeYear", request.UseOfficeYearRange ? 1 : 0);
+        command.Parameters.AddWithValue("$officeYearFrom", request.UseOfficeYearRange ? Math.Min(request.OfficeYearFrom, request.OfficeYearTo) : DBNull.Value);
+        command.Parameters.AddWithValue("$officeYearTo", request.UseOfficeYearRange ? Math.Max(request.OfficeYearFrom, request.OfficeYearTo) : DBNull.Value);
         command.Parameters.AddWithValue("$useDynasty", request.UseDynastyRange ? 1 : 0);
         command.Parameters.AddWithValue("$dynastyFromStart", request.DynastyFrom?.StartYear is int fromStart ? fromStart : DBNull.Value);
         command.Parameters.AddWithValue("$dynastyToEnd", request.DynastyTo?.EndYear is int toEnd ? toEnd : DBNull.Value);

@@ -41,6 +41,10 @@ public partial class OfficeQueryWindow : Window {
     private TextBlock _lblIndexYearTo = null!;
     private TextBox _txtIndexYearFrom = null!;
     private TextBox _txtIndexYearTo = null!;
+    private CheckBox _chkUseOfficeYear = null!;
+    private TextBlock _lblOfficeYearTo = null!;
+    private TextBox _txtOfficeYearFrom = null!;
+    private TextBox _txtOfficeYearTo = null!;
     private DynastyRangePicker _dynastyPicker = null!;
     private Button _btnSelectOffices = null!;
     private Button _btnClearOffices = null!;
@@ -72,8 +76,13 @@ public partial class OfficeQueryWindow : Window {
         _chkUseIndexYear.IsChecked = false;
         _txtIndexYearFrom.Text = "-200";
         _txtIndexYearTo.Text = "1911";
+        _chkUseOfficeYear.IsChecked = false;
+        _txtOfficeYearFrom.Text = "-200";
+        _txtOfficeYearTo.Text = "1911";
         _chkUseIndexYear.IsCheckedChanged += ChkUseIndexYear_IsCheckedChanged;
+        _chkUseOfficeYear.IsCheckedChanged += ChkUseOfficeYear_IsCheckedChanged;
         UpdateIndexYearEnabledState();
+        UpdateOfficeYearEnabledState();
 
         ApplyLocalization();
         Opened += OfficeQueryWindow_Opened;
@@ -95,6 +104,10 @@ public partial class OfficeQueryWindow : Window {
         _lblIndexYearTo = this.FindControl<TextBlock>("LblIndexYearTo") ?? throw new InvalidOperationException("LblIndexYearTo not found.");
         _txtIndexYearFrom = this.FindControl<TextBox>("TxtIndexYearFrom") ?? throw new InvalidOperationException("TxtIndexYearFrom not found.");
         _txtIndexYearTo = this.FindControl<TextBox>("TxtIndexYearTo") ?? throw new InvalidOperationException("TxtIndexYearTo not found.");
+        _chkUseOfficeYear = this.FindControl<CheckBox>("ChkUseOfficeYear") ?? throw new InvalidOperationException("ChkUseOfficeYear not found.");
+        _lblOfficeYearTo = this.FindControl<TextBlock>("LblOfficeYearTo") ?? throw new InvalidOperationException("LblOfficeYearTo not found.");
+        _txtOfficeYearFrom = this.FindControl<TextBox>("TxtOfficeYearFrom") ?? throw new InvalidOperationException("TxtOfficeYearFrom not found.");
+        _txtOfficeYearTo = this.FindControl<TextBox>("TxtOfficeYearTo") ?? throw new InvalidOperationException("TxtOfficeYearTo not found.");
         _dynastyPicker = this.FindControl<DynastyRangePicker>("DynastyPicker") ?? throw new InvalidOperationException("DynastyPicker not found.");
         _btnSelectOffices = this.FindControl<Button>("BtnSelectOffices") ?? throw new InvalidOperationException("BtnSelectOffices not found.");
         _btnClearOffices = this.FindControl<Button>("BtnClearOffices") ?? throw new InvalidOperationException("BtnClearOffices not found.");
@@ -139,6 +152,8 @@ public partial class OfficeQueryWindow : Window {
         _chkIncludeSubUnits.Content = T("office_query.include_subunits");
         _chkUseIndexYear.Content = T("office_query.use_index_year");
         _lblIndexYearTo.Text = T("office_query.to");
+        _chkUseOfficeYear.Content = T("office_query.use_office_year");
+        _lblOfficeYearTo.Text = T("office_query.to");
         _btnSelectOffices.Content = T("office_query.select_offices");
         _btnClearOffices.Content = T("office_query.clear_offices");
         _btnRunQuery.Content = T("office_query.run_query");
@@ -151,15 +166,15 @@ public partial class OfficeQueryWindow : Window {
         _dynastyPicker.Configure(_localizationService);
 
         var rc = _gridRecords.Columns;
-        ((DataGridTextColumn)rc[0]).Header = T("browser.grid_person_id");
-        ((DataGridTextColumn)rc[1]).Header = T("browser.grid_name_chn");
-        ((DataGridTextColumn)rc[2]).Header = T("browser.name");
-        ((DataGridTextColumn)rc[3]).Header = T("browser.grid_index_year");
-        ((DataGridTextColumn)rc[4]).Header = T("browser.index_year_type");
-        ((DataGridTextColumn)rc[5]).Header = T("browser.gender");
-        ((DataGridTextColumn)rc[6]).Header = T("browser.dynasty");
-        ((DataGridTextColumn)rc[7]).Header = T("browser.index_address_type");
-        ((DataGridTextColumn)rc[8]).Header = T("browser.posting_id");
+        ((DataGridTextColumn)rc[0]).Header = T("browser.posting_id");
+        ((DataGridTextColumn)rc[1]).Header = T("browser.grid_person_id");
+        ((DataGridTextColumn)rc[2]).Header = T("browser.grid_name_chn");
+        ((DataGridTextColumn)rc[3]).Header = T("browser.name");
+        ((DataGridTextColumn)rc[4]).Header = T("browser.grid_index_year");
+        ((DataGridTextColumn)rc[5]).Header = T("browser.index_year_type");
+        ((DataGridTextColumn)rc[6]).Header = T("browser.gender");
+        ((DataGridTextColumn)rc[7]).Header = T("browser.dynasty");
+        ((DataGridTextColumn)rc[8]).Header = T("browser.index_address_type");
         ((DataGridTextColumn)rc[9]).Header = T("browser.address_sequence");
         ((DataGridTextColumn)rc[10]).Header = T("browser.posting_office");
         ((DataGridTextColumn)rc[11]).Header = T("office_query.office_code");
@@ -187,7 +202,7 @@ public partial class OfficeQueryWindow : Window {
         ((DataGridTextColumn)rc[33]).Header = T("browser.posting_addresses");
         ((DataGridTextColumn)rc[34]).Header = "X";
         ((DataGridTextColumn)rc[35]).Header = "Y";
-        ((DataGridTextColumn)rc[36]).Header = "XY";
+        ((DataGridTextColumn)rc[36]).Header = T("query.people_at_place");
         ((DataGridTextColumn)rc[37]).Header = T("browser.source_title");
         ((DataGridTextColumn)rc[38]).Header = T("browser.address_pages");
         ((DataGridTextColumn)rc[39]).Header = T("browser.notes");
@@ -207,7 +222,7 @@ public partial class OfficeQueryWindow : Window {
         ((DataGridTextColumn)pc[11]).Header = T("browser.posting_addresses");
         ((DataGridTextColumn)pc[12]).Header = "X";
         ((DataGridTextColumn)pc[13]).Header = "Y";
-        ((DataGridTextColumn)pc[14]).Header = "XY";
+        ((DataGridTextColumn)pc[14]).Header = T("query.people_at_place");
         ((DataGridTextColumn)pc[15]).Header = T("office_query.posting_count");
 
         UpdateSelectedOfficesText();
@@ -220,6 +235,8 @@ public partial class OfficeQueryWindow : Window {
     }
 
     private void ChkUseIndexYear_IsCheckedChanged(object? sender, RoutedEventArgs e) => UpdateIndexYearEnabledState();
+
+    private void ChkUseOfficeYear_IsCheckedChanged(object? sender, RoutedEventArgs e) => UpdateOfficeYearEnabledState();
 
     private async void BtnSelectOffices_Click(object? sender, RoutedEventArgs e) {
         if (_officeOptions.Count == 0) {
@@ -366,6 +383,9 @@ public partial class OfficeQueryWindow : Window {
             UseIndexYearRange: _chkUseIndexYear.IsChecked == true,
             IndexYearFrom: ParseInt(_txtIndexYearFrom.Text, -200),
             IndexYearTo: ParseInt(_txtIndexYearTo.Text, 1911),
+            UseOfficeYearRange: _chkUseOfficeYear.IsChecked == true,
+            OfficeYearFrom: ParseInt(_txtOfficeYearFrom.Text, -200),
+            OfficeYearTo: ParseInt(_txtOfficeYearTo.Text, 1911),
             UseDynastyRange: _dynastyPicker.UseDynastyRange,
             DynastyFrom: selectedFrom,
             DynastyTo: selectedTo
@@ -377,6 +397,13 @@ public partial class OfficeQueryWindow : Window {
         _txtIndexYearFrom.IsEnabled = isEnabled;
         _txtIndexYearTo.IsEnabled = isEnabled;
         _lblIndexYearTo.IsEnabled = isEnabled;
+    }
+
+    private void UpdateOfficeYearEnabledState() {
+        var isEnabled = _chkUseOfficeYear.IsChecked == true;
+        _txtOfficeYearFrom.IsEnabled = isEnabled;
+        _txtOfficeYearTo.IsEnabled = isEnabled;
+        _lblOfficeYearTo.IsEnabled = isEnabled;
     }
 
     private void UpdateSelectedOfficesText() {

@@ -177,7 +177,7 @@ public partial class EntryQueryWindow : Window {
         ((DataGridTextColumn)rc[23]).Header = T("browser.entry_address");
         ((DataGridTextColumn)rc[24]).Header = "X";
         ((DataGridTextColumn)rc[25]).Header = "Y";
-        ((DataGridTextColumn)rc[26]).Header = "XY";
+        ((DataGridTextColumn)rc[26]).Header = T("query.people_at_place");
         ((DataGridTextColumn)rc[27]).Header = T("browser.entry_parental_status");
         ((DataGridTextColumn)rc[28]).Header = T("browser.entry_attempt_count");
         ((DataGridTextColumn)rc[29]).Header = T("browser.source_title");
@@ -200,7 +200,7 @@ public partial class EntryQueryWindow : Window {
         ((DataGridTextColumn)pc[11]).Header = T("browser.entry_address");
         ((DataGridTextColumn)pc[12]).Header = "X";
         ((DataGridTextColumn)pc[13]).Header = "Y";
-        ((DataGridTextColumn)pc[14]).Header = "XY";
+        ((DataGridTextColumn)pc[14]).Header = T("query.people_at_place");
         ((DataGridTextColumn)pc[15]).Header = T("entry_query.entry_count");
 
         UpdateSelectedEntriesText();

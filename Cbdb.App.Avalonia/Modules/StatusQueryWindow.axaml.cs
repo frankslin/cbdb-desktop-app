@@ -191,7 +191,7 @@ public partial class StatusQueryWindow : Window {
         ((DataGridTextColumn)_gridPeople.Columns[9]).Header = T("browser.index_address_type");
         ((DataGridTextColumn)_gridPeople.Columns[10]).Header = "X";
         ((DataGridTextColumn)_gridPeople.Columns[11]).Header = "Y";
-        ((DataGridTextColumn)_gridPeople.Columns[12]).Header = "XY";
+        ((DataGridTextColumn)_gridPeople.Columns[12]).Header = T("query.people_at_place");
         ((DataGridTextColumn)_gridPeople.Columns[13]).Header = T("status_query.status_count");
 
         UpdateSelectedStatusesText();
