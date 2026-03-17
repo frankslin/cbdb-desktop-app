@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Interactivity;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Avalonia.Modules;
 using Cbdb.App.Avalonia.Tests.TestInfrastructure;
@@ -268,6 +269,78 @@ public sealed class QueryPickerBehaviorTests {
     }
 
     [AvaloniaFact]
+    public void OfficeCodePickerWindow_CollapsedTreeNode_UsesPlaceholderUntilExpanded() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var grandChild = new OfficeTypeNode("311", "Circuit Office", "路級官職", Array.Empty<OfficeTypeNode>(), new[] { "O2" });
+        var child = new OfficeTypeNode("31", "Civil Office", "文職", new[] { grandChild }, new[] { "O1", "O2" });
+        var root = new OfficeTypeNode(OfficePickerData.RootCode, null, null, new[] { child }, new[] { "O1", "O2" });
+        var pickerData = new OfficePickerData(
+            root,
+            new[] {
+                new OfficeCodeOption("O1", "Prefect", "知州", null, null, 1),
+                new OfficeCodeOption("O2", "Circuit Intendant", "轉運使", null, null, 1)
+            },
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
+                ["O1"] = "31",
+                ["O2"] = "311"
+            }
+        );
+
+        var window = new OfficeCodePickerWindow(localization, pickerData);
+        try {
+            var childItem = InvokePrivate<TreeViewItem>(window, "BuildTreeItem", child);
+            var collapsedItems = Assert.IsAssignableFrom<IEnumerable<object>>(childItem.ItemsSource);
+            Assert.Single(collapsedItems);
+            Assert.DoesNotContain(collapsedItems, item => item is TreeViewItem);
+
+            InvokePrivate(window, "TreeItem_Expanded", childItem, new RoutedEventArgs());
+
+            var expandedItems = Assert.IsAssignableFrom<IEnumerable<object>>(childItem.ItemsSource);
+            Assert.Contains(expandedItems, item => item is TreeViewItem treeItem && treeItem.Tag is OfficeTypeNode node && node.Code == "311");
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void OfficeCodePickerWindow_CategoryView_LimitsVisibleOptionsButKeepsSelectedItems() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var officeCodes = Enumerable.Range(1, 360).Select(index => $"O{index}").ToArray();
+        var child = new OfficeTypeNode("31", "Civil Office", "文職", Array.Empty<OfficeTypeNode>(), officeCodes);
+        var root = new OfficeTypeNode(OfficePickerData.RootCode, null, null, new[] { child }, officeCodes);
+        var options = officeCodes
+            .Select((code, index) => new OfficeCodeOption(code, $"Office {index + 1}", $"官職{index + 1}", null, null, index + 1))
+            .ToArray();
+
+        var pickerData = new OfficePickerData(
+            root,
+            options,
+            officeCodes.ToDictionary(code => code, _ => "31", StringComparer.OrdinalIgnoreCase));
+
+        var window = new OfficeCodePickerWindow(localization, pickerData, new[] { "O350" });
+        try {
+            SetPrivateField(window, "_activeTypeNode", child);
+            InvokePrivate(window, "RenderOptions");
+
+            var host = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "OfficeOptionHost");
+
+            Assert.Equal(300, host.Children.Count);
+            Assert.Contains(host.Children, childControl =>
+                childControl is Border border &&
+                border.Child is Grid grid &&
+                grid.Children.OfType<StackPanel>()
+                    .SelectMany(panel => panel.Children.OfType<TextBlock>())
+                    .Any(text => string.Equals(text.Text, "官職350 / Office 350", StringComparison.Ordinal)));
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void PlacePickerWindow_SingleSelectionUpdatesExistingRowState() {
         var localization = new AppLocalizationService();
         localization.SetLanguage(UiLanguage.English);
@@ -329,5 +402,11 @@ public sealed class QueryPickerBehaviorTests {
         var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(method);
         method!.Invoke(target, args);
+    }
+
+    private static T InvokePrivate<T>(object target, string methodName, params object?[] args) {
+        var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+        return Assert.IsType<T>(method!.Invoke(target, args));
     }
 }
