@@ -1,0 +1,174 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.Modules.OfficeQueryWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Cbdb.App.Avalonia.Controls"
+    xmlns:d="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
+    Title="Query Office"
+    Width="1380"
+    Height="840"
+    MinWidth="1180"
+    MinHeight="720"
+    Background="#E5E5E5">
+  <Window.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="6,4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="Padding" Value="12,4" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TabControl">
+      <Setter Property="Background" Value="#E9E9E9" />
+    </Style>
+    <Style Selector="TabControl > TabItem">
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="Margin" Value="0,0,2,0" />
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="FontSize" Value="{DynamicResource AppTabFontSize}" />
+      <Setter Property="Background" Value="#D7D7D7" />
+      <Setter Property="BorderBrush" Value="#9F9F9F" />
+      <Setter Property="BorderThickness" Value="1,1,1,0" />
+      <Setter Property="Foreground" Value="#222222" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TabControl > TabItem:pointerover">
+      <Setter Property="Background" Value="#E5E5E5" />
+    </Style>
+    <Style Selector="TabControl > TabItem:selected">
+      <Setter Property="Background" Value="#F7F7F7" />
+      <Setter Property="BorderBrush" Value="#868686" />
+      <Setter Property="Foreground" Value="#000000" />
+    </Style>
+    <Style Selector="TabControl > ContentPresenter#PART_SelectedContentHost">
+      <Setter Property="Background" Value="#F7F7F7" />
+      <Setter Property="BorderBrush" Value="#868686" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="10" />
+    </Style>
+  </Window.Styles>
+
+  <Grid Margin="10" RowDefinitions="Auto,*,Auto">
+    <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <Grid RowDefinitions="Auto,Auto">
+        <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto">
+          <WrapPanel Grid.Row="0" Margin="0,0,0,8" VerticalAlignment="Center" ItemHeight="32">
+            <TextBlock x:Name="LblPersonKeyword" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtPersonKeyword" Width="280" Margin="0,0,12,0" />
+            <TextBlock x:Name="LblOfficeSelection" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtSelectedOffices" Width="420" Margin="0,0,12,0" IsReadOnly="True" />
+            <Button x:Name="BtnSelectOffices" Margin="0,0,8,0" Click="BtnSelectOffices_Click" />
+            <Button x:Name="BtnClearOffices" Click="BtnClearOffices_Click" />
+          </WrapPanel>
+
+          <WrapPanel Grid.Row="1" Margin="0,0,0,8" VerticalAlignment="Center" ItemHeight="32">
+            <TextBlock x:Name="LblPlaceSelection" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtSelectedPlaces" Width="760" Margin="0,0,12,0" IsReadOnly="True" />
+            <Button x:Name="BtnSelectPlaces" Margin="0,0,8,0" Click="BtnSelectPlaces_Click" />
+            <Button x:Name="BtnClearPlaces" Margin="0,0,12,0" Click="BtnClearPlaces_Click" />
+            <CheckBox x:Name="ChkIncludeSubUnits" VerticalAlignment="Center" />
+          </WrapPanel>
+
+          <WrapPanel Grid.Row="2" VerticalAlignment="Center" ItemHeight="32">
+            <CheckBox x:Name="ChkUseIndexYear" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <Grid Width="210" Margin="0,0,12,0" ColumnDefinitions="*,Auto,*">
+              <TextBox x:Name="TxtIndexYearFrom" Watermark="-200" />
+              <TextBlock x:Name="LblIndexYearTo" Grid.Column="1" Margin="8,6" VerticalAlignment="Center" />
+              <TextBox x:Name="TxtIndexYearTo" Grid.Column="2" Watermark="1911" />
+            </Grid>
+            <controls:DynastyRangePicker x:Name="DynastyPicker" />
+          </WrapPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,10,0,0" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+          <Button x:Name="BtnRunQuery" Grid.Column="0" Margin="0,0,8,0" Click="BtnRunQuery_Click" />
+          <Button x:Name="BtnSavePersonIds" Grid.Column="1" Margin="0,0,8,0" Click="BtnSavePersonIds_Click" />
+          <Button x:Name="BtnSaveOfficeCodes" Grid.Column="2" Margin="0,0,8,0" Click="BtnSaveOfficeCodes_Click" />
+          <Button x:Name="BtnOpenInBrowser" Grid.Column="3" Margin="0,0,8,0" Click="BtnOpenInBrowser_Click" />
+          <Button x:Name="BtnClose" Grid.Column="4" Click="BtnClose_Click" />
+        </Grid>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
+      <TabControl>
+        <TabItem x:Name="TabRecords">
+          <d:DataGrid x:Name="GridRecords" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" CanUserReorderColumns="False" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <d:DataGrid.Columns>
+              <d:DataGridTextColumn Binding="{Binding PersonId}" Width="76" />
+              <d:DataGridTextColumn Binding="{Binding NameChn}" Width="120" />
+              <d:DataGridTextColumn Binding="{Binding Name}" Width="150" />
+              <d:DataGridTextColumn Binding="{Binding IndexYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding IndexYearType}" Width="110" />
+              <d:DataGridTextColumn Binding="{Binding Sex}" Width="64" />
+              <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="100" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddressType}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding PostingId}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding Sequence}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding Office}" Width="220" />
+              <d:DataGridTextColumn Binding="{Binding OfficeCode}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding AppointmentType}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding AssumeOffice}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding Category}" Width="130" />
+              <d:DataGridTextColumn Binding="{Binding FirstYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstNianhao}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding FirstNianhaoYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstRange}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastNianhao}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding LastNianhaoYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastRange}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding Institution}" Width="160" />
+              <d:DataGridTextColumn Binding="{Binding OfficeAddressId}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding OfficeAddress}" Width="200" />
+              <d:DataGridTextColumn Binding="{Binding OfficeXCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding OfficeYCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding OfficeXyCount}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding Source}" Width="160" />
+              <d:DataGridTextColumn Binding="{Binding Pages}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding Notes}" Width="220" />
+            </d:DataGrid.Columns>
+          </d:DataGrid>
+        </TabItem>
+
+        <TabItem x:Name="TabPeople">
+          <d:DataGrid x:Name="GridPeople" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" CanUserReorderColumns="False" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <d:DataGrid.Columns>
+              <d:DataGridTextColumn Binding="{Binding PersonId}" Width="76" />
+              <d:DataGridTextColumn Binding="{Binding NameChn}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding Name}" Width="170" />
+              <d:DataGridTextColumn Binding="{Binding IndexYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding IndexYearType}" Width="110" />
+              <d:DataGridTextColumn Binding="{Binding Sex}" Width="64" />
+              <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="110" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddressId}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddress}" Width="220" />
+              <d:DataGridTextColumn Binding="{Binding IndexAddressType}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding OfficeAddressId}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding OfficeAddress}" Width="200" />
+              <d:DataGridTextColumn Binding="{Binding OfficeXCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding OfficeYCoord}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding XyCount}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding PostingCount}" Width="90" />
+            </d:DataGrid.Columns>
+          </d:DataGrid>
+        </TabItem>
+      </TabControl>
+    </Border>
+
+    <Border Grid.Row="2" BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <TextBlock x:Name="TxtStatusBar" Foreground="#444" />
+    </Border>
+  </Grid>
+</Window>

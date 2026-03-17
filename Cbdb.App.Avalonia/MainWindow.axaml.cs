@@ -63,6 +63,7 @@ public partial class MainWindow : Window {
     private string _sqlitePath = string.Empty;
     private PersonBrowserWindow? _personBrowserWindow;
     private EntryQueryWindow? _entryQueryWindow;
+    private OfficeQueryWindow? _officeQueryWindow;
     private StatusQueryWindow? _statusQueryWindow;
 
     internal AppLocalizationService LocalizationService => _localizationService;
@@ -250,6 +251,37 @@ public partial class MainWindow : Window {
             window.Show(this);
             _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
             _txtOutput.Text = T("msg.entry_query_opened");
+            return;
+        }
+
+        if (key == "module.office") {
+            if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
+                _txtStatus.Text = T("status.failed");
+                _txtOutput.Text = T("msg.sqlite_missing");
+                return;
+            }
+
+            if (_officeQueryWindow is { } existingWindow) {
+                if (existingWindow.WindowState == WindowState.Minimized) {
+                    existingWindow.WindowState = WindowState.Normal;
+                }
+
+                existingWindow.Activate();
+                _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+                _txtOutput.Text = T("msg.office_query_opened");
+                return;
+            }
+
+            var window = new OfficeQueryWindow(_sqlitePath, _localizationService);
+            _officeQueryWindow = window;
+            window.Closed += (_, _) => {
+                if (ReferenceEquals(_officeQueryWindow, window)) {
+                    _officeQueryWindow = null;
+                }
+            };
+            window.Show(this);
+            _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+            _txtOutput.Text = T("msg.office_query_opened");
             return;
         }
 

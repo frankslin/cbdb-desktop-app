@@ -1,0 +1,72 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.Modules.OfficeCodePickerWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Select Office"
+    Width="980"
+    Height="680"
+    MinWidth="760"
+    MinHeight="540"
+    Background="#E5E5E5">
+  <Window.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="6,4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="Padding" Value="12,4" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TreeView">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="TreeViewItem">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
+    </Style>
+  </Window.Styles>
+
+  <Grid Margin="10" RowDefinitions="Auto,*,Auto">
+    <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBox x:Name="TxtSearch" KeyDown="TxtSearch_KeyDown" />
+        <Button x:Name="BtnFind" Grid.Column="1" Margin="8,0,0,0" Click="BtnFind_Click" />
+        <Button x:Name="BtnFindNext" Grid.Column="2" Margin="8,0,0,0" Click="BtnFindNext_Click" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" Margin="0,8,0,8" ColumnDefinitions="300,10,*">
+      <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock x:Name="TxtCategoryHeader" FontSize="{DynamicResource AppTabFontSize}" FontWeight="Bold" />
+          <TreeView x:Name="TypeTreeView" Grid.Row="1" Margin="0,10,0,0" />
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="2" BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
+        <Grid RowDefinitions="Auto,Auto,*">
+          <Grid ColumnDefinitions="Auto,Auto,*">
+            <Button x:Name="BtnSelectVisible" Click="BtnSelectVisible_Click" />
+            <Button x:Name="BtnClearVisible" Grid.Column="1" Margin="8,0,0,0" Click="BtnClearVisible_Click" />
+            <TextBlock x:Name="TxtCurrentType" Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" FontWeight="Bold" />
+          </Grid>
+          <TextBlock x:Name="TxtSummary" Grid.Row="1" Margin="0,10,0,0" Foreground="#444" />
+          <ScrollViewer Grid.Row="2" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="OfficeOptionHost" Spacing="6" />
+          </ScrollViewer>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="2" BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+        <TextBlock x:Name="TxtSelectionHint" VerticalAlignment="Center" Foreground="#555" />
+        <Button x:Name="BtnClearAll" Grid.Column="1" Margin="8,0,0,0" Click="BtnClearAll_Click" />
+        <Button x:Name="BtnCancel" Grid.Column="2" Margin="8,0,0,0" Click="BtnCancel_Click" />
+        <Button x:Name="BtnApply" Grid.Column="3" Margin="8,0,0,0" Click="BtnApply_Click" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>
