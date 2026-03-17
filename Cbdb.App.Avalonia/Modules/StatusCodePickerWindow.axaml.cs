@@ -1,17 +1,21 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Core;
 
 namespace Cbdb.App.Avalonia.Modules;
 
 public partial class StatusCodePickerWindow : Window {
+    private static readonly object UnloadedChildPlaceholder = new();
+
     private readonly AppLocalizationService _localizationService;
     private readonly StatusPickerData _pickerData;
     private readonly List<StatusCodeOption> _allOptions;
@@ -63,9 +67,6 @@ public partial class StatusCodePickerWindow : Window {
             ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             : new HashSet<string>(selectedCodes, StringComparer.OrdinalIgnoreCase);
         _activeTypeNode = _pickerData.Root;
-        foreach (var node in _pickerData.Root.Children.Where(node => node.Children.Count > 0)) {
-            _expandedTypeCodes.Add(node.Code);
-        }
 
         InitializeComponent();
         InitializeControls();
@@ -197,9 +198,14 @@ public partial class StatusCodePickerWindow : Window {
 
         item.Expanded += TreeItem_Expanded;
         item.Collapsed += TreeItem_Collapsed;
+        item.PointerReleased += TreeItem_PointerReleased;
 
         if (node.Children.Count > 0) {
-            item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+            if (_expandedTypeCodes.Contains(node.Code) || IsDescendantOfActiveNode(node)) {
+                item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+            } else {
+                item.ItemsSource = new[] { UnloadedChildPlaceholder };
+            }
         }
 
         return item;
@@ -222,8 +228,11 @@ public partial class StatusCodePickerWindow : Window {
     }
 
     private void TreeItem_Expanded(object? sender, RoutedEventArgs e) {
-        if (sender is TreeViewItem { Tag: StatusTypeNode node }) {
+        if (sender is TreeViewItem item && item.Tag is StatusTypeNode node) {
             _expandedTypeCodes.Add(node.Code);
+            if (node.Children.Count > 0) {
+                item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+            }
         }
     }
 
@@ -231,6 +240,36 @@ public partial class StatusCodePickerWindow : Window {
         if (sender is TreeViewItem { Tag: StatusTypeNode node }) {
             _expandedTypeCodes.Remove(node.Code);
         }
+    }
+
+    private void TreeItem_PointerReleased(object? sender, PointerReleasedEventArgs e) {
+        if (sender is not TreeViewItem item || item.Tag is not StatusTypeNode node || node.Children.Count == 0) {
+            return;
+        }
+
+        if (e.Source is not Visual sourceVisual) {
+            return;
+        }
+
+        var sourceTreeItem = sourceVisual.FindAncestorOfType<TreeViewItem>() ?? sourceVisual as TreeViewItem;
+        if (!ReferenceEquals(sourceTreeItem, item)) {
+            return;
+        }
+
+        if (e.Source is CheckBox or ToggleButton) {
+            return;
+        }
+
+        if (item.IsExpanded) {
+            item.IsExpanded = false;
+            _expandedTypeCodes.Remove(node.Code);
+        } else {
+            _expandedTypeCodes.Add(node.Code);
+            item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+            item.IsExpanded = true;
+        }
+
+        e.Handled = true;
     }
 
     private void RenderOptions() {

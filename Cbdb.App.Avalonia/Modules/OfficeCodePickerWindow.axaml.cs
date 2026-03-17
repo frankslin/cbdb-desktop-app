@@ -1,17 +1,23 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Core;
 
 namespace Cbdb.App.Avalonia.Modules;
 
 public partial class OfficeCodePickerWindow : Window {
+    private const int MaxVisibleOptionsAtRoot = 200;
+    private const int MaxVisibleOptionsPerCategory = 300;
+    private static readonly object UnloadedChildPlaceholder = new();
+
     private readonly AppLocalizationService _localizationService;
     private readonly OfficePickerData _pickerData;
     private readonly List<OfficeCodeOption> _allOptions;
@@ -58,9 +64,6 @@ public partial class OfficeCodePickerWindow : Window {
             ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             : new HashSet<string>(selectedCodes, StringComparer.OrdinalIgnoreCase);
         _activeTypeNode = _pickerData.Root;
-        foreach (var node in EnumerateNodes(_pickerData.Root).Where(node => node.Children.Count > 0)) {
-            _expandedTypeCodes.Add(node.Code);
-        }
 
         InitializeComponent();
         InitializeControls();
@@ -180,9 +183,14 @@ public partial class OfficeCodePickerWindow : Window {
 
         item.Expanded += TreeItem_Expanded;
         item.Collapsed += TreeItem_Collapsed;
+        item.PointerReleased += TreeItem_PointerReleased;
 
         if (node.Children.Count > 0) {
-            item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+            if (_expandedTypeCodes.Contains(node.Code) || IsDescendantOfActiveNode(node)) {
+                item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+            } else {
+                item.ItemsSource = new[] { UnloadedChildPlaceholder };
+            }
         }
 
         return item;
@@ -205,8 +213,11 @@ public partial class OfficeCodePickerWindow : Window {
     }
 
     private void TreeItem_Expanded(object? sender, RoutedEventArgs e) {
-        if (sender is TreeViewItem { Tag: OfficeTypeNode node }) {
+        if (sender is TreeViewItem item && item.Tag is OfficeTypeNode node) {
             _expandedTypeCodes.Add(node.Code);
+            if (node.Children.Count > 0) {
+                item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+            }
         }
     }
 
@@ -214,6 +225,38 @@ public partial class OfficeCodePickerWindow : Window {
         if (sender is TreeViewItem { Tag: OfficeTypeNode node }) {
             _expandedTypeCodes.Remove(node.Code);
         }
+    }
+
+    private void TreeItem_PointerReleased(object? sender, PointerReleasedEventArgs e) {
+        if (sender is not TreeViewItem item || item.Tag is not OfficeTypeNode node || node.Children.Count == 0) {
+            return;
+        }
+
+        if (e.Source is not Visual sourceVisual) {
+            return;
+        }
+
+        var sourceTreeItem = sourceVisual.FindAncestorOfType<TreeViewItem>() ?? sourceVisual as TreeViewItem;
+        if (!ReferenceEquals(sourceTreeItem, item)) {
+            return;
+        }
+
+        if (e.Source is CheckBox or ToggleButton) {
+            return;
+        }
+
+        // Make the whole row behave like a directory tree node instead of
+        // requiring users to hit the small expander glyph precisely.
+        if (item.IsExpanded) {
+            item.IsExpanded = false;
+            _expandedTypeCodes.Remove(node.Code);
+        } else {
+            _expandedTypeCodes.Add(node.Code);
+            item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
+            item.IsExpanded = true;
+        }
+
+        e.Handled = true;
     }
 
     private void RenderOptions() {
@@ -300,14 +343,32 @@ public partial class OfficeCodePickerWindow : Window {
     }
 
     private IReadOnlyList<OfficeCodeOption> GetVisibleOptions() {
-        if (_activeTypeNode.IsRoot) {
-            return _allOptions;
+        IReadOnlyList<OfficeCodeOption> LimitVisibleOptions(IEnumerable<OfficeCodeOption> options, int maxVisibleCount) {
+            var optionList = options.ToList();
+            var selected = optionList
+                .Where(option => _selectedCodes.Contains(option.Code))
+                .ToList();
+
+            var remainingSlots = Math.Max(0, maxVisibleCount - selected.Count);
+            if (remainingSlots == 0) {
+                return selected;
+            }
+
+            return selected
+                .Concat(optionList.Where(option => !_selectedCodes.Contains(option.Code)).Take(remainingSlots))
+                .ToList();
         }
 
-        return _activeTypeNode.OfficeCodes
+        if (_activeTypeNode.IsRoot) {
+            return LimitVisibleOptions(_allOptions, MaxVisibleOptionsAtRoot);
+        }
+
+        return LimitVisibleOptions(
+            _activeTypeNode.OfficeCodes
             .Where(_optionByCode.ContainsKey)
-            .Select(code => _optionByCode[code])
-            .ToList();
+            .Select(code => _optionByCode[code]),
+            MaxVisibleOptionsPerCategory
+        );
     }
 
     private void RunSearch(bool moveNext) {

@@ -44,6 +44,16 @@
       <Setter Property="BorderBrush" Value="#133FB5" />
       <Setter Property="Foreground" Value="White" />
     </Style>
+    <Style Selector="ToggleButton.language-toggle:checked:pointerover">
+      <Setter Property="Background" Value="#133FB5" />
+      <Setter Property="BorderBrush" Value="#133FB5" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="ToggleButton.language-toggle:checked:pressed">
+      <Setter Property="Background" Value="#133FB5" />
+      <Setter Property="BorderBrush" Value="#133FB5" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
   </Window.Styles>
   <Grid Margin="14" ColumnDefinitions="*,200" RowDefinitions="Auto,*,Auto">
     <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,Auto">
@@ -75,7 +85,7 @@
             BorderThickness="1"
             Background="#F9F9F9">
       <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
           <Button x:Name="BtnModuleBrowser" Classes="module-tile" Grid.Row="0" Grid.Column="0" Margin="0,0,12,12" Click="ModuleButton_Click" Tag="module.browser" />
           <Button x:Name="BtnModuleEntry" Classes="module-tile" Grid.Row="0" Grid.Column="1" Margin="0,0,0,12" Click="ModuleButton_Click" Tag="module.entry" />
           <Button x:Name="BtnModuleOffice" Classes="module-tile" Grid.Row="1" Grid.Column="0" Margin="0,0,12,12" Click="ModuleButton_Click" Tag="module.office" />
@@ -84,8 +94,10 @@
           <Button x:Name="BtnModuleNetworks" Classes="module-tile" Grid.Row="2" Grid.Column="1" Margin="0,0,0,12" Click="ModuleButton_Click" Tag="module.networks" />
           <Button x:Name="BtnModuleAssociationPairs" Classes="module-tile" Grid.Row="3" Grid.Column="0" Margin="0,0,12,12" Click="ModuleButton_Click" Tag="module.association_pairs" />
           <Button x:Name="BtnModulePlace" Classes="module-tile" Grid.Row="3" Grid.Column="1" Margin="0,0,0,12" Click="ModuleButton_Click" Tag="module.place" />
-          <Button x:Name="BtnModuleStatus" Classes="module-tile" Grid.Row="4" Grid.Column="0" Margin="0,0,12,0" Click="ModuleButton_Click" Tag="module.status" />
-          <Button x:Name="BtnModuleTexts" Classes="module-tile" Grid.Row="4" Grid.Column="1" Click="ModuleButton_Click" Tag="module.texts" />
+          <Button x:Name="BtnModuleStatus" Classes="module-tile" Grid.Row="4" Grid.Column="0" Margin="0,0,12,12" Click="ModuleButton_Click" Tag="module.status" />
+          <Button x:Name="BtnModuleTexts" Classes="module-tile" Grid.Row="4" Grid.Column="1" Margin="0,0,0,12" Click="ModuleButton_Click" Tag="module.texts" />
+          <Button x:Name="BtnModuleGroupPeople" Classes="module-tile" Grid.Row="5" Grid.Column="0" Margin="0,0,12,0" Click="ModuleButton_Click" Tag="module.group_people" />
+          <Button x:Name="BtnModuleQueryExample" Classes="module-tile" Grid.Row="5" Grid.Column="1" Click="ModuleButton_Click" Tag="module.query_example" />
         </Grid>
       </ScrollViewer>
     </Border>

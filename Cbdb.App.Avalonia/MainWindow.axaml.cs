@@ -29,7 +29,10 @@ public partial class MainWindow : Window {
         ["module.association_pairs"] = "M0 80c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v16h128V80c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48h-96c-26.5 0-48-21.5-48-48v-16H192v16c0 7.3-1.7 14.3-4.6 20.5L256 288h80c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48h-96c-26.5 0-48-21.5-48-48v-96c0-7.3 1.7-14.3 4.6-20.5L128 224H48c-26.5 0-48-21.5-48-48z",
         ["module.place"] = "M576 48c0-11.1-5.7-21.4-15.2-27.2s-21.2-6.4-31.1-1.4L413.5 77.5 234.1 17.6c-8.1-2.7-16.8-2.1-24.4 1.7l-128 64C70.8 88.8 64 99.9 64 112v352c0 11.1 5.7 21.4 15.2 27.2s21.2 6.4 31.1 1.4l116.1-58.1 173.3 57.8c-4.3-6.4-8.5-13.1-12.6-19.9-11-18.3-21.9-39.3-30-61.8l-101.2-33.7V92.4l128 42.7v99.3c31-35.8 77-58.4 128-58.4 22.6 0 44.2 4.4 64 12.5zm-64 176c-66.3 0-120 52.8-120 117.9 0 68.9 64.1 150.4 98.6 189.3 11.6 13 31.3 13 42.9 0 34.5-38.9 98.6-120.4 98.6-189.3 0-65.1-53.7-117.9-120-117.9zm-40 120a40 40 0 1 1 80 0 40 40 0 1 1-80 0",
         ["module.status"] = "M288 160h96V96h-96zM0 160V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48zm160 256h224v-64H160zM0 416v-80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48z",
-        ["module.texts"] = "M256 141.3v309.3l.5-.2A449 449 0 0 1 428.8 416H448V96h-19.2c-42.2 0-84.1 8.4-123.1 24.6-16.8 7-33.4 13.9-49.7 20.7m-25.1-79.8L256 72l25.1-10.5C327.9 42 378.1 32 428.8 32H464c26.5 0 48 21.5 48 48v352c0 26.5-21.5 48-48 48h-35.2c-50.7 0-100.9 10-147.7 29.5l-12.8 5.3c-7.9 3.3-16.7 3.3-24.6 0l-12.8-5.3C184.1 490 133.9 480 83.2 480H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h35.2c50.7 0 100.9 10 147.7 29.5"
+        ["module.status"] = "M288 160h96V96h-96zM0 160V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48zm160 256h224v-64H160zM0 416v-80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48z",
+        ["module.texts"] = "M256 141.3v309.3l.5-.2A449 449 0 0 1 428.8 416H448V96h-19.2c-42.2 0-84.1 8.4-123.1 24.6-16.8 7-33.4 13.9-49.7 20.7m-25.1-79.8L256 72l25.1-10.5C327.9 42 378.1 32 428.8 32H464c26.5 0 48 21.5 48 48v352c0 26.5-21.5 48-48 48h-35.2c-50.7 0-100.9 10-147.7 29.5l-12.8 5.3c-7.9 3.3-16.7 3.3-24.6 0l-12.8-5.3C184.1 490 133.9 480 83.2 480H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h35.2c50.7 0 100.9 10 147.7 29.5",
+        ["module.group_people"] = "M96 128a112 112 0 1 1 224 0A112 112 0 1 1 96 128zM0 480c0-97.2 78.8-176 176-176h64c97.2 0 176 78.8 176 176c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM480 224a96 96 0 1 0 0-192 96 96 0 1 0 0 192zm-67.2 56.5c29.1-15.7 62.4-24.5 97.7-24.5C625.1 256 718 349 718 463.5c0 26.8-21.7 48.5-48.5 48.5H497.4c-9.6 0-17.4-7.8-17.4-17.4 0-76.7-26.1-147.3-69.9-203.1-2.1-2.7-.8-6.8 2.7-8.4z",
+        ["module.query_example"] = "M384 336H192c-35.3 0-64-28.7-64-64V64c0-35.3 28.7-64 64-64H332.1c17 0 33.3 6.7 45.3 18.7l57.9 57.9c12 12 18.7 28.3 18.7 45.3V272c0 35.3-28.7 64-64 64zM256 48v80h80L256 48zM64 176H48C21.5 176 0 197.5 0 224V448c0 35.3 28.7 64 64 64H288c26.5 0 48-21.5 48-48V448H272v16H64V224h64V176z"
     };
 
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
@@ -49,6 +52,8 @@ public partial class MainWindow : Window {
     private Button _btnModulePlace = null!;
     private Button _btnModuleStatus = null!;
     private Button _btnModuleTexts = null!;
+    private Button _btnModuleGroupPeople = null!;
+    private Button _btnModuleQueryExample = null!;
     private Button _btnReportError = null!;
     private Button _btnRelinkTables = null!;
     private Button _btnDownloadLatestData = null!;
@@ -99,6 +104,8 @@ public partial class MainWindow : Window {
         SetModuleButtonContent(_btnModulePlace, "module.place");
         SetModuleButtonContent(_btnModuleStatus, "module.status");
         SetModuleButtonContent(_btnModuleTexts, "module.texts");
+        SetModuleButtonContent(_btnModuleGroupPeople, "module.group_people");
+        SetModuleButtonContent(_btnModuleQueryExample, "module.query_example");
 
         _btnReportError.Content = T("button.report_error");
         _btnChangeIndexAddress.Content = T("button.change_index_address");
@@ -471,6 +478,8 @@ public partial class MainWindow : Window {
         _btnModulePlace = this.FindControl<Button>("BtnModulePlace") ?? throw new InvalidOperationException("BtnModulePlace not found.");
         _btnModuleStatus = this.FindControl<Button>("BtnModuleStatus") ?? throw new InvalidOperationException("BtnModuleStatus not found.");
         _btnModuleTexts = this.FindControl<Button>("BtnModuleTexts") ?? throw new InvalidOperationException("BtnModuleTexts not found.");
+        _btnModuleGroupPeople = this.FindControl<Button>("BtnModuleGroupPeople") ?? throw new InvalidOperationException("BtnModuleGroupPeople not found.");
+        _btnModuleQueryExample = this.FindControl<Button>("BtnModuleQueryExample") ?? throw new InvalidOperationException("BtnModuleQueryExample not found.");
         _btnReportError = this.FindControl<Button>("BtnReportError") ?? throw new InvalidOperationException("BtnReportError not found.");
         _btnRelinkTables = this.FindControl<Button>("BtnRelinkTables") ?? throw new InvalidOperationException("BtnRelinkTables not found.");
         _btnDownloadLatestData = this.FindControl<Button>("BtnDownloadLatestData") ?? throw new InvalidOperationException("BtnDownloadLatestData not found.");
