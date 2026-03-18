@@ -62,7 +62,7 @@
   <Grid Margin="10" RowDefinitions="Auto,*,Auto">
     <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
       <Grid RowDefinitions="Auto,Auto">
-        <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto">
+        <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto,Auto">
           <WrapPanel Grid.Row="0" Margin="0,0,0,8" VerticalAlignment="Center" ItemHeight="32">
             <TextBlock x:Name="LblPersonKeyword" Margin="0,0,8,0" VerticalAlignment="Center" />
             <TextBox x:Name="TxtPersonKeyword" Width="280" Margin="0,0,12,0" />
@@ -73,14 +73,22 @@
           </WrapPanel>
 
           <WrapPanel Grid.Row="1" Margin="0,0,0,8" VerticalAlignment="Center" ItemHeight="32">
-            <TextBlock x:Name="LblPlaceSelection" Margin="0,0,8,0" VerticalAlignment="Center" />
-            <TextBox x:Name="TxtSelectedPlaces" Width="760" Margin="0,0,12,0" IsReadOnly="True" />
-            <Button x:Name="BtnSelectPlaces" Margin="0,0,8,0" Click="BtnSelectPlaces_Click" />
-            <Button x:Name="BtnClearPlaces" Margin="0,0,12,0" Click="BtnClearPlaces_Click" />
-            <CheckBox x:Name="ChkIncludeSubUnits" VerticalAlignment="Center" />
+            <TextBlock x:Name="LblPersonPlaceSelection" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtSelectedPersonPlaces" Width="760" Margin="0,0,12,0" IsReadOnly="True" />
+            <Button x:Name="BtnSelectPersonPlaces" Margin="0,0,8,0" Click="BtnSelectPersonPlaces_Click" />
+            <Button x:Name="BtnClearPersonPlaces" Margin="0,0,12,0" Click="BtnClearPersonPlaces_Click" />
+            <CheckBox x:Name="ChkIncludePersonSubUnits" VerticalAlignment="Center" />
           </WrapPanel>
 
-          <WrapPanel Grid.Row="2" VerticalAlignment="Center" ItemHeight="32">
+          <WrapPanel Grid.Row="2" Margin="0,0,0,8" VerticalAlignment="Center" ItemHeight="32">
+            <TextBlock x:Name="LblOfficePlaceSelection" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBox x:Name="TxtSelectedOfficePlaces" Width="760" Margin="0,0,12,0" IsReadOnly="True" />
+            <Button x:Name="BtnSelectOfficePlaces" Margin="0,0,8,0" Click="BtnSelectOfficePlaces_Click" />
+            <Button x:Name="BtnClearOfficePlaces" Margin="0,0,12,0" Click="BtnClearOfficePlaces_Click" />
+            <CheckBox x:Name="ChkIncludeOfficeSubUnits" VerticalAlignment="Center" />
+          </WrapPanel>
+
+          <WrapPanel Grid.Row="3" VerticalAlignment="Center" ItemHeight="32">
             <CheckBox x:Name="ChkUseIndexYear" Margin="0,0,8,0" VerticalAlignment="Center" />
             <Grid Width="210" Margin="0,0,12,0" ColumnDefinitions="*,Auto,*">
               <TextBox x:Name="TxtIndexYearFrom" Watermark="-200" />

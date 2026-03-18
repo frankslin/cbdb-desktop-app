@@ -322,13 +322,23 @@ WHERE 1 = 1
             command.Parameters.AddWithValue($"$officeCode{i}", request.OfficeCodes[i]);
         }
 
-        if (request.PlaceIds.Count > 0) {
-            sql += request.IncludeSubordinateUnits
-                ? "\n  AND (pta.c_addr_id IN (" + string.Join(", ", request.PlaceIds.Select((_, index) => $"$placeId{index}")) + ") OR EXISTS (SELECT 1 FROM ZZZ_BELONGS_TO bt WHERE bt.c_addr_id = pta.c_addr_id AND bt.c_belongs_to IN (" + string.Join(", ", request.PlaceIds.Select((_, index) => $"$placeId{index}")) + ")))"
-                : "\n  AND pta.c_addr_id IN (" + string.Join(", ", request.PlaceIds.Select((_, index) => $"$placeId{index}")) + ")";
+        if (request.PersonPlaceIds.Count > 0) {
+            sql += request.IncludeSubordinatePersonUnits
+                ? "\n  AND (b.c_index_addr_id IN (" + string.Join(", ", request.PersonPlaceIds.Select((_, index) => $"$personPlaceId{index}")) + ") OR EXISTS (SELECT 1 FROM ZZZ_BELONGS_TO bt WHERE bt.c_addr_id = b.c_index_addr_id AND bt.c_belongs_to IN (" + string.Join(", ", request.PersonPlaceIds.Select((_, index) => $"$personPlaceId{index}")) + ")))"
+                : "\n  AND b.c_index_addr_id IN (" + string.Join(", ", request.PersonPlaceIds.Select((_, index) => $"$personPlaceId{index}")) + ")";
 
-            for (var i = 0; i < request.PlaceIds.Count; i++) {
-                command.Parameters.AddWithValue($"$placeId{i}", request.PlaceIds[i]);
+            for (var i = 0; i < request.PersonPlaceIds.Count; i++) {
+                command.Parameters.AddWithValue($"$personPlaceId{i}", request.PersonPlaceIds[i]);
+            }
+        }
+
+        if (request.OfficePlaceIds.Count > 0) {
+            sql += request.IncludeSubordinateOfficeUnits
+                ? "\n  AND (pta.c_addr_id IN (" + string.Join(", ", request.OfficePlaceIds.Select((_, index) => $"$officePlaceId{index}")) + ") OR EXISTS (SELECT 1 FROM ZZZ_BELONGS_TO bt WHERE bt.c_addr_id = pta.c_addr_id AND bt.c_belongs_to IN (" + string.Join(", ", request.OfficePlaceIds.Select((_, index) => $"$officePlaceId{index}")) + ")))"
+                : "\n  AND pta.c_addr_id IN (" + string.Join(", ", request.OfficePlaceIds.Select((_, index) => $"$officePlaceId{index}")) + ")";
+
+            for (var i = 0; i < request.OfficePlaceIds.Count; i++) {
+                command.Parameters.AddWithValue($"$officePlaceId{i}", request.OfficePlaceIds[i]);
             }
         }
 

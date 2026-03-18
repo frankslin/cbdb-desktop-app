@@ -120,17 +120,27 @@
               <d:DataGridTextColumn Binding="{Binding Dynasty}" Width="100" />
               <d:DataGridTextColumn Binding="{Binding IndexAddressId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding IndexAddressType}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding Sequence}" Width="80" />
               <d:DataGridTextColumn Binding="{Binding Status}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding StatusCode}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding FirstYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstNianhaoCode}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding FirstNianhao}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding FirstNianhaoPinyin}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding FirstNianhaoYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstRangeCode}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding FirstRangeDesc}" Width="120" />
               <d:DataGridTextColumn Binding="{Binding FirstRange}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding LastYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastNianhaoCode}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding LastNianhao}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding LastNianhaoPinyin}" Width="140" />
               <d:DataGridTextColumn Binding="{Binding LastNianhaoYear}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastRangeCode}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding LastRangeDesc}" Width="120" />
               <d:DataGridTextColumn Binding="{Binding LastRange}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding Supplement}" Width="140" />
+              <d:DataGridTextColumn Binding="{Binding SourceId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding Source}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding Pages}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding IndexAddress}" Width="180" />

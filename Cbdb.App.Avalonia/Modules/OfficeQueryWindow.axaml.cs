@@ -24,7 +24,8 @@ public partial class OfficeQueryWindow : Window {
     private IReadOnlyList<PlaceOption> _placeOptions = Array.Empty<PlaceOption>();
     private IReadOnlyList<OfficeCodeOption> _officeOptions = Array.Empty<OfficeCodeOption>();
     private List<string> _selectedOfficeCodes = new();
-    private List<int> _selectedPlaceIds = new();
+    private List<int> _selectedPersonPlaceIds = new();
+    private List<int> _selectedOfficePlaceIds = new();
     private IReadOnlyList<OfficeQueryRecord> _records = Array.Empty<OfficeQueryRecord>();
     private IReadOnlyList<OfficeQueryPerson> _people = Array.Empty<OfficeQueryPerson>();
 
@@ -32,11 +33,16 @@ public partial class OfficeQueryWindow : Window {
     private TextBox _txtPersonKeyword = null!;
     private TextBlock _lblOfficeSelection = null!;
     private TextBox _txtSelectedOffices = null!;
-    private TextBlock _lblPlaceSelection = null!;
-    private TextBox _txtSelectedPlaces = null!;
-    private Button _btnSelectPlaces = null!;
-    private Button _btnClearPlaces = null!;
-    private CheckBox _chkIncludeSubUnits = null!;
+    private TextBlock _lblPersonPlaceSelection = null!;
+    private TextBox _txtSelectedPersonPlaces = null!;
+    private Button _btnSelectPersonPlaces = null!;
+    private Button _btnClearPersonPlaces = null!;
+    private CheckBox _chkIncludePersonSubUnits = null!;
+    private TextBlock _lblOfficePlaceSelection = null!;
+    private TextBox _txtSelectedOfficePlaces = null!;
+    private Button _btnSelectOfficePlaces = null!;
+    private Button _btnClearOfficePlaces = null!;
+    private CheckBox _chkIncludeOfficeSubUnits = null!;
     private CheckBox _chkUseIndexYear = null!;
     private TextBlock _lblIndexYearTo = null!;
     private TextBox _txtIndexYearFrom = null!;
@@ -95,11 +101,16 @@ public partial class OfficeQueryWindow : Window {
         _txtPersonKeyword = this.FindControl<TextBox>("TxtPersonKeyword") ?? throw new InvalidOperationException("TxtPersonKeyword not found.");
         _lblOfficeSelection = this.FindControl<TextBlock>("LblOfficeSelection") ?? throw new InvalidOperationException("LblOfficeSelection not found.");
         _txtSelectedOffices = this.FindControl<TextBox>("TxtSelectedOffices") ?? throw new InvalidOperationException("TxtSelectedOffices not found.");
-        _lblPlaceSelection = this.FindControl<TextBlock>("LblPlaceSelection") ?? throw new InvalidOperationException("LblPlaceSelection not found.");
-        _txtSelectedPlaces = this.FindControl<TextBox>("TxtSelectedPlaces") ?? throw new InvalidOperationException("TxtSelectedPlaces not found.");
-        _btnSelectPlaces = this.FindControl<Button>("BtnSelectPlaces") ?? throw new InvalidOperationException("BtnSelectPlaces not found.");
-        _btnClearPlaces = this.FindControl<Button>("BtnClearPlaces") ?? throw new InvalidOperationException("BtnClearPlaces not found.");
-        _chkIncludeSubUnits = this.FindControl<CheckBox>("ChkIncludeSubUnits") ?? throw new InvalidOperationException("ChkIncludeSubUnits not found.");
+        _lblPersonPlaceSelection = this.FindControl<TextBlock>("LblPersonPlaceSelection") ?? throw new InvalidOperationException("LblPersonPlaceSelection not found.");
+        _txtSelectedPersonPlaces = this.FindControl<TextBox>("TxtSelectedPersonPlaces") ?? throw new InvalidOperationException("TxtSelectedPersonPlaces not found.");
+        _btnSelectPersonPlaces = this.FindControl<Button>("BtnSelectPersonPlaces") ?? throw new InvalidOperationException("BtnSelectPersonPlaces not found.");
+        _btnClearPersonPlaces = this.FindControl<Button>("BtnClearPersonPlaces") ?? throw new InvalidOperationException("BtnClearPersonPlaces not found.");
+        _chkIncludePersonSubUnits = this.FindControl<CheckBox>("ChkIncludePersonSubUnits") ?? throw new InvalidOperationException("ChkIncludePersonSubUnits not found.");
+        _lblOfficePlaceSelection = this.FindControl<TextBlock>("LblOfficePlaceSelection") ?? throw new InvalidOperationException("LblOfficePlaceSelection not found.");
+        _txtSelectedOfficePlaces = this.FindControl<TextBox>("TxtSelectedOfficePlaces") ?? throw new InvalidOperationException("TxtSelectedOfficePlaces not found.");
+        _btnSelectOfficePlaces = this.FindControl<Button>("BtnSelectOfficePlaces") ?? throw new InvalidOperationException("BtnSelectOfficePlaces not found.");
+        _btnClearOfficePlaces = this.FindControl<Button>("BtnClearOfficePlaces") ?? throw new InvalidOperationException("BtnClearOfficePlaces not found.");
+        _chkIncludeOfficeSubUnits = this.FindControl<CheckBox>("ChkIncludeOfficeSubUnits") ?? throw new InvalidOperationException("ChkIncludeOfficeSubUnits not found.");
         _chkUseIndexYear = this.FindControl<CheckBox>("ChkUseIndexYear") ?? throw new InvalidOperationException("ChkUseIndexYear not found.");
         _lblIndexYearTo = this.FindControl<TextBlock>("LblIndexYearTo") ?? throw new InvalidOperationException("LblIndexYearTo not found.");
         _txtIndexYearFrom = this.FindControl<TextBox>("TxtIndexYearFrom") ?? throw new InvalidOperationException("TxtIndexYearFrom not found.");
@@ -135,7 +146,8 @@ public partial class OfficeQueryWindow : Window {
             _placeOptions = await _placeLookupService.GetPlacesAsync(_sqlitePath);
             await _dynastyPicker.LoadDynastiesAsync(_sqlitePath);
             UpdateSelectedOfficesText();
-            UpdateSelectedPlacesText();
+            UpdateSelectedPersonPlacesText();
+            UpdateSelectedOfficePlacesText();
             _txtStatusBar.Text = string.Format(T("office_query.loaded_filters"), _officeOptions.Count, _dynastyPicker.OptionCount);
         } catch (Exception ex) {
             _txtStatusBar.Text = ex.Message;
@@ -146,10 +158,14 @@ public partial class OfficeQueryWindow : Window {
         Title = T("office_query.title");
         _lblPersonKeyword.Text = T("office_query.person_keyword");
         _lblOfficeSelection.Text = T("office_query.selected_offices");
-        _lblPlaceSelection.Text = T("office_query.selected_places");
-        _btnSelectPlaces.Content = T("office_query.select_places");
-        _btnClearPlaces.Content = T("office_query.clear_places");
-        _chkIncludeSubUnits.Content = T("office_query.include_subunits");
+        _lblPersonPlaceSelection.Text = T("office_query.selected_person_places");
+        _btnSelectPersonPlaces.Content = T("office_query.select_person_places");
+        _btnClearPersonPlaces.Content = T("office_query.clear_person_places");
+        _chkIncludePersonSubUnits.Content = T("office_query.include_person_subunits");
+        _lblOfficePlaceSelection.Text = T("office_query.selected_office_places");
+        _btnSelectOfficePlaces.Content = T("office_query.select_office_places");
+        _btnClearOfficePlaces.Content = T("office_query.clear_office_places");
+        _chkIncludeOfficeSubUnits.Content = T("office_query.include_office_subunits");
         _chkUseIndexYear.Content = T("office_query.use_index_year");
         _lblIndexYearTo.Text = T("office_query.to");
         _chkUseOfficeYear.Content = T("office_query.use_office_year");
@@ -226,7 +242,8 @@ public partial class OfficeQueryWindow : Window {
         ((DataGridTextColumn)pc[15]).Header = T("office_query.posting_count");
 
         UpdateSelectedOfficesText();
-        UpdateSelectedPlacesText();
+        UpdateSelectedPersonPlacesText();
+        UpdateSelectedOfficePlacesText();
     }
 
     private void HandleLanguageChanged(object? sender, EventArgs e) {
@@ -256,22 +273,40 @@ public partial class OfficeQueryWindow : Window {
         UpdateSelectedOfficesText();
     }
 
-    private async void BtnSelectPlaces_Click(object? sender, RoutedEventArgs e) {
+    private async void BtnSelectPersonPlaces_Click(object? sender, RoutedEventArgs e) {
         if (_placeOptions.Count == 0) {
             await LoadFiltersAsync();
         }
 
-        var picker = new PlacePickerWindow(_localizationService, _placeOptions, _selectedPlaceIds);
+        var picker = new PlacePickerWindow(_localizationService, _placeOptions, _selectedPersonPlaceIds);
         var result = await picker.ShowDialog<bool?>(this);
         if (result == true) {
-            _selectedPlaceIds = picker.SelectedPlaceIds.ToList();
-            UpdateSelectedPlacesText();
+            _selectedPersonPlaceIds = picker.SelectedPlaceIds.ToList();
+            UpdateSelectedPersonPlacesText();
         }
     }
 
-    private void BtnClearPlaces_Click(object? sender, RoutedEventArgs e) {
-        _selectedPlaceIds.Clear();
-        UpdateSelectedPlacesText();
+    private void BtnClearPersonPlaces_Click(object? sender, RoutedEventArgs e) {
+        _selectedPersonPlaceIds.Clear();
+        UpdateSelectedPersonPlacesText();
+    }
+
+    private async void BtnSelectOfficePlaces_Click(object? sender, RoutedEventArgs e) {
+        if (_placeOptions.Count == 0) {
+            await LoadFiltersAsync();
+        }
+
+        var picker = new PlacePickerWindow(_localizationService, _placeOptions, _selectedOfficePlaceIds);
+        var result = await picker.ShowDialog<bool?>(this);
+        if (result == true) {
+            _selectedOfficePlaceIds = picker.SelectedPlaceIds.ToList();
+            UpdateSelectedOfficePlacesText();
+        }
+    }
+
+    private void BtnClearOfficePlaces_Click(object? sender, RoutedEventArgs e) {
+        _selectedOfficePlaceIds.Clear();
+        UpdateSelectedOfficePlacesText();
     }
 
     private async void BtnRunQuery_Click(object? sender, RoutedEventArgs e) {
@@ -378,8 +413,10 @@ public partial class OfficeQueryWindow : Window {
         return new OfficeQueryRequest(
             PersonKeyword: NormalizeText(_txtPersonKeyword.Text),
             OfficeCodes: _selectedOfficeCodes,
-            PlaceIds: _selectedPlaceIds,
-            IncludeSubordinateUnits: _chkIncludeSubUnits.IsChecked == true,
+            PersonPlaceIds: _selectedPersonPlaceIds,
+            IncludeSubordinatePersonUnits: _chkIncludePersonSubUnits.IsChecked == true,
+            OfficePlaceIds: _selectedOfficePlaceIds,
+            IncludeSubordinateOfficeUnits: _chkIncludeOfficeSubUnits.IsChecked == true,
             UseIndexYearRange: _chkUseIndexYear.IsChecked == true,
             IndexYearFrom: ParseInt(_txtIndexYearFrom.Text, -200),
             IndexYearTo: ParseInt(_txtIndexYearTo.Text, 1911),
@@ -435,23 +472,30 @@ public partial class OfficeQueryWindow : Window {
         _txtSelectedOffices.Text = T("office_query.multi_select");
     }
 
-    private void UpdateSelectedPlacesText() {
-        if (_selectedPlaceIds.Count == 0) {
-            _txtSelectedPlaces.Text = T("office_query.all_places");
-            return;
+    private void UpdateSelectedPersonPlacesText() {
+        _txtSelectedPersonPlaces.Text = FormatSelectedPlaces(_selectedPersonPlaceIds);
+    }
+
+    private void UpdateSelectedOfficePlacesText() {
+        _txtSelectedOfficePlaces.Text = FormatSelectedPlaces(_selectedOfficePlaceIds);
+    }
+
+    private string FormatSelectedPlaces(IReadOnlyCollection<int> placeIds) {
+        if (placeIds.Count == 0) {
+            return T("office_query.all_places");
         }
 
         var labels = _placeOptions
-            .Where(option => _selectedPlaceIds.Contains(option.AddressId))
+            .Where(option => placeIds.Contains(option.AddressId))
             .Select(option => option.DisplayLabel)
             .Take(3)
             .ToList();
 
-        var suffix = _selectedPlaceIds.Count > labels.Count
-            ? string.Format(T("office_query.more_selected"), _selectedPlaceIds.Count - labels.Count)
+        var suffix = placeIds.Count > labels.Count
+            ? string.Format(T("office_query.more_selected"), placeIds.Count - labels.Count)
             : string.Empty;
 
-        _txtSelectedPlaces.Text = string.Join("; ", labels) + suffix;
+        return string.Join("; ", labels) + suffix;
     }
 
     private void UpdateStatusBarCounts() {

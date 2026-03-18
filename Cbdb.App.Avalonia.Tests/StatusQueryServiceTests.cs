@@ -284,6 +284,107 @@ INSERT INTO STATUS_DATA (c_personid, c_status_code, c_sequence, c_firstyear, c_l
         }
     }
 
+    [Fact]
+    public async Task QueryAsync_MapsDetailedStatusFields() {
+        var sqlitePath = CreateTempSqlitePath();
+
+        try {
+            await using var connection = await OpenConnectionAsync(sqlitePath);
+            await ExecuteBatchAsync(connection, """
+CREATE TABLE BIOG_MAIN (
+    c_personid INTEGER PRIMARY KEY,
+    c_name TEXT,
+    c_name_chn TEXT,
+    c_name_rm TEXT,
+    c_name_proper TEXT,
+    c_surname TEXT,
+    c_surname_chn TEXT,
+    c_mingzi TEXT,
+    c_mingzi_chn TEXT,
+    c_index_year INTEGER,
+    c_dy INTEGER,
+    c_index_addr_id INTEGER,
+    c_index_addr_type_code INTEGER,
+    c_female INTEGER,
+    c_index_year_type_code INTEGER
+);
+CREATE TABLE ALTNAME_DATA (c_personid INTEGER, c_alt_name TEXT, c_alt_name_chn TEXT);
+CREATE TABLE STATUS_DATA (
+    c_personid INTEGER,
+    c_status_code INTEGER,
+    c_sequence INTEGER,
+    c_firstyear INTEGER,
+    c_fy_nh_code INTEGER,
+    c_fy_nh_year INTEGER,
+    c_fy_range INTEGER,
+    c_lastyear INTEGER,
+    c_ly_nh_code INTEGER,
+    c_ly_nh_year INTEGER,
+    c_ly_range INTEGER,
+    c_supplement TEXT,
+    c_source INTEGER,
+    c_pages TEXT,
+    c_notes TEXT
+);
+CREATE TABLE STATUS_CODES (c_status_code INTEGER PRIMARY KEY, c_status_desc TEXT, c_status_desc_chn TEXT);
+CREATE TABLE DYNASTIES (c_dy INTEGER PRIMARY KEY, c_dynasty TEXT, c_dynasty_chn TEXT, c_start INTEGER, c_end INTEGER);
+CREATE TABLE ADDR_CODES (c_addr_id INTEGER PRIMARY KEY, c_name TEXT, c_name_chn TEXT, x_coord REAL, y_coord REAL);
+CREATE TABLE BIOG_ADDR_CODES (c_addr_type INTEGER PRIMARY KEY, c_addr_desc TEXT, c_addr_desc_chn TEXT);
+CREATE TABLE INDEXYEAR_TYPE_CODES (c_index_year_type_code INTEGER PRIMARY KEY, c_index_year_type_desc TEXT, c_index_year_type_hz TEXT);
+CREATE TABLE NIAN_HAO (c_nianhao_id INTEGER PRIMARY KEY, c_nianhao_chn TEXT, c_nianhao_pin TEXT);
+CREATE TABLE YEAR_RANGE_CODES (c_range_code INTEGER PRIMARY KEY, c_range TEXT, c_range_chn TEXT);
+CREATE TABLE TEXT_CODES (c_textid INTEGER PRIMARY KEY, c_title TEXT, c_title_chn TEXT);
+CREATE TABLE ZZZ_BELONGS_TO (c_addr_id INTEGER, c_belongs_to INTEGER);
+
+INSERT INTO DYNASTIES VALUES (1, 'Song', '宋', 960, 1279);
+INSERT INTO ADDR_CODES VALUES (10, 'Fu Zhou', '福州', 119.3, 26.08);
+INSERT INTO BIOG_ADDR_CODES VALUES (7, 'Native place', '籍貫');
+INSERT INTO INDEXYEAR_TYPE_CODES VALUES (1, 'Index Year', '指數年');
+INSERT INTO NIAN_HAO VALUES (1, '元祐', 'yuanyou');
+INSERT INTO NIAN_HAO VALUES (2, '紹聖', 'shaosheng');
+INSERT INTO YEAR_RANGE_CODES VALUES (1, 'Range A', '時限甲');
+INSERT INTO YEAR_RANGE_CODES VALUES (2, 'Range B', '時限乙');
+INSERT INTO TEXT_CODES VALUES (9, 'Source Text', '來源文本');
+INSERT INTO STATUS_CODES VALUES (100, 'Official', '官員');
+INSERT INTO BIOG_MAIN VALUES (1, 'Su Shi', '蘇軾', NULL, NULL, NULL, NULL, NULL, NULL, 1080, 1, 10, 7, 0, 1);
+INSERT INTO STATUS_DATA VALUES (1, 100, 3, 1070, 1, 4, 1, 1085, 2, 2, 2, '補注', 9, '12-13', 'note-1');
+""");
+
+            var service = new SqliteStatusQueryService();
+            var result = await service.QueryAsync(sqlitePath, new StatusQueryRequest(
+                PersonKeyword: null,
+                StatusCodes: new[] { "100" },
+                PlaceIds: Array.Empty<int>(),
+                IncludeSubordinateUnits: false,
+                UseIndexYearRange: false,
+                IndexYearFrom: -200,
+                IndexYearTo: 1911,
+                UseDynastyRange: false,
+                DynastyFrom: null,
+                DynastyTo: null
+            ));
+
+            var record = Assert.Single(result.Records);
+            Assert.Equal(3, record.Sequence);
+            Assert.Equal(1, record.FirstNianhaoCode);
+            Assert.Equal("元祐", record.FirstNianhao);
+            Assert.Equal("yuanyou", record.FirstNianhaoPinyin);
+            Assert.Equal(1, record.FirstRangeCode);
+            Assert.Equal("Range A", record.FirstRangeDesc);
+            Assert.Equal("時限甲", record.FirstRange);
+            Assert.Equal(2, record.LastNianhaoCode);
+            Assert.Equal("紹聖", record.LastNianhao);
+            Assert.Equal("shaosheng", record.LastNianhaoPinyin);
+            Assert.Equal(2, record.LastRangeCode);
+            Assert.Equal("Range B", record.LastRangeDesc);
+            Assert.Equal("時限乙", record.LastRange);
+            Assert.Equal(9, record.SourceId);
+            Assert.Equal("來源文本", record.Source);
+        } finally {
+            TryDelete(sqlitePath);
+        }
+    }
+
     private static string CreateTempSqlitePath() {
         return Path.Combine(Path.GetTempPath(), $"cbdb-status-tests-{Guid.NewGuid():N}.sqlite3");
     }
