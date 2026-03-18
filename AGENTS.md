@@ -204,6 +204,7 @@
   - picker behavior tests for status / entry / office
   - office-year filtering in office query
   - office query window category-summary behavior
+  - injected whole-window tests for office / status / entry query windows
   - database-index prompt service behavior
 - Query-result-to-Person-Browser history behavior now has automated coverage.
 
@@ -253,6 +254,11 @@
 - TreeView interaction in Avalonia can be tricky when combined with custom whole-row expand/collapse behavior.
   - Parent/child bubbling needs to be handled carefully or parent nodes may collapse when clicking children.
   - Lazy placeholder children are useful for preserving expand arrows, but they can break expansion if the real child materialization path is wrong.
+- Headless query-window tests that rely on `DynastyRangePicker` need a real SQLite file with a minimal `DYNASTIES` table.
+  - A plain text placeholder file is not enough, because dynasty loading still goes through the real SQLite lookup service.
+- Local `dotnet test` for Avalonia headless windows may fail under sandboxed macOS with `System.Net.Sockets.SocketException (13): Permission denied`.
+  - When that happens, the failure is in VSTest's local socket setup rather than the test logic itself.
+  - Rerun outside the sandbox if code-side compilation errors have already been ruled out.
 - Person detail loading is sensitive to SQL column order.
   - Several regressions came from changing selected columns without updating reader indexes consistently.
   - When possible, avoid expanding positional reader logic unless the SQL and indexes are updated together.
@@ -309,3 +315,4 @@
   - Continue aligning office-place / people-place semantics with Access.
   - Add more picker and window behavior coverage.
 - Continue tightening release automation and documentation so packaged builds remain reproducible and self-describing.
+- Continue extending injected whole-window tests for query modules before porting additional home-page modules.

@@ -70,9 +70,11 @@ On startup, the app auto-loads this path into the SQLite textbox.
 For backward compatibility, it still falls back to `../cbdb-sqlite-db/cbdb_20260304.sqlite3` if present.
 ## Current App Scope
 
-- The current app supports two modules:
+- The current app supports four usable modules:
   - `Person Browser`
   - `Status Query`
+  - `Entry Query`
+  - `Office Query`
 - The Avalonia app is the primary desktop shell on both Windows and macOS
 - `Cbdb.App.Desktop` remains in the repository only as legacy reference material
 
@@ -102,12 +104,15 @@ Main window texts are key-driven via localization service.
   - SQLite file picker using cross-platform storage APIs
   - SQLite health check using shared data services
   - external link / user-guide open actions
-  - Person Browser search, summary, Basic Information, file import/export, and counted tab shell
-  - Status Query with hierarchical status selection, place filtering, and result tabs
-  - initial headless UI coverage for the Avalonia person browser using fixture-backed fake services
+  - Person Browser search, summary, Basic Information, file import/export, and repeated-form related tabs
+  - Status Query with hierarchical status selection, place filtering, export, and result tabs
+  - Entry Query with hierarchical entry selection, place filtering, export, and result tabs
+  - Office Query with hierarchical office selection, split people-place / office-place filters, export, and result tabs
+  - headless UI coverage for Person Browser and injected query-window paths
 - Not yet ported:
-  - most query modules beyond Status Query
-  - full related-tab and query-module parity with Access
+  - several other home-page query modules
+  - full Access-equivalent workflows for Status / Entry / Office
+  - GIS / KML / Neo4j style export paths
 
 ## Release Process
 
@@ -120,7 +125,7 @@ Main window texts are key-driven via localization service.
 
 ## Next Implementation Steps
 
-1. Add Browser page (person search + detail tabs)
-2. Implement LookAt query framework
-3. Add export flows (CSV/HTML)
+1. Continue tightening `Status`, `Entry`, and `Office` toward closer Access-equivalent workflows
+2. Expand query-window headless UI coverage and fixture-backed integration tests
+3. Port the next home-page module that can reuse the existing query shell and picker patterns
 4. Add secondary feature: address rank editing + index address rebuild

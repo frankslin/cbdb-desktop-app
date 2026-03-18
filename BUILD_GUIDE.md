@@ -111,7 +111,9 @@ dotnet run --project ./Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj
 9. Click `Users Guide` and confirm the browser opens:
    English UI: `https://cbdb-project.github.io/cbdb-user-guide`
    Chinese UI: `https://cbdb-project.github.io/cbdb-user-guide/zh-TW/`
-10. Click module buttons and confirm the shell shows porting placeholder messages rather than crashing.
+10. Launch `Person Browser`, `Status Query`, `Entry Query`, and `Office Query`.
+11. In each query window, confirm filters load without crashing and the picker dialogs open.
+12. Confirm the remaining home-page placeholder buttons still show placeholder behavior instead of crashing.
 
 ### Expected macOS Result
 
@@ -164,7 +166,7 @@ For Avalonia:
 
 - `Cbdb.App.Desktop` is Windows-only because it uses WPF and targets `net8.0-windows`.
 - `Cbdb.App.Avalonia` is still partial at this stage.
-- The `Person Browser` shell has been ported, but related-tab content and query-module windows are still incomplete.
+- `Person Browser`, `Status Query`, `Entry Query`, and `Office Query` are usable, but they are not yet fully Access-equivalent.
 - If `data/cbdb_20260304.sqlite3` is missing, the app will require manual file selection.
 
 ## Troubleshooting
@@ -206,4 +208,5 @@ Check:
 4. Run with bundled SQLite data
 5. Verify language switch
 6. Verify dataset selection and health check
-7. Verify module launch or placeholder behavior
+7. Verify the four currently usable modules launch and load filters
+8. Verify remaining placeholder tiles still fail gracefully
