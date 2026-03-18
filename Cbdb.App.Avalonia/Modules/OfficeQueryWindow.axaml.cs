@@ -12,8 +12,8 @@ namespace Cbdb.App.Avalonia.Modules;
 
 public partial class OfficeQueryWindow : Window {
     private readonly AppLocalizationService _localizationService;
-    private readonly IOfficeQueryService _officeQueryService = new SqliteOfficeQueryService();
-    private readonly IPlaceLookupService _placeLookupService = new SqlitePlaceLookupService();
+    private readonly IOfficeQueryService _officeQueryService;
+    private readonly IPlaceLookupService _placeLookupService;
     private readonly string _sqlitePath;
 
     private OfficePickerData _officePickerData = new(
@@ -66,13 +66,33 @@ public partial class OfficeQueryWindow : Window {
     private TextBlock _txtStatusBar = null!;
 
     public OfficeQueryWindow()
-        : this(string.Empty, new AppLocalizationService()) {
+        : this(string.Empty, new AppLocalizationService(), new SqliteOfficeQueryService(), new SqlitePlaceLookupService()) {
     }
 
     public OfficeQueryWindow(string sqlitePath, AppLocalizationService localizationService) {
         _sqlitePath = sqlitePath;
         _localizationService = localizationService;
+        _officeQueryService = new SqliteOfficeQueryService();
+        _placeLookupService = new SqlitePlaceLookupService();
 
+        InitializeWindow();
+    }
+
+    public OfficeQueryWindow(
+        string sqlitePath,
+        AppLocalizationService localizationService,
+        IOfficeQueryService officeQueryService,
+        IPlaceLookupService placeLookupService
+    ) {
+        _sqlitePath = sqlitePath;
+        _localizationService = localizationService;
+        _officeQueryService = officeQueryService;
+        _placeLookupService = placeLookupService;
+
+        InitializeWindow();
+    }
+
+    private void InitializeWindow() {
         InitializeComponent();
         InitializeControls();
 

@@ -23,12 +23,20 @@ public sealed class SqliteOfficeQueryService : IOfficeQueryService {
         var primaryTypeByOfficeCode = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         await using var connection = await OpenReadOnlyConnectionAsync(sqlitePath, cancellationToken);
+        var officeColumns = await GetColumnNamesAsync(connection, "OFFICE_CODES", cancellationToken);
+        var hasOfficeTransAlt = officeColumns.Contains("c_office_trans_alt");
+        var hasOfficeChnAlt = officeColumns.Contains("c_office_chn_alt");
+
         await using (var command = connection.CreateCommand()) {
-            command.CommandText = """
+            var officeTransAltExpr = hasOfficeTransAlt ? "MAX(oc.c_office_trans_alt)" : "NULL";
+            var officeChnAltExpr = hasOfficeChnAlt ? "MAX(oc.c_office_chn_alt)" : "NULL";
+            command.CommandText = $"""
 SELECT
     CAST(oc.c_office_id AS TEXT) AS c_office_id,
     oc.c_office_trans,
     oc.c_office_chn,
+    {officeTransAltExpr} AS c_office_trans_alt,
+    {officeChnAltExpr} AS c_office_chn_alt,
     d.c_dynasty,
     d.c_dynasty_chn,
     COUNT(pto.c_personid) AS usage_count
@@ -45,9 +53,11 @@ ORDER BY COALESCE(oc.c_office_chn, oc.c_office_trans, CAST(oc.c_office_id AS TEX
                     Code: reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
                     Description: reader.IsDBNull(1) ? null : reader.GetString(1),
                     DescriptionChn: reader.IsDBNull(2) ? null : reader.GetString(2),
-                    Dynasty: reader.IsDBNull(3) ? null : reader.GetString(3),
-                    DynastyChn: reader.IsDBNull(4) ? null : reader.GetString(4),
-                    UsageCount: reader.IsDBNull(5) ? 0 : reader.GetInt32(5)
+                    DescriptionAlt: reader.IsDBNull(3) ? null : reader.GetString(3),
+                    DescriptionChnAlt: reader.IsDBNull(4) ? null : reader.GetString(4),
+                    Dynasty: reader.IsDBNull(5) ? null : reader.GetString(5),
+                    DynastyChn: reader.IsDBNull(6) ? null : reader.GetString(6),
+                    UsageCount: reader.IsDBNull(7) ? 0 : reader.GetInt32(7)
                 );
                 options.Add(option);
                 optionByCode[option.Code] = option;
@@ -166,6 +176,24 @@ ORDER BY CAST(c_office_tree_id AS TEXT), c_office_id;
         );
 
         return new OfficePickerData(root, options, primaryTypeByOfficeCode);
+    }
+
+    private static async Task<HashSet<string>> GetColumnNamesAsync(
+        SqliteConnection connection,
+        string tableName,
+        CancellationToken cancellationToken
+    ) {
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA table_info({tableName});";
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            if (!reader.IsDBNull(1)) {
+                columns.Add(reader.GetString(1));
+            }
+        }
+
+        return columns;
     }
 
     public async Task<OfficeQueryResult> QueryAsync(

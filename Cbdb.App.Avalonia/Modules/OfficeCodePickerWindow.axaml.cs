@@ -393,6 +393,8 @@ public partial class OfficeCodePickerWindow : Window {
                     option.Code.Contains(keyword, StringComparison.OrdinalIgnoreCase)
                     || (option.Description?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
                     || (option.DescriptionChn?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (option.DescriptionAlt?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (option.DescriptionChnAlt?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
                     || (option.Dynasty?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
                     || (option.DynastyChn?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false))
                 .Select(option => option.Code)

@@ -4,6 +4,8 @@ public sealed record OfficeCodeOption(
     string Code,
     string? Description,
     string? DescriptionChn,
+    string? DescriptionAlt,
+    string? DescriptionChnAlt,
     string? Dynasty,
     string? DynastyChn,
     int UsageCount

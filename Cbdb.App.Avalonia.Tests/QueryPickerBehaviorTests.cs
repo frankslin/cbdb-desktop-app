@@ -97,9 +97,9 @@ public sealed class QueryPickerBehaviorTests {
         var pickerData = new OfficePickerData(
             root,
             new[] {
-                new OfficeCodeOption("O1", "Prefect", "知州", "Song", "宋", 1),
-                new OfficeCodeOption("O2", "Vice Prefect", "通判", "Song", "宋", 1),
-                new OfficeCodeOption("O3", "Commander", "都統", "Song", "宋", 1)
+                new OfficeCodeOption("O1", "Prefect", "知州", null, null, "Song", "宋", 1),
+                new OfficeCodeOption("O2", "Vice Prefect", "通判", null, null, "Song", "宋", 1),
+                new OfficeCodeOption("O3", "Commander", "都統", null, null, "Song", "宋", 1)
             },
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 ["O1"] = "31",
@@ -279,8 +279,8 @@ public sealed class QueryPickerBehaviorTests {
         var pickerData = new OfficePickerData(
             root,
             new[] {
-                new OfficeCodeOption("O1", "Prefect", "知州", "Song", "宋", 1),
-                new OfficeCodeOption("X1", "Example Office", "示例官職", "Yuan", "元", 1)
+                new OfficeCodeOption("O1", "Prefect", "知州", null, null, "Song", "宋", 1),
+                new OfficeCodeOption("X1", "Example Office", "示例官職", null, null, "Yuan", "元", 1)
             },
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 ["O1"] = "31"
@@ -310,6 +310,36 @@ public sealed class QueryPickerBehaviorTests {
     }
 
     [AvaloniaFact]
+    public void OfficeCodePickerWindow_SearchMatchesAlternateOfficeNames() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var root = new OfficeTypeNode(OfficePickerData.RootCode, null, null, Array.Empty<OfficeTypeNode>(), new[] { "O1" });
+        var pickerData = new OfficePickerData(
+            root,
+            new[] {
+                new OfficeCodeOption("O1", "Prefect", "知州", "Regional Prefect", "州守", "Song", "宋", 1)
+            },
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+
+        var window = new OfficeCodePickerWindow(localization, pickerData);
+        try {
+            var txtSearch = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSearch");
+            txtSearch.Text = "Regional Prefect";
+
+            InvokePrivate(window, "RunSearch", false);
+
+            var host = AvaloniaUiTestHelper.FindRequiredControl<StackPanel>(window, "OfficeOptionHost");
+            Assert.Contains(host.Children, childControl =>
+                childControl is Border border &&
+                border.Background is SolidColorBrush brush &&
+                brush.Color == Color.Parse("#FFF3BF"));
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void OfficeCodePickerWindow_RootView_LimitsVisibleOptionsButKeepsSelectedItems() {
         var localization = new AppLocalizationService();
         localization.SetLanguage(UiLanguage.English);
@@ -319,6 +349,8 @@ public sealed class QueryPickerBehaviorTests {
                 $"O{index}",
                 $"Office {index}",
                 $"官職{index}",
+                null,
+                null,
                 null,
                 null,
                 index))
@@ -353,7 +385,7 @@ public sealed class QueryPickerBehaviorTests {
         var pickerData = new OfficePickerData(
             new OfficeTypeNode(OfficePickerData.RootCode, null, null, Array.Empty<OfficeTypeNode>(), new[] { "O1" }),
             new[] {
-                new OfficeCodeOption("O1", "Prefect", "知州", "Song", "宋", 12)
+                new OfficeCodeOption("O1", "Prefect", "知州", null, null, "Song", "宋", 12)
             },
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
@@ -383,8 +415,8 @@ public sealed class QueryPickerBehaviorTests {
         var pickerData = new OfficePickerData(
             root,
             new[] {
-                new OfficeCodeOption("O1", "Prefect", "知州", null, null, 1),
-                new OfficeCodeOption("O2", "Circuit Intendant", "轉運使", null, null, 1)
+                new OfficeCodeOption("O1", "Prefect", "知州", null, null, null, null, 1),
+                new OfficeCodeOption("O2", "Circuit Intendant", "轉運使", null, null, null, null, 1)
             },
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 ["O1"] = "31",
@@ -417,7 +449,7 @@ public sealed class QueryPickerBehaviorTests {
         var child = new OfficeTypeNode("31", "Civil Office", "文職", Array.Empty<OfficeTypeNode>(), officeCodes);
         var root = new OfficeTypeNode(OfficePickerData.RootCode, null, null, new[] { child }, officeCodes);
         var options = officeCodes
-            .Select((code, index) => new OfficeCodeOption(code, $"Office {index + 1}", $"官職{index + 1}", null, null, index + 1))
+            .Select((code, index) => new OfficeCodeOption(code, $"Office {index + 1}", $"官職{index + 1}", null, null, null, null, index + 1))
             .ToArray();
 
         var pickerData = new OfficePickerData(
