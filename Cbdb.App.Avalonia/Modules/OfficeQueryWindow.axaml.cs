@@ -190,38 +190,57 @@ public partial class OfficeQueryWindow : Window {
         ((DataGridTextColumn)rc[5]).Header = T("browser.index_year_type");
         ((DataGridTextColumn)rc[6]).Header = T("browser.gender");
         ((DataGridTextColumn)rc[7]).Header = T("browser.dynasty");
-        ((DataGridTextColumn)rc[8]).Header = T("browser.index_address_type");
-        ((DataGridTextColumn)rc[9]).Header = T("browser.address_sequence");
-        ((DataGridTextColumn)rc[10]).Header = T("browser.posting_office");
-        ((DataGridTextColumn)rc[11]).Header = T("office_query.office_code");
-        ((DataGridTextColumn)rc[12]).Header = T("browser.posting_appointment");
-        ((DataGridTextColumn)rc[13]).Header = T("browser.posting_assume_office");
-        ((DataGridTextColumn)rc[14]).Header = T("browser.posting_category");
-        ((DataGridTextColumn)rc[15]).Header = T("office_query.first_year");
-        ((DataGridTextColumn)rc[16]).Header = T("office_query.first_nianhao");
-        ((DataGridTextColumn)rc[17]).Header = T("office_query.first_nianhao_year");
-        ((DataGridTextColumn)rc[18]).Header = T("office_query.first_range");
-        ((DataGridTextColumn)rc[19]).Header = T("office_query.first_month");
-        ((DataGridTextColumn)rc[20]).Header = T("office_query.first_intercalary");
-        ((DataGridTextColumn)rc[21]).Header = T("office_query.first_day");
-        ((DataGridTextColumn)rc[22]).Header = T("office_query.first_day_ganzhi");
-        ((DataGridTextColumn)rc[23]).Header = T("office_query.last_year");
-        ((DataGridTextColumn)rc[24]).Header = T("office_query.last_nianhao");
-        ((DataGridTextColumn)rc[25]).Header = T("office_query.last_nianhao_year");
-        ((DataGridTextColumn)rc[26]).Header = T("office_query.last_range");
-        ((DataGridTextColumn)rc[27]).Header = T("office_query.last_month");
-        ((DataGridTextColumn)rc[28]).Header = T("office_query.last_intercalary");
-        ((DataGridTextColumn)rc[29]).Header = T("office_query.last_day");
-        ((DataGridTextColumn)rc[30]).Header = T("office_query.last_day_ganzhi");
-        ((DataGridTextColumn)rc[31]).Header = T("browser.entry_institution");
-        ((DataGridTextColumn)rc[32]).Header = T("browser.address_id");
-        ((DataGridTextColumn)rc[33]).Header = T("browser.posting_addresses");
-        ((DataGridTextColumn)rc[34]).Header = "X";
-        ((DataGridTextColumn)rc[35]).Header = "Y";
-        ((DataGridTextColumn)rc[36]).Header = T("query.people_at_place");
-        ((DataGridTextColumn)rc[37]).Header = T("browser.source_title");
-        ((DataGridTextColumn)rc[38]).Header = T("browser.address_pages");
-        ((DataGridTextColumn)rc[39]).Header = T("browser.notes");
+        ((DataGridTextColumn)rc[8]).Header = T("office_query.posting_dynasty");
+        ((DataGridTextColumn)rc[9]).Header = T("browser.index_address_type");
+        ((DataGridTextColumn)rc[10]).Header = T("browser.address_sequence");
+        ((DataGridTextColumn)rc[11]).Header = T("browser.posting_office");
+        ((DataGridTextColumn)rc[12]).Header = T("office_query.office_code");
+        ((DataGridTextColumn)rc[13]).Header = T("office_query.appointment_code");
+        ((DataGridTextColumn)rc[14]).Header = T("browser.posting_appointment");
+        ((DataGridTextColumn)rc[15]).Header = T("office_query.assume_office_code");
+        ((DataGridTextColumn)rc[16]).Header = T("browser.posting_assume_office");
+        ((DataGridTextColumn)rc[17]).Header = T("office_query.office_category_id");
+        ((DataGridTextColumn)rc[18]).Header = T("browser.posting_category");
+        ((DataGridTextColumn)rc[19]).Header = T("office_query.first_year");
+        ((DataGridTextColumn)rc[20]).Header = T("office_query.nianhao_code");
+        ((DataGridTextColumn)rc[21]).Header = T("office_query.first_nianhao");
+        ((DataGridTextColumn)rc[22]).Header = T("office_query.nianhao_pinyin");
+        ((DataGridTextColumn)rc[23]).Header = T("office_query.first_nianhao_year");
+        ((DataGridTextColumn)rc[24]).Header = T("office_query.range_code");
+        ((DataGridTextColumn)rc[25]).Header = T("office_query.range_desc");
+        ((DataGridTextColumn)rc[26]).Header = T("office_query.first_range");
+        ((DataGridTextColumn)rc[27]).Header = T("office_query.first_month");
+        ((DataGridTextColumn)rc[28]).Header = T("office_query.first_intercalary");
+        ((DataGridTextColumn)rc[29]).Header = T("office_query.first_day");
+        ((DataGridTextColumn)rc[30]).Header = T("office_query.ganzhi_code");
+        ((DataGridTextColumn)rc[31]).Header = T("office_query.first_day_ganzhi");
+        ((DataGridTextColumn)rc[32]).Header = T("office_query.ganzhi_pinyin");
+        ((DataGridTextColumn)rc[33]).Header = T("office_query.last_year");
+        ((DataGridTextColumn)rc[34]).Header = T("office_query.nianhao_code");
+        ((DataGridTextColumn)rc[35]).Header = T("office_query.last_nianhao");
+        ((DataGridTextColumn)rc[36]).Header = T("office_query.nianhao_pinyin");
+        ((DataGridTextColumn)rc[37]).Header = T("office_query.last_nianhao_year");
+        ((DataGridTextColumn)rc[38]).Header = T("office_query.range_code");
+        ((DataGridTextColumn)rc[39]).Header = T("office_query.range_desc");
+        ((DataGridTextColumn)rc[40]).Header = T("office_query.last_range");
+        ((DataGridTextColumn)rc[41]).Header = T("office_query.last_month");
+        ((DataGridTextColumn)rc[42]).Header = T("office_query.last_intercalary");
+        ((DataGridTextColumn)rc[43]).Header = T("office_query.last_day");
+        ((DataGridTextColumn)rc[44]).Header = T("office_query.ganzhi_code");
+        ((DataGridTextColumn)rc[45]).Header = T("office_query.last_day_ganzhi");
+        ((DataGridTextColumn)rc[46]).Header = T("office_query.ganzhi_pinyin");
+        ((DataGridTextColumn)rc[47]).Header = T("office_query.institution_code");
+        ((DataGridTextColumn)rc[48]).Header = T("office_query.institution_name_code");
+        ((DataGridTextColumn)rc[49]).Header = T("browser.entry_institution");
+        ((DataGridTextColumn)rc[50]).Header = T("browser.address_id");
+        ((DataGridTextColumn)rc[51]).Header = T("browser.posting_addresses");
+        ((DataGridTextColumn)rc[52]).Header = "X";
+        ((DataGridTextColumn)rc[53]).Header = "Y";
+        ((DataGridTextColumn)rc[54]).Header = T("query.people_at_place");
+        ((DataGridTextColumn)rc[55]).Header = T("office_query.source_id");
+        ((DataGridTextColumn)rc[56]).Header = T("browser.source_title");
+        ((DataGridTextColumn)rc[57]).Header = T("browser.address_pages");
+        ((DataGridTextColumn)rc[58]).Header = T("browser.notes");
 
         var pc = _gridPeople.Columns;
         ((DataGridTextColumn)pc[0]).Header = T("browser.grid_person_id");
@@ -473,16 +492,16 @@ public partial class OfficeQueryWindow : Window {
     }
 
     private void UpdateSelectedPersonPlacesText() {
-        _txtSelectedPersonPlaces.Text = FormatSelectedPlaces(_selectedPersonPlaceIds);
+        _txtSelectedPersonPlaces.Text = FormatSelectedPlaces(_selectedPersonPlaceIds, T("office_query.all_person_places"));
     }
 
     private void UpdateSelectedOfficePlacesText() {
-        _txtSelectedOfficePlaces.Text = FormatSelectedPlaces(_selectedOfficePlaceIds);
+        _txtSelectedOfficePlaces.Text = FormatSelectedPlaces(_selectedOfficePlaceIds, T("office_query.all_office_places"));
     }
 
-    private string FormatSelectedPlaces(IReadOnlyCollection<int> placeIds) {
+    private string FormatSelectedPlaces(IReadOnlyCollection<int> placeIds, string defaultLabel) {
         if (placeIds.Count == 0) {
-            return T("office_query.all_places");
+            return defaultLabel;
         }
 
         var labels = _placeOptions

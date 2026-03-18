@@ -124,6 +124,73 @@ public sealed class QueryPickerBehaviorTests {
     }
 
     [AvaloniaFact]
+    public void OfficeQueryWindow_UsesDistinctDefaultLabels_ForPersonAndOfficePlaces() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var window = new OfficeQueryWindow(string.Empty, localization);
+        try {
+            SetPrivateField(window, "_placeOptions", Array.Empty<PlaceOption>());
+            SetPrivateField(window, "_selectedPersonPlaceIds", new List<int>());
+            SetPrivateField(window, "_selectedOfficePlaceIds", new List<int>());
+
+            InvokePrivate(window, "UpdateSelectedPersonPlacesText");
+            InvokePrivate(window, "UpdateSelectedOfficePlacesText");
+
+            var personPlaces = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedPersonPlaces");
+            var officePlaces = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedOfficePlaces");
+
+            Assert.Equal("All people places", personPlaces.Text);
+            Assert.Equal("All office places", officePlaces.Text);
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void OfficeQueryWindow_BuildRequest_SeparatesPersonAndOfficePlaceSelections() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var window = new OfficeQueryWindow(string.Empty, localization);
+        try {
+            var personPlaces = new[] {
+                new PlaceOption(10, "Fu Zhou", "福州", null, 960, 1279, null, null, null, null, null, null)
+            };
+            var officePlaces = new[] {
+                new PlaceOption(20, "Lin An", "臨安", null, 960, 1279, null, null, null, null, null, null)
+            };
+
+            SetPrivateField(window, "_placeOptions", personPlaces.Concat(officePlaces).ToArray());
+            SetPrivateField(window, "_selectedPersonPlaceIds", new List<int> { 10 });
+            SetPrivateField(window, "_selectedOfficePlaceIds", new List<int> { 20 });
+
+            var chkPerson = AvaloniaUiTestHelper.FindRequiredControl<CheckBox>(window, "ChkIncludePersonSubUnits");
+            var chkOffice = AvaloniaUiTestHelper.FindRequiredControl<CheckBox>(window, "ChkIncludeOfficeSubUnits");
+            chkPerson.IsChecked = true;
+            chkOffice.IsChecked = false;
+
+            InvokePrivate(window, "UpdateSelectedPersonPlacesText");
+            InvokePrivate(window, "UpdateSelectedOfficePlacesText");
+
+            var request = InvokePrivate<OfficeQueryRequest>(window, "BuildRequest");
+
+            Assert.Equal(new[] { 10 }, request.PersonPlaceIds);
+            Assert.True(request.IncludeSubordinatePersonUnits);
+            Assert.Equal(new[] { 20 }, request.OfficePlaceIds);
+            Assert.False(request.IncludeSubordinateOfficeUnits);
+
+            var personPlacesText = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedPersonPlaces");
+            var officePlacesText = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedOfficePlaces");
+
+            Assert.Contains("福州 / Fu Zhou", personPlacesText.Text);
+            Assert.Contains("臨安 / Lin An", officePlacesText.Text);
+        } finally {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void EntryCodePickerWindow_SearchWithoutTypeMapping_FallsBackToRootAndKeepsMatchVisible() {
         var localization = new AppLocalizationService();
         localization.SetLanguage(UiLanguage.English);
