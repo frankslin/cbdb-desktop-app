@@ -12,8 +12,8 @@ namespace Cbdb.App.Avalonia.Modules;
 
 public partial class EntryQueryWindow : Window {
     private readonly AppLocalizationService _localizationService;
-    private readonly IEntryQueryService _entryQueryService = new SqliteEntryQueryService();
-    private readonly IPlaceLookupService _placeLookupService = new SqlitePlaceLookupService();
+    private readonly IEntryQueryService _entryQueryService;
+    private readonly IPlaceLookupService _placeLookupService;
     private readonly string _sqlitePath;
 
     private EntryPickerData _entryPickerData = new(
@@ -60,13 +60,33 @@ public partial class EntryQueryWindow : Window {
     private TextBlock _txtStatusBar = null!;
 
     public EntryQueryWindow()
-        : this(string.Empty, new AppLocalizationService()) {
+        : this(string.Empty, new AppLocalizationService(), new SqliteEntryQueryService(), new SqlitePlaceLookupService()) {
     }
 
     public EntryQueryWindow(string sqlitePath, AppLocalizationService localizationService) {
         _sqlitePath = sqlitePath;
         _localizationService = localizationService;
+        _entryQueryService = new SqliteEntryQueryService();
+        _placeLookupService = new SqlitePlaceLookupService();
 
+        InitializeWindow();
+    }
+
+    public EntryQueryWindow(
+        string sqlitePath,
+        AppLocalizationService localizationService,
+        IEntryQueryService entryQueryService,
+        IPlaceLookupService placeLookupService
+    ) {
+        _sqlitePath = sqlitePath;
+        _localizationService = localizationService;
+        _entryQueryService = entryQueryService;
+        _placeLookupService = placeLookupService;
+
+        InitializeWindow();
+    }
+
+    private void InitializeWindow() {
         InitializeComponent();
         InitializeControls();
 

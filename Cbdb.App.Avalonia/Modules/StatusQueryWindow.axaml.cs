@@ -12,8 +12,8 @@ namespace Cbdb.App.Avalonia.Modules;
 
 public partial class StatusQueryWindow : Window {
     private readonly AppLocalizationService _localizationService;
-    private readonly IStatusQueryService _statusQueryService = new SqliteStatusQueryService();
-    private readonly IPlaceLookupService _placeLookupService = new SqlitePlaceLookupService();
+    private readonly IStatusQueryService _statusQueryService;
+    private readonly IPlaceLookupService _placeLookupService;
     private readonly string _sqlitePath;
 
     private StatusPickerData _statusPickerData = new(
@@ -56,13 +56,33 @@ public partial class StatusQueryWindow : Window {
     private TextBlock _txtStatusBar = null!;
 
     public StatusQueryWindow()
-        : this(string.Empty, new AppLocalizationService()) {
+        : this(string.Empty, new AppLocalizationService(), new SqliteStatusQueryService(), new SqlitePlaceLookupService()) {
     }
 
     public StatusQueryWindow(string sqlitePath, AppLocalizationService localizationService) {
         _sqlitePath = sqlitePath;
         _localizationService = localizationService;
+        _statusQueryService = new SqliteStatusQueryService();
+        _placeLookupService = new SqlitePlaceLookupService();
 
+        InitializeWindow();
+    }
+
+    public StatusQueryWindow(
+        string sqlitePath,
+        AppLocalizationService localizationService,
+        IStatusQueryService statusQueryService,
+        IPlaceLookupService placeLookupService
+    ) {
+        _sqlitePath = sqlitePath;
+        _localizationService = localizationService;
+        _statusQueryService = statusQueryService;
+        _placeLookupService = placeLookupService;
+
+        InitializeWindow();
+    }
+
+    private void InitializeWindow() {
         InitializeComponent();
         InitializeControls();
 
@@ -420,7 +440,7 @@ public partial class StatusQueryWindow : Window {
             return;
         }
 
-        _txtSelectedStatuses.Text = T("entry_query.multi_select");
+        _txtSelectedStatuses.Text = T("status_query.multi_select");
     }
 
     private void UpdateSelectedPlacesText() {

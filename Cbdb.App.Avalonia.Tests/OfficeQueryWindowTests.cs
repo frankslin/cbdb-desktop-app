@@ -6,6 +6,7 @@ using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Avalonia.Modules;
 using Cbdb.App.Avalonia.Tests.TestInfrastructure;
 using Cbdb.App.Core;
+using Microsoft.Data.Sqlite;
 using Xunit;
 
 namespace Cbdb.App.Avalonia.Tests;
@@ -17,7 +18,7 @@ public sealed class OfficeQueryWindowTests {
         localization.SetLanguage(UiLanguage.English);
 
         var sqlitePath = Path.Combine(Path.GetTempPath(), "office-query-window-fixture.sqlite3");
-        File.WriteAllText(sqlitePath, "fixture");
+        CreateDynastyFixture(sqlitePath);
 
         var officeService = new FakeOfficeQueryService();
         var placeService = new FakePlaceLookupService();
@@ -66,7 +67,7 @@ public sealed class OfficeQueryWindowTests {
         localization.SetLanguage(UiLanguage.English);
 
         var sqlitePath = Path.Combine(Path.GetTempPath(), "office-query-window-build-request.sqlite3");
-        File.WriteAllText(sqlitePath, "fixture");
+        CreateDynastyFixture(sqlitePath);
 
         var officeService = new FakeOfficeQueryService();
         var placeService = new FakePlaceLookupService();
@@ -132,6 +133,25 @@ public sealed class OfficeQueryWindowTests {
         var field = instance.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(field);
         field!.SetValue(instance, value);
+    }
+
+    private static void CreateDynastyFixture(string sqlitePath) {
+        TestSqliteFileHelper.Delete(sqlitePath);
+        using var connection = new SqliteConnection($"Data Source={sqlitePath}");
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+CREATE TABLE DYNASTIES (
+    c_dy INTEGER PRIMARY KEY,
+    c_dynasty TEXT,
+    c_dynasty_chn TEXT,
+    c_start INTEGER,
+    c_end INTEGER
+);
+INSERT INTO DYNASTIES VALUES (1, 'Song', '宋', 960, 1279);
+INSERT INTO DYNASTIES VALUES (2, 'Yuan', '元', 1271, 1368);
+""";
+        command.ExecuteNonQuery();
     }
 
     private sealed class FakeOfficeQueryService : IOfficeQueryService {

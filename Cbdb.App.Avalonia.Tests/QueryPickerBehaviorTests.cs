@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Avalonia.Modules;
 using Cbdb.App.Avalonia.Tests.TestInfrastructure;
