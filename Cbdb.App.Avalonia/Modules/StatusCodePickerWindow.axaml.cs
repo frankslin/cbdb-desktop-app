@@ -200,13 +200,13 @@ public partial class StatusCodePickerWindow : Window {
         item.Collapsed += TreeItem_Collapsed;
         item.PointerReleased += TreeItem_PointerReleased;
 
-        if (node.Children.Count > 0) {
-            if (_expandedTypeCodes.Contains(node.Code) || IsDescendantOfActiveNode(node)) {
-                item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
-            } else {
-                item.ItemsSource = new[] { UnloadedChildPlaceholder };
-            }
-        }
+        QueryPickerTreeHelper.InitializeChildren(
+            item,
+            node.Children,
+            _expandedTypeCodes.Contains(node.Code) || IsDescendantOfActiveNode(node),
+            UnloadedChildPlaceholder,
+            BuildTreeItem
+        );
 
         return item;
     }
@@ -229,47 +229,25 @@ public partial class StatusCodePickerWindow : Window {
 
     private void TreeItem_Expanded(object? sender, RoutedEventArgs e) {
         if (sender is TreeViewItem item && item.Tag is StatusTypeNode node) {
-            _expandedTypeCodes.Add(node.Code);
-            if (node.Children.Count > 0) {
-                item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
-            }
+            QueryPickerTreeHelper.ExpandNode(item, node.Code, node.Children, _expandedTypeCodes, BuildTreeItem);
         }
     }
 
     private void TreeItem_Collapsed(object? sender, RoutedEventArgs e) {
         if (sender is TreeViewItem { Tag: StatusTypeNode node }) {
-            _expandedTypeCodes.Remove(node.Code);
+            QueryPickerTreeHelper.CollapseNode(node.Code, _expandedTypeCodes);
         }
     }
 
     private void TreeItem_PointerReleased(object? sender, PointerReleasedEventArgs e) {
-        if (sender is not TreeViewItem item || item.Tag is not StatusTypeNode node || node.Children.Count == 0) {
-            return;
-        }
-
-        if (e.Source is not Visual sourceVisual) {
-            return;
-        }
-
-        var sourceTreeItem = sourceVisual.FindAncestorOfType<TreeViewItem>() ?? sourceVisual as TreeViewItem;
-        if (!ReferenceEquals(sourceTreeItem, item)) {
-            return;
-        }
-
-        if (e.Source is CheckBox or ToggleButton) {
-            return;
-        }
-
-        if (item.IsExpanded) {
-            item.IsExpanded = false;
-            _expandedTypeCodes.Remove(node.Code);
-        } else {
-            _expandedTypeCodes.Add(node.Code);
-            item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
-            item.IsExpanded = true;
-        }
-
-        e.Handled = true;
+        QueryPickerTreeHelper.TryHandleWholeRowToggle<StatusTypeNode>(
+            sender,
+            e,
+            _expandedTypeCodes,
+            node => node.Code,
+            node => node.Children,
+            BuildTreeItem
+        );
     }
 
     private void RenderOptions() {
@@ -279,7 +257,7 @@ public partial class StatusCodePickerWindow : Window {
         var visibleOptions = GetVisibleOptions();
         Control? highlightedRow = null;
         _btnSelectVisible.Content = visibleOptions.Count > 0 && visibleOptions.All(option => _selectedCodes.Contains(option.Code))
-            ? T("entry_query.deselect_all")
+            ? T("status_query.deselect_all")
             : T("status_query.select_all");
 
         foreach (var option in visibleOptions) {
@@ -418,7 +396,7 @@ public partial class StatusCodePickerWindow : Window {
         _highlightedStatusCode = statusCode;
 
         if (_pickerData.StatusCodeToTypeCode.TryGetValue(statusCode, out var typeCode)) {
-            var matchedNode = FindTypeNode(_pickerData.Root, typeCode);
+            var matchedNode = QueryPickerTreeHelper.FindNode(_pickerData.Root, typeCode, node => node.Code, node => node.Children);
             if (matchedNode is not null) {
                 _activeTypeNode = matchedNode;
                 if (typeCode.Length > 2) {
@@ -450,22 +428,7 @@ public partial class StatusCodePickerWindow : Window {
 
     private bool IsDescendantOfActiveNode(StatusTypeNode topNode) =>
         string.Equals(_activeTypeNode.Code, topNode.Code, StringComparison.OrdinalIgnoreCase)
-        || topNode.Children.Any(child => string.Equals(child.Code, _activeTypeNode.Code, StringComparison.OrdinalIgnoreCase));
-
-    private static StatusTypeNode? FindTypeNode(StatusTypeNode currentNode, string typeCode) {
-        if (string.Equals(currentNode.Code, typeCode, StringComparison.OrdinalIgnoreCase)) {
-            return currentNode;
-        }
-
-        foreach (var child in currentNode.Children) {
-            var match = FindTypeNode(child, typeCode);
-            if (match is not null) {
-                return match;
-            }
-        }
-
-        return null;
-    }
+        || QueryPickerTreeHelper.ContainsDescendant(topNode, _activeTypeNode.Code, node => node.Code, node => node.Children);
 
     private string GetTypeNodeLabel(StatusTypeNode node) {
         if (node.IsRoot) {

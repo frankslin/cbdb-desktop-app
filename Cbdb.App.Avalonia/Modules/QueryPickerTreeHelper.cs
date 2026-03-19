@@ -1,0 +1,121 @@
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.VisualTree;
+
+namespace Cbdb.App.Avalonia.Modules;
+
+internal static class QueryPickerTreeHelper {
+    public static void InitializeChildren<TNode>(
+        TreeViewItem item,
+        IReadOnlyList<TNode> children,
+        bool shouldMaterialize,
+        object unloadedChildPlaceholder,
+        Func<TNode, TreeViewItem> buildChildItem
+    ) {
+        if (children.Count == 0) {
+            return;
+        }
+
+        item.ItemsSource = shouldMaterialize
+            ? children.Select(buildChildItem).ToList()
+            : new[] { unloadedChildPlaceholder };
+    }
+
+    public static void ExpandNode<TNode>(
+        TreeViewItem item,
+        string code,
+        IReadOnlyList<TNode> children,
+        HashSet<string> expandedCodes,
+        Func<TNode, TreeViewItem> buildChildItem
+    ) {
+        expandedCodes.Add(code);
+        if (children.Count > 0) {
+            item.ItemsSource = children.Select(buildChildItem).ToList();
+        }
+    }
+
+    public static void CollapseNode(string code, HashSet<string> expandedCodes) {
+        expandedCodes.Remove(code);
+    }
+
+    public static bool TryHandleWholeRowToggle<TNode>(
+        object? sender,
+        PointerReleasedEventArgs e,
+        HashSet<string> expandedCodes,
+        Func<TNode, string> getCode,
+        Func<TNode, IReadOnlyList<TNode>> getChildren,
+        Func<TNode, TreeViewItem> buildChildItem
+    ) {
+        if (sender is not TreeViewItem item || item.Tag is not TNode node) {
+            return false;
+        }
+
+        var children = getChildren(node);
+        if (children.Count == 0) {
+            return false;
+        }
+
+        if (e.Source is not global::Avalonia.Visual sourceVisual) {
+            return false;
+        }
+
+        var sourceTreeItem = sourceVisual.FindAncestorOfType<TreeViewItem>() ?? sourceVisual as TreeViewItem;
+        if (!ReferenceEquals(sourceTreeItem, item)) {
+            return false;
+        }
+
+        if (e.Source is CheckBox or ToggleButton) {
+            return false;
+        }
+
+        var code = getCode(node);
+        if (item.IsExpanded) {
+            item.IsExpanded = false;
+            expandedCodes.Remove(code);
+        } else {
+            expandedCodes.Add(code);
+            item.ItemsSource = children.Select(buildChildItem).ToList();
+            item.IsExpanded = true;
+        }
+
+        e.Handled = true;
+        return true;
+    }
+
+    public static TNode? FindNode<TNode>(
+        TNode root,
+        string code,
+        Func<TNode, string> getCode,
+        Func<TNode, IEnumerable<TNode>> getChildren
+    ) where TNode : class {
+        if (string.Equals(getCode(root), code, StringComparison.OrdinalIgnoreCase)) {
+            return root;
+        }
+
+        foreach (var child in getChildren(root)) {
+            var found = FindNode(child, code, getCode, getChildren);
+            if (found is not null) {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
+    public static bool ContainsDescendant<TNode>(
+        TNode parent,
+        string code,
+        Func<TNode, string> getCode,
+        Func<TNode, IEnumerable<TNode>> getChildren
+    ) {
+        foreach (var child in getChildren(parent)) {
+            if (string.Equals(getCode(child), code, StringComparison.OrdinalIgnoreCase)
+                || ContainsDescendant(child, code, getCode, getChildren)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}

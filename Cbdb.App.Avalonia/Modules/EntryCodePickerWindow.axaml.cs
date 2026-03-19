@@ -184,13 +184,13 @@ public partial class EntryCodePickerWindow : Window {
         item.Collapsed += TreeItem_Collapsed;
         item.PointerReleased += TreeItem_PointerReleased;
 
-        if (node.Children.Count > 0) {
-            if (_expandedTypeCodes.Contains(node.Code) || IsDescendantOfActiveNode(node)) {
-                item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
-            } else {
-                item.ItemsSource = new[] { UnloadedChildPlaceholder };
-            }
-        }
+        QueryPickerTreeHelper.InitializeChildren(
+            item,
+            node.Children,
+            _expandedTypeCodes.Contains(node.Code) || IsDescendantOfActiveNode(node),
+            UnloadedChildPlaceholder,
+            BuildTreeItem
+        );
 
         return item;
     }
@@ -213,47 +213,25 @@ public partial class EntryCodePickerWindow : Window {
 
     private void TreeItem_Expanded(object? sender, RoutedEventArgs e) {
         if (sender is TreeViewItem item && item.Tag is EntryTypeNode node) {
-            _expandedTypeCodes.Add(node.Code);
-            if (node.Children.Count > 0) {
-                item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
-            }
+            QueryPickerTreeHelper.ExpandNode(item, node.Code, node.Children, _expandedTypeCodes, BuildTreeItem);
         }
     }
 
     private void TreeItem_Collapsed(object? sender, RoutedEventArgs e) {
         if (sender is TreeViewItem { Tag: EntryTypeNode node }) {
-            _expandedTypeCodes.Remove(node.Code);
+            QueryPickerTreeHelper.CollapseNode(node.Code, _expandedTypeCodes);
         }
     }
 
     private void TreeItem_PointerReleased(object? sender, PointerReleasedEventArgs e) {
-        if (sender is not TreeViewItem item || item.Tag is not EntryTypeNode node || node.Children.Count == 0) {
-            return;
-        }
-
-        if (e.Source is not Visual sourceVisual) {
-            return;
-        }
-
-        var sourceTreeItem = sourceVisual.FindAncestorOfType<TreeViewItem>() ?? sourceVisual as TreeViewItem;
-        if (!ReferenceEquals(sourceTreeItem, item)) {
-            return;
-        }
-
-        if (e.Source is CheckBox or ToggleButton) {
-            return;
-        }
-
-        if (item.IsExpanded) {
-            item.IsExpanded = false;
-            _expandedTypeCodes.Remove(node.Code);
-        } else {
-            _expandedTypeCodes.Add(node.Code);
-            item.ItemsSource = node.Children.Select(BuildTreeItem).ToList();
-            item.IsExpanded = true;
-        }
-
-        e.Handled = true;
+        QueryPickerTreeHelper.TryHandleWholeRowToggle<EntryTypeNode>(
+            sender,
+            e,
+            _expandedTypeCodes,
+            node => node.Code,
+            node => node.Children,
+            BuildTreeItem
+        );
     }
 
     private void RenderOptions() {
@@ -381,7 +359,7 @@ public partial class EntryCodePickerWindow : Window {
         _highlightedEntryCode = matchCode;
 
         if (_pickerData.EntryCodeToTypeCode.TryGetValue(matchCode, out var typeCode)) {
-            var node = FindNode(_pickerData.Root, typeCode);
+            var node = QueryPickerTreeHelper.FindNode(_pickerData.Root, typeCode, item => item.Code, item => item.Children);
             if (node is not null) {
                 _activeTypeNode = node;
             }
@@ -412,21 +390,6 @@ public partial class EntryCodePickerWindow : Window {
         _txtSelectionHint.Text = string.Empty;
     }
 
-    private static EntryTypeNode? FindNode(EntryTypeNode root, string code) {
-        if (string.Equals(root.Code, code, StringComparison.OrdinalIgnoreCase)) {
-            return root;
-        }
-
-        foreach (var child in root.Children) {
-            var found = FindNode(child, code);
-            if (found is not null) {
-                return found;
-            }
-        }
-
-        return null;
-    }
-
     private static IEnumerable<EntryTypeNode> EnumerateNodes(EntryTypeNode root) {
         yield return root;
         foreach (var child in root.Children) {
@@ -437,17 +400,7 @@ public partial class EntryCodePickerWindow : Window {
     }
 
     private bool IsDescendantOfActiveNode(EntryTypeNode node) {
-        return ContainsNode(node, _activeTypeNode.Code);
-    }
-
-    private static bool ContainsNode(EntryTypeNode parent, string code) {
-        foreach (var child in parent.Children) {
-            if (string.Equals(child.Code, code, StringComparison.OrdinalIgnoreCase) || ContainsNode(child, code)) {
-                return true;
-            }
-        }
-
-        return false;
+        return QueryPickerTreeHelper.ContainsDescendant(node, _activeTypeNode.Code, item => item.Code, item => item.Children);
     }
 
     private string GetTypeNodeLabel(EntryTypeNode node) {
