@@ -5,7 +5,55 @@ using Avalonia.VisualTree;
 
 namespace Cbdb.App.Avalonia.Modules;
 
+internal sealed class QueryPickerSearchState {
+    private List<string> _matches = new();
+
+    public IReadOnlyList<string> Matches => _matches;
+    public int Index { get; private set; } = -1;
+    public bool HasActiveMatch => _matches.Count > 0 && Index >= 0;
+
+    public void Reset() {
+        _matches.Clear();
+        Index = -1;
+    }
+
+    public void Replace(IEnumerable<string> matches) {
+        _matches = matches.ToList();
+        Index = -1;
+    }
+
+    public string? MoveNext() {
+        if (_matches.Count == 0) {
+            return null;
+        }
+
+        Index = (Index + 1) % _matches.Count;
+        return _matches[Index];
+    }
+}
+
 internal static class QueryPickerTreeHelper {
+    public static IReadOnlyList<TOption> LimitVisibleOptionsPreservingSelected<TOption>(
+        IEnumerable<TOption> options,
+        Func<TOption, string> getCode,
+        IReadOnlySet<string> selectedCodes,
+        int maxVisibleCount
+    ) {
+        var optionList = options.ToList();
+        var selected = optionList
+            .Where(option => selectedCodes.Contains(getCode(option)))
+            .ToList();
+
+        var remainingSlots = Math.Max(0, maxVisibleCount - selected.Count);
+        if (remainingSlots == 0) {
+            return selected;
+        }
+
+        return selected
+            .Concat(optionList.Where(option => !selectedCodes.Contains(getCode(option))).Take(remainingSlots))
+            .ToList();
+    }
+
     public static void InitializeChildren<TNode>(
         TreeViewItem item,
         IReadOnlyList<TNode> children,

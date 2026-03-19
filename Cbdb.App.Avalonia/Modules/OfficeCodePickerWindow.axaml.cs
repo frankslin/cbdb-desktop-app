@@ -41,8 +41,7 @@ public partial class OfficeCodePickerWindow : Window {
     private Button _btnApply = null!;
     private OfficeTypeNode _activeTypeNode = new(OfficePickerData.RootCode, null, null, Array.Empty<OfficeTypeNode>(), Array.Empty<string>());
     private string? _highlightedOfficeCode;
-    private List<string> _searchMatches = new();
-    private int _searchMatchIndex = -1;
+    private readonly QueryPickerSearchState _searchState = new();
     private bool _preserveHighlightOnTreeSelection;
 
     public OfficeCodePickerWindow()
@@ -326,30 +325,21 @@ public partial class OfficeCodePickerWindow : Window {
     }
 
     private IReadOnlyList<OfficeCodeOption> GetVisibleOptions() {
-        IReadOnlyList<OfficeCodeOption> LimitVisibleOptions(IEnumerable<OfficeCodeOption> options, int maxVisibleCount) {
-            var optionList = options.ToList();
-            var selected = optionList
-                .Where(option => _selectedCodes.Contains(option.Code))
-                .ToList();
-
-            var remainingSlots = Math.Max(0, maxVisibleCount - selected.Count);
-            if (remainingSlots == 0) {
-                return selected;
-            }
-
-            return selected
-                .Concat(optionList.Where(option => !_selectedCodes.Contains(option.Code)).Take(remainingSlots))
-                .ToList();
-        }
-
         if (_activeTypeNode.IsRoot) {
-            return LimitVisibleOptions(_allOptions, MaxVisibleOptionsAtRoot);
+            return QueryPickerTreeHelper.LimitVisibleOptionsPreservingSelected(
+                _allOptions,
+                option => option.Code,
+                _selectedCodes,
+                MaxVisibleOptionsAtRoot
+            );
         }
 
-        return LimitVisibleOptions(
+        return QueryPickerTreeHelper.LimitVisibleOptionsPreservingSelected(
             _activeTypeNode.OfficeCodes
-            .Where(_optionByCode.ContainsKey)
-            .Select(code => _optionByCode[code]),
+                .Where(_optionByCode.ContainsKey)
+                .Select(code => _optionByCode[code]),
+            option => option.Code,
+            _selectedCodes,
             MaxVisibleOptionsPerCategory
         );
     }
@@ -363,8 +353,8 @@ public partial class OfficeCodePickerWindow : Window {
             return;
         }
 
-        if (!moveNext || _searchMatches.Count == 0) {
-            _searchMatches = _allOptions
+        if (!moveNext || _searchState.Matches.Count == 0) {
+            _searchState.Replace(_allOptions
                 .Where(option =>
                     option.Code.Contains(keyword, StringComparison.OrdinalIgnoreCase)
                     || (option.Description?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
@@ -374,17 +364,19 @@ public partial class OfficeCodePickerWindow : Window {
                     || (option.Dynasty?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
                     || (option.DynastyChn?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false))
                 .Select(option => option.Code)
-                .ToList();
-            _searchMatchIndex = -1;
+            );
         }
 
-        if (_searchMatches.Count == 0) {
+        if (_searchState.Matches.Count == 0) {
             _txtSelectionHint.Text = T("office_query.search_no_match");
             return;
         }
 
-        _searchMatchIndex = (_searchMatchIndex + 1) % _searchMatches.Count;
-        var matchCode = _searchMatches[_searchMatchIndex];
+        var matchCode = _searchState.MoveNext();
+        if (matchCode is null) {
+            _txtSelectionHint.Text = T("office_query.search_no_match");
+            return;
+        }
         _highlightedOfficeCode = matchCode;
 
         if (_pickerData.OfficeCodeToTypeCode.TryGetValue(matchCode, out var typeCode)) {
@@ -400,13 +392,13 @@ public partial class OfficeCodePickerWindow : Window {
         RenderTypeTree();
         _preserveHighlightOnTreeSelection = false;
         RenderOptions();
-        _txtSelectionHint.Text = string.Format(T("office_query.search_result"), _searchMatchIndex + 1, _searchMatches.Count);
+        _txtSelectionHint.Text = string.Format(T("office_query.search_result"), _searchState.Index + 1, _searchState.Matches.Count);
     }
 
     private void UpdateSummary() {
         _txtSummary.Text = string.Format(T("office_query.picker_summary"), _selectedCodes.Count, _allOptions.Count);
-        if (_searchMatches.Count > 0 && _searchMatchIndex >= 0) {
-            _txtSelectionHint.Text = string.Format(T("office_query.search_result"), _searchMatchIndex + 1, _searchMatches.Count);
+        if (_searchState.HasActiveMatch) {
+            _txtSelectionHint.Text = string.Format(T("office_query.search_result"), _searchState.Index + 1, _searchState.Matches.Count);
             return;
         }
 
@@ -414,18 +406,8 @@ public partial class OfficeCodePickerWindow : Window {
     }
 
     private void ResetSearchState() {
-        _searchMatches.Clear();
-        _searchMatchIndex = -1;
+        _searchState.Reset();
         _txtSelectionHint.Text = string.Empty;
-    }
-
-    private static IEnumerable<OfficeTypeNode> EnumerateNodes(OfficeTypeNode root) {
-        yield return root;
-        foreach (var child in root.Children) {
-            foreach (var descendant in EnumerateNodes(child)) {
-                yield return descendant;
-            }
-        }
     }
 
     private bool IsDescendantOfActiveNode(OfficeTypeNode node) {

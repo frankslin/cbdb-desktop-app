@@ -39,8 +39,7 @@ public partial class StatusCodePickerWindow : Window {
     private Button _btnApply = null!;
     private StatusTypeNode _activeTypeNode = new(StatusPickerData.RootCode, null, null, Array.Empty<StatusTypeNode>(), Array.Empty<string>());
     private string? _highlightedStatusCode;
-    private List<string> _searchMatches = new();
-    private int _searchMatchIndex = -1;
+    private readonly QueryPickerSearchState _searchState = new();
     private bool _preserveHighlightOnTreeSelection;
 
     public StatusCodePickerWindow()
@@ -332,7 +331,7 @@ public partial class StatusCodePickerWindow : Window {
 
         _btnSelectVisible.IsEnabled = !_activeTypeNode.IsRoot && visibleOptions.Count > 0;
         _btnClearVisible.IsEnabled = !_activeTypeNode.IsRoot && visibleOptions.Count > 0;
-        _btnFindNext.IsEnabled = _searchMatches.Count > 1;
+        _btnFindNext.IsEnabled = _searchState.Matches.Count > 1;
 
         UpdateSummary(visibleOptions.Count);
         if (highlightedRow is not null) {
@@ -369,27 +368,33 @@ public partial class StatusCodePickerWindow : Window {
             return;
         }
 
-        if (!moveNext || _searchMatches.Count == 0) {
-            _searchMatches = _allOptions
+        if (!moveNext || _searchState.Matches.Count == 0) {
+            _searchState.Replace(_allOptions
                 .Where(option =>
                     option.Code.Contains(keyword, StringComparison.OrdinalIgnoreCase)
                     || (!string.IsNullOrWhiteSpace(option.Description) && option.Description.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                     || (!string.IsNullOrWhiteSpace(option.DescriptionChn) && option.DescriptionChn.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                 )
                 .Select(option => option.Code)
-                .ToList();
-            _searchMatchIndex = -1;
+            );
         }
 
-        if (_searchMatches.Count == 0) {
+        if (_searchState.Matches.Count == 0) {
             _highlightedStatusCode = null;
             RenderOptions();
             _txtSelectionHint.Text = T("status_query.search_no_match");
             return;
         }
 
-        _searchMatchIndex = (_searchMatchIndex + 1) % _searchMatches.Count;
-        ActivateSearchMatch(_searchMatches[_searchMatchIndex]);
+        var matchCode = _searchState.MoveNext();
+        if (matchCode is null) {
+            _highlightedStatusCode = null;
+            RenderOptions();
+            _txtSelectionHint.Text = T("status_query.search_no_match");
+            return;
+        }
+
+        ActivateSearchMatch(matchCode);
     }
 
     private void ActivateSearchMatch(string statusCode) {
@@ -413,14 +418,13 @@ public partial class StatusCodePickerWindow : Window {
         RenderOptions();
         _txtSelectionHint.Text = string.Format(
             T("status_query.search_result"),
-            _searchMatchIndex + 1,
-            _searchMatches.Count
+            _searchState.Index + 1,
+            _searchState.Matches.Count
         );
     }
 
     private void ResetSearchState() {
-        _searchMatches.Clear();
-        _searchMatchIndex = -1;
+        _searchState.Reset();
         _highlightedStatusCode = null;
         _btnFindNext.IsEnabled = false;
         _txtSelectionHint.Text = string.Empty;
@@ -445,11 +449,11 @@ public partial class StatusCodePickerWindow : Window {
     private void UpdateSummary(int? visibleCount = null) {
         var count = _selectedCodes.Count;
         _txtSummary.Text = string.Format(T("status_query.picker_summary"), count, _allOptions.Count);
-        if (_searchMatches.Count > 0 && _searchMatchIndex >= 0) {
+        if (_searchState.HasActiveMatch) {
             _txtSelectionHint.Text = string.Format(
                 T("status_query.search_result"),
-                _searchMatchIndex + 1,
-                _searchMatches.Count
+                _searchState.Index + 1,
+                _searchState.Matches.Count
             );
             return;
         }

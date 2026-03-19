@@ -39,8 +39,7 @@ public partial class EntryCodePickerWindow : Window {
     private Button _btnApply = null!;
     private EntryTypeNode _activeTypeNode = new(EntryPickerData.RootCode, null, null, Array.Empty<EntryTypeNode>(), Array.Empty<string>());
     private string? _highlightedEntryCode;
-    private List<string> _searchMatches = new();
-    private int _searchMatchIndex = -1;
+    private readonly QueryPickerSearchState _searchState = new();
     private bool _preserveHighlightOnTreeSelection;
 
     public EntryCodePickerWindow()
@@ -338,24 +337,26 @@ public partial class EntryCodePickerWindow : Window {
             return;
         }
 
-        if (!moveNext || _searchMatches.Count == 0) {
-            _searchMatches = _allOptions
+        if (!moveNext || _searchState.Matches.Count == 0) {
+            _searchState.Replace(_allOptions
                 .Where(option =>
                     option.Code.Contains(keyword, StringComparison.OrdinalIgnoreCase)
                     || (option.Description?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
                     || (option.DescriptionChn?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false))
                 .Select(option => option.Code)
-                .ToList();
-            _searchMatchIndex = -1;
+            );
         }
 
-        if (_searchMatches.Count == 0) {
+        if (_searchState.Matches.Count == 0) {
             _txtSelectionHint.Text = T("entry_query.search_no_match");
             return;
         }
 
-        _searchMatchIndex = (_searchMatchIndex + 1) % _searchMatches.Count;
-        var matchCode = _searchMatches[_searchMatchIndex];
+        var matchCode = _searchState.MoveNext();
+        if (matchCode is null) {
+            _txtSelectionHint.Text = T("entry_query.search_no_match");
+            return;
+        }
         _highlightedEntryCode = matchCode;
 
         if (_pickerData.EntryCodeToTypeCode.TryGetValue(matchCode, out var typeCode)) {
@@ -371,13 +372,13 @@ public partial class EntryCodePickerWindow : Window {
         RenderTypeTree();
         _preserveHighlightOnTreeSelection = false;
         RenderOptions();
-        _txtSelectionHint.Text = string.Format(T("entry_query.search_result"), _searchMatchIndex + 1, _searchMatches.Count);
+        _txtSelectionHint.Text = string.Format(T("entry_query.search_result"), _searchState.Index + 1, _searchState.Matches.Count);
     }
 
     private void UpdateSummary() {
         _txtSummary.Text = string.Format(T("entry_query.picker_summary"), _selectedCodes.Count, _allOptions.Count);
-        if (_searchMatches.Count > 0 && _searchMatchIndex >= 0) {
-            _txtSelectionHint.Text = string.Format(T("entry_query.search_result"), _searchMatchIndex + 1, _searchMatches.Count);
+        if (_searchState.HasActiveMatch) {
+            _txtSelectionHint.Text = string.Format(T("entry_query.search_result"), _searchState.Index + 1, _searchState.Matches.Count);
             return;
         }
 
@@ -385,18 +386,8 @@ public partial class EntryCodePickerWindow : Window {
     }
 
     private void ResetSearchState() {
-        _searchMatches.Clear();
-        _searchMatchIndex = -1;
+        _searchState.Reset();
         _txtSelectionHint.Text = string.Empty;
-    }
-
-    private static IEnumerable<EntryTypeNode> EnumerateNodes(EntryTypeNode root) {
-        yield return root;
-        foreach (var child in root.Children) {
-            foreach (var descendant in EnumerateNodes(child)) {
-                yield return descendant;
-            }
-        }
     }
 
     private bool IsDescendantOfActiveNode(EntryTypeNode node) {
