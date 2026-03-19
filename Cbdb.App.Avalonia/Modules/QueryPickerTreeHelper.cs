@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Cbdb.App.Avalonia.Modules;
@@ -33,6 +34,35 @@ internal sealed class QueryPickerSearchState {
 }
 
 internal static class QueryPickerTreeHelper {
+    public static void BindSelectionCheckBox(
+        CheckBox checkBox,
+        string code,
+        ISet<string> selectedCodes,
+        Action onSelectionChanged
+    ) {
+        checkBox.Tag = code;
+        checkBox.IsCheckedChanged += (_, _) => {
+            if (checkBox.IsChecked == true) {
+                selectedCodes.Add(code);
+            } else {
+                selectedCodes.Remove(code);
+            }
+
+            onSelectionChanged();
+        };
+    }
+
+    public static void BindWholeRowToggle(Border row, CheckBox checkBox) {
+        row.PointerPressed += (_, e) => {
+            if (e.Source is CheckBox) {
+                return;
+            }
+
+            checkBox.IsChecked = checkBox.IsChecked != true;
+            e.Handled = true;
+        };
+    }
+
     public static IReadOnlyList<TOption> LimitVisibleOptionsPreservingSelected<TOption>(
         IEnumerable<TOption> options,
         Func<TOption, string> getCode,
@@ -113,10 +143,13 @@ internal static class QueryPickerTreeHelper {
             return false;
         }
 
-        if (e.Source is CheckBox or ToggleButton) {
+        var sourceToggle = sourceVisual.FindAncestorOfType<ToggleButton>() ?? sourceVisual as ToggleButton;
+        if (sourceToggle is not null) {
             return false;
         }
 
+        var scrollViewer = item.FindAncestorOfType<ScrollViewer>();
+        var previousOffset = scrollViewer?.Offset;
         var code = getCode(node);
         if (item.IsExpanded) {
             item.IsExpanded = false;
@@ -125,6 +158,10 @@ internal static class QueryPickerTreeHelper {
             expandedCodes.Add(code);
             item.ItemsSource = children.Select(buildChildItem).ToList();
             item.IsExpanded = true;
+        }
+
+        if (scrollViewer is not null && previousOffset.HasValue) {
+            Dispatcher.UIThread.Post(() => scrollViewer.Offset = previousOffset.Value);
         }
 
         e.Handled = true;
