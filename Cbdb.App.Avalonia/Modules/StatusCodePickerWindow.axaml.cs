@@ -275,19 +275,16 @@ public partial class StatusCodePickerWindow : Window {
             };
 
             var checkBox = new CheckBox {
-                Tag = option.Code,
                 IsChecked = _selectedCodes.Contains(option.Code),
                 VerticalAlignment = VerticalAlignment.Center
             };
-            checkBox.IsCheckedChanged += OptionCheckBox_Changed;
-            row.PointerPressed += (_, e) => {
-                if (e.Source is CheckBox) {
-                    return;
-                }
-
-                checkBox.IsChecked = checkBox.IsChecked != true;
-                e.Handled = true;
-            };
+            QueryPickerTreeHelper.BindSelectionCheckBox(
+                checkBox,
+                option.Code,
+                _selectedCodes,
+                () => UpdateSummary(GetVisibleOptions().Count)
+            );
+            QueryPickerTreeHelper.BindWholeRowToggle(row, checkBox);
 
             var descText = new TextBlock {
                 Text = option.Description ?? option.Code,
@@ -337,20 +334,6 @@ public partial class StatusCodePickerWindow : Window {
         if (highlightedRow is not null) {
             Dispatcher.UIThread.Post(() => highlightedRow.BringIntoView());
         }
-    }
-
-    private void OptionCheckBox_Changed(object? sender, RoutedEventArgs e) {
-        if (sender is not CheckBox checkBox || checkBox.Tag is not string code) {
-            return;
-        }
-
-        if (checkBox.IsChecked == true) {
-            _selectedCodes.Add(code);
-        } else {
-            _selectedCodes.Remove(code);
-        }
-
-        UpdateSummary(GetVisibleOptions().Count);
     }
 
     private List<StatusCodeOption> GetVisibleOptions() =>

@@ -262,23 +262,8 @@ public partial class EntryCodePickerWindow : Window {
                 IsChecked = isSelected,
                 VerticalAlignment = VerticalAlignment.Top
             };
-            checkBox.IsCheckedChanged += (_, _) => {
-                if (checkBox.IsChecked == true) {
-                    _selectedCodes.Add(option.Code);
-                } else {
-                    _selectedCodes.Remove(option.Code);
-                }
-
-                UpdateSummary();
-            };
-            row.PointerPressed += (_, e) => {
-                if (e.Source is CheckBox) {
-                    return;
-                }
-
-                checkBox.IsChecked = checkBox.IsChecked != true;
-                e.Handled = true;
-            };
+            QueryPickerTreeHelper.BindSelectionCheckBox(checkBox, option.Code, _selectedCodes, UpdateSummary);
+            QueryPickerTreeHelper.BindWholeRowToggle(row, checkBox);
 
             var textPanel = new StackPanel {
                 Margin = new Thickness(8, 0, 0, 0),
