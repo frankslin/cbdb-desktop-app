@@ -53,7 +53,7 @@
             <TextBlock x:Name="TxtCurrentType" Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" FontWeight="Bold" />
           </Grid>
           <TextBlock x:Name="TxtSummary" Grid.Row="1" Margin="0,10,0,0" Foreground="#444" />
-          <ScrollViewer Grid.Row="2" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
+          <ScrollViewer x:Name="OptionsScrollViewer" Grid.Row="2" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
             <StackPanel x:Name="OfficeOptionHost" Spacing="6" />
           </ScrollViewer>
         </Grid>

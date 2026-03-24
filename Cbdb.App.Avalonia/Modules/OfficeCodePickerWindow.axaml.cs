@@ -14,8 +14,9 @@ using Cbdb.App.Core;
 namespace Cbdb.App.Avalonia.Modules;
 
 public partial class OfficeCodePickerWindow : Window {
-    private const int MaxVisibleOptionsAtRoot = 200;
-    private const int MaxVisibleOptionsPerCategory = 300;
+    private const int InitialVisibleOptionsAtRoot = 200;
+    private const int InitialVisibleOptionsPerCategory = 300;
+    private const int VisibleOptionsLoadStep = 150;
     private static readonly object UnloadedChildPlaceholder = new();
 
     private readonly AppLocalizationService _localizationService;
@@ -34,6 +35,7 @@ public partial class OfficeCodePickerWindow : Window {
     private Button _btnClearVisible = null!;
     private TextBlock _txtCurrentType = null!;
     private TextBlock _txtSummary = null!;
+    private ScrollViewer _optionsScrollViewer = null!;
     private StackPanel _officeOptionHost = null!;
     private TextBlock _txtSelectionHint = null!;
     private Button _btnClearAll = null!;
@@ -43,6 +45,9 @@ public partial class OfficeCodePickerWindow : Window {
     private string? _highlightedOfficeCode;
     private readonly QueryPickerSearchState _searchState = new();
     private bool _preserveHighlightOnTreeSelection;
+    private List<OfficeCodeOption> _orderedVisibleOptions = new();
+    private int _visibleOptionLimit;
+    private string _visibleOptionsStateKey = string.Empty;
 
     public OfficeCodePickerWindow()
         : this(
@@ -89,6 +94,8 @@ public partial class OfficeCodePickerWindow : Window {
         _btnClearVisible = this.FindControl<Button>("BtnClearVisible") ?? throw new InvalidOperationException("BtnClearVisible not found.");
         _txtCurrentType = this.FindControl<TextBlock>("TxtCurrentType") ?? throw new InvalidOperationException("TxtCurrentType not found.");
         _txtSummary = this.FindControl<TextBlock>("TxtSummary") ?? throw new InvalidOperationException("TxtSummary not found.");
+        _optionsScrollViewer = this.FindControl<ScrollViewer>("OptionsScrollViewer") ?? throw new InvalidOperationException("OptionsScrollViewer not found.");
+        _optionsScrollViewer.ScrollChanged += OptionsScrollViewer_ScrollChanged;
         _officeOptionHost = this.FindControl<StackPanel>("OfficeOptionHost") ?? throw new InvalidOperationException("OfficeOptionHost not found.");
         _txtSelectionHint = this.FindControl<TextBlock>("TxtSelectionHint") ?? throw new InvalidOperationException("TxtSelectionHint not found.");
         _btnClearAll = this.FindControl<Button>("BtnClearAll") ?? throw new InvalidOperationException("BtnClearAll not found.");
@@ -310,23 +317,28 @@ public partial class OfficeCodePickerWindow : Window {
     }
 
     private IReadOnlyList<OfficeCodeOption> GetVisibleOptions() {
-        if (_activeTypeNode.IsRoot) {
-            return QueryPickerTreeHelper.LimitVisibleOptionsPreservingSelected(
-                _allOptions,
-                option => option.Code,
-                _selectedCodes,
-                MaxVisibleOptionsAtRoot
-            );
+        var stateKey = $"{_activeTypeNode.Code}|{_txtSearch.Text?.Trim()}";
+        if (!string.Equals(_visibleOptionsStateKey, stateKey, StringComparison.Ordinal)) {
+            _visibleOptionsStateKey = stateKey;
+            _visibleOptionLimit = _activeTypeNode.IsRoot ? InitialVisibleOptionsAtRoot : InitialVisibleOptionsPerCategory;
         }
 
-        return QueryPickerTreeHelper.LimitVisibleOptionsPreservingSelected(
-            _activeTypeNode.OfficeCodes
+        _orderedVisibleOptions = BuildOrderedVisibleOptions().ToList();
+        return _orderedVisibleOptions.Take(_visibleOptionLimit).ToList();
+    }
+
+    private IEnumerable<OfficeCodeOption> BuildOrderedVisibleOptions() {
+        IEnumerable<OfficeCodeOption> source = _activeTypeNode.IsRoot
+            ? _allOptions
+            : _activeTypeNode.OfficeCodes
                 .Where(_optionByCode.ContainsKey)
-                .Select(code => _optionByCode[code]),
-            option => option.Code,
-            _selectedCodes,
-            MaxVisibleOptionsPerCategory
-        );
+                .Select(code => _optionByCode[code]);
+
+        var selected = source
+            .Where(option => _selectedCodes.Contains(option.Code))
+            .ToList();
+
+        return selected.Concat(source.Where(option => !_selectedCodes.Contains(option.Code)));
     }
 
     private void RunSearch(bool moveNext) {
@@ -393,6 +405,25 @@ public partial class OfficeCodePickerWindow : Window {
     private void ResetSearchState() {
         _searchState.Reset();
         _txtSelectionHint.Text = string.Empty;
+        _visibleOptionsStateKey = string.Empty;
+    }
+
+    private void OptionsScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e) {
+        if (sender is not ScrollViewer viewer || _orderedVisibleOptions.Count == 0) {
+            return;
+        }
+
+        if (_visibleOptionLimit >= _orderedVisibleOptions.Count) {
+            return;
+        }
+
+        var remaining = viewer.Extent.Height - (viewer.Offset.Y + viewer.Viewport.Height);
+        if (remaining > 120) {
+            return;
+        }
+
+        _visibleOptionLimit = Math.Min(_orderedVisibleOptions.Count, _visibleOptionLimit + VisibleOptionsLoadStep);
+        RenderOptions();
     }
 
     private bool IsDescendantOfActiveNode(OfficeTypeNode node) {

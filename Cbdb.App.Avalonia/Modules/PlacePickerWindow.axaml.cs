@@ -12,8 +12,9 @@ using Cbdb.App.Core;
 namespace Cbdb.App.Avalonia.Modules;
 
 public partial class PlacePickerWindow : Window {
-    private const int MaxVisibleOptionsWithoutSearch = 300;
-    private const int MaxVisibleOptionsWithSearch = 500;
+    private const int InitialVisibleOptionsWithoutSearch = 300;
+    private const int InitialVisibleOptionsWithSearch = 500;
+    private const int VisibleOptionsLoadStep = 200;
 
     private readonly AppLocalizationService _localizationService;
     private readonly List<PlaceOption> _allOptions;
@@ -27,6 +28,7 @@ public partial class PlacePickerWindow : Window {
     private TextBlock _txtSummary = null!;
     private Button _btnSelectVisible = null!;
     private Button _btnInvertVisible = null!;
+    private ScrollViewer _optionsScrollViewer = null!;
     private ItemsControl _placeOptionHost = null!;
     private Button _btnClearAll = null!;
     private Button _btnCancel = null!;
@@ -34,6 +36,8 @@ public partial class PlacePickerWindow : Window {
     private string? _activeKeyword;
     private int? _lastToggledAddressId;
     private List<int>? _stickyVisibleAddressIds;
+    private List<PlaceOptionRow> _orderedRows = new();
+    private int _visibleRowLimit;
 
     public PlacePickerWindow()
         : this(new AppLocalizationService(), Array.Empty<PlaceOption>()) {
@@ -79,6 +83,8 @@ public partial class PlacePickerWindow : Window {
         _txtSummary = this.FindControl<TextBlock>("TxtSummary") ?? throw new InvalidOperationException("TxtSummary not found.");
         _btnSelectVisible = this.FindControl<Button>("BtnSelectVisible") ?? throw new InvalidOperationException("BtnSelectVisible not found.");
         _btnInvertVisible = this.FindControl<Button>("BtnInvertVisible") ?? throw new InvalidOperationException("BtnInvertVisible not found.");
+        _optionsScrollViewer = this.FindControl<ScrollViewer>("OptionsScrollViewer") ?? throw new InvalidOperationException("OptionsScrollViewer not found.");
+        _optionsScrollViewer.ScrollChanged += OptionsScrollViewer_ScrollChanged;
         _placeOptionHost = this.FindControl<ItemsControl>("PlaceOptionHost") ?? throw new InvalidOperationException("PlaceOptionHost not found.");
         _btnClearAll = this.FindControl<Button>("BtnClearAll") ?? throw new InvalidOperationException("BtnClearAll not found.");
         _btnCancel = this.FindControl<Button>("BtnCancel") ?? throw new InvalidOperationException("BtnCancel not found.");
@@ -125,14 +131,14 @@ public partial class PlacePickerWindow : Window {
         _txtSearch.Text = string.Empty;
         _activeKeyword = null;
         _stickyVisibleAddressIds = null;
-        RefreshVisibleRows();
+        RefreshVisibleRows(resetLimit: true);
     }
 
     private void BtnClearAll_Click(object? sender, RoutedEventArgs e) {
         _selectedPlaceIds.Clear();
         _stickyVisibleAddressIds = null;
         SetRowsSelectionState(_rowsByAddressId.Values, false);
-        RefreshVisibleRows();
+        RefreshVisibleRows(resetLimit: true);
     }
 
     private void BtnSelectVisible_Click(object? sender, RoutedEventArgs e) {
@@ -254,11 +260,16 @@ public partial class PlacePickerWindow : Window {
     private void ApplySearch() {
         _activeKeyword = NormalizeKeyword(_txtSearch.Text);
         _stickyVisibleAddressIds = null;
-        RefreshVisibleRows();
+        RefreshVisibleRows(resetLimit: true);
     }
 
-    private void RefreshVisibleRows() {
-        var visibleRows = BuildVisibleRows().ToList();
+    private void RefreshVisibleRows(bool resetLimit = false) {
+        _orderedRows = BuildOrderedRows().ToList();
+        if (resetLimit || _visibleRowLimit <= 0) {
+            _visibleRowLimit = GetInitialVisibleLimit();
+        }
+
+        var visibleRows = _orderedRows.Take(_visibleRowLimit).ToList();
 
         _visibleRows.Clear();
         foreach (var row in visibleRows) {
@@ -268,10 +279,10 @@ public partial class PlacePickerWindow : Window {
         UpdateSummary(_visibleRows.Count);
     }
 
-    private IEnumerable<PlaceOptionRow> BuildVisibleRows() {
+    private IEnumerable<PlaceOptionRow> BuildOrderedRows() {
         var keyword = _activeKeyword;
         if (string.IsNullOrWhiteSpace(keyword)) {
-            return BuildVisibleRowsWithoutSearch();
+            return BuildOrderedRowsWithoutSearch();
         }
 
         return _allOptions
@@ -280,11 +291,11 @@ public partial class PlacePickerWindow : Window {
                 || (!string.IsNullOrWhiteSpace(option.Name) && option.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                 || (!string.IsNullOrWhiteSpace(option.NameChn) && option.NameChn.Contains(keyword, StringComparison.OrdinalIgnoreCase))
             )
-            .Take(MaxVisibleOptionsWithSearch)
-            .Select(option => _rowsByAddressId[option.AddressId]);
+            .Select(option => _rowsByAddressId[option.AddressId])
+            .Distinct();
     }
 
-    private IEnumerable<PlaceOptionRow> BuildVisibleRowsWithoutSearch() {
+    private IEnumerable<PlaceOptionRow> BuildOrderedRowsWithoutSearch() {
         if (_stickyVisibleAddressIds is { Count: > 0 }) {
             return _stickyVisibleAddressIds
                 .Distinct()
@@ -299,17 +310,31 @@ public partial class PlacePickerWindow : Window {
             .Distinct()
             .ToList();
 
-        var remainingSlots = Math.Max(0, MaxVisibleOptionsWithoutSearch - selectedRows.Count);
-        if (remainingSlots == 0) {
-            return selectedRows;
-        }
-
         return selectedRows
             .Concat(_allOptions
                 .Select(option => _rowsByAddressId[option.AddressId])
                 .Where(row => !row.IsSelected)
-                .Distinct()
-                .Take(remainingSlots));
+                .Distinct());
+    }
+
+    private int GetInitialVisibleLimit() {
+        return string.IsNullOrWhiteSpace(_activeKeyword)
+            ? InitialVisibleOptionsWithoutSearch
+            : InitialVisibleOptionsWithSearch;
+    }
+
+    private void OptionsScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e) {
+        if (sender is not ScrollViewer viewer || _visibleRows.Count >= _orderedRows.Count) {
+            return;
+        }
+
+        var remaining = viewer.Extent.Height - (viewer.Offset.Y + viewer.Viewport.Height);
+        if (remaining > 120) {
+            return;
+        }
+
+        _visibleRowLimit = Math.Min(_orderedRows.Count, _visibleRowLimit + VisibleOptionsLoadStep);
+        RefreshVisibleRows(resetLimit: false);
     }
 
     private static string? NormalizeKeyword(string? keyword) {

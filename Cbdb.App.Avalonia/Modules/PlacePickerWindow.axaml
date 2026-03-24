@@ -43,7 +43,7 @@
     <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
       <Grid RowDefinitions="Auto,*">
         <TextBlock x:Name="TxtSummary" Foreground="#444" />
-        <ScrollViewer Grid.Row="1" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer x:Name="OptionsScrollViewer" Grid.Row="1" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
           <ItemsControl x:Name="PlaceOptionHost">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
