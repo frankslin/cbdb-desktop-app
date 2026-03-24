@@ -159,8 +159,10 @@ public partial class PersonBrowserWindow : Window {
     private string? _currentKeyword;
     private int _nextOffset;
     private bool _hasMore;
-    private bool _isLoadingPage;
+    private int _activePeopleLoadCount;
     private bool _pendingLoadMore;
+    private int _peopleLoadVersion;
+    private readonly Dictionary<string, int> _relatedTabRenderVersions = new(StringComparer.OrdinalIgnoreCase);
     private int? _selectedPersonId;
     private PersonDetail? _currentDetail;
     private IReadOnlyList<PersonAddressItem> _currentAddresses = Array.Empty<PersonAddressItem>();
@@ -186,6 +188,7 @@ public partial class PersonBrowserWindow : Window {
     private bool _suppressHistoryPush;
     private bool _isRestoringHistory;
     private bool _expandKinshipNetwork;
+    private bool _isLoadingPage => _activePeopleLoadCount > 0;
 
     public PersonBrowserWindow() : this(string.Empty, new AppLocalizationService()) {
     }
@@ -356,10 +359,7 @@ public partial class PersonBrowserWindow : Window {
 
             ReplaceCurrentHistoryState();
             var rows = await _personBrowserService.GetPeopleByIdsAsync(_sqlitePath, personIds);
-            _people.Clear();
-            foreach (var row in rows) {
-                _people.Add(row);
-            }
+            await ReplacePeopleAsync(rows, selectFirstRowWhenAvailable: true);
 
             _currentKeyword = null;
             _txtKeyword.Text = string.Empty;
@@ -423,6 +423,7 @@ public partial class PersonBrowserWindow : Window {
             return;
         }
 
+        var loadVersion = ++_peopleLoadVersion;
         _currentKeyword = string.IsNullOrWhiteSpace(_txtKeyword.Text) ? null : _txtKeyword.Text.Trim();
         _nextOffset = 0;
         _hasMore = true;
@@ -430,9 +431,9 @@ public partial class PersonBrowserWindow : Window {
         try {
             _btnSearch.IsEnabled = false;
             _btnClear.IsEnabled = false;
-            _people.Clear();
+            await ReplacePeopleAsync(Array.Empty<PersonListItem>());
             ClearDetail();
-            await LoadNextPageAsync(selectFirstRowWhenAvailable: true);
+            await LoadNextPageAsync(selectFirstRowWhenAvailable: true, requestedLoadVersion: loadVersion);
         } catch (Exception ex) {
             _txtRecord.Text = ex.Message;
         } finally {
@@ -441,16 +442,22 @@ public partial class PersonBrowserWindow : Window {
         }
     }
 
-    private async Task LoadNextPageAsync(bool selectFirstRowWhenAvailable = false) {
-        if (_isLoadingPage || !_hasMore) {
+    private async Task LoadNextPageAsync(bool selectFirstRowWhenAvailable = false, int? requestedLoadVersion = null) {
+        var loadVersion = requestedLoadVersion ?? _peopleLoadVersion;
+        if ((requestedLoadVersion is null && _isLoadingPage) || !_hasMore) {
             return;
         }
 
         try {
-            _isLoadingPage = true;
+            _activePeopleLoadCount++;
             var rows = await _personBrowserService.SearchAsync(_sqlitePath, _currentKeyword, PageSize, _nextOffset);
-            foreach (var row in rows) {
-                _people.Add(row);
+            if (loadVersion != _peopleLoadVersion) {
+                return;
+            }
+
+            await AppendPeopleAsync(rows, selectFirstRowWhenAvailable);
+            if (loadVersion != _peopleLoadVersion) {
+                return;
             }
 
             _nextOffset += rows.Count;
@@ -459,12 +466,26 @@ public partial class PersonBrowserWindow : Window {
             UpdateRecordText();
 
             if (selectFirstRowWhenAvailable && _people.Count > 0) {
-                _gridPeople.SelectedIndex = 0;
+                var first = _people[0];
+                _isRestoringHistory = true;
+                try {
+                    _gridPeople.SelectedItem = first;
+                    _gridPeople.ScrollIntoView(first, _colPersonId);
+                } finally {
+                    _isRestoringHistory = false;
+                }
+
+                if (!await LoadSelectedPersonAsync(first, suppressHistoryPush: false)) {
+                    ClearDetail();
+                    UpdateRecordText();
+                }
             }
         } catch (Exception ex) {
-            _txtRecord.Text = ex.Message;
+            if (loadVersion == _peopleLoadVersion) {
+                _txtRecord.Text = ex.Message;
+            }
         } finally {
-            _isLoadingPage = false;
+            _activePeopleLoadCount = Math.Max(0, _activePeopleLoadCount - 1);
         }
     }
 
@@ -651,10 +672,7 @@ public partial class PersonBrowserWindow : Window {
             _nextOffset = state.NextOffset;
             _hasMore = state.HasMore;
 
-            _people.Clear();
-            foreach (var item in state.SearchResults) {
-                _people.Add(item);
-            }
+            await ReplacePeopleAsync(state.SearchResults);
             UpdateRecordText();
 
             if (state.Detail is null || !state.SelectedPersonId.HasValue) {
@@ -739,6 +757,22 @@ public partial class PersonBrowserWindow : Window {
         } finally {
             _isRestoringHistory = false;
             UpdateHistoryButtons();
+        }
+    }
+
+    private async Task ReplacePeopleAsync(IReadOnlyList<PersonListItem> rows, bool selectFirstRowWhenAvailable = false) {
+        _gridPeople.SelectedItem = null;
+        _people.Clear();
+        await AppendPeopleAsync(rows, selectFirstRowWhenAvailable);
+    }
+
+    private async Task AppendPeopleAsync(IReadOnlyList<PersonListItem> rows, bool selectFirstRowWhenAvailable = false) {
+        const int batchSize = 40;
+        for (var i = 0; i < rows.Count; i++) {
+            _people.Add(rows[i]);
+            if ((i + 1) % batchSize == 0) {
+                await Task.Yield();
+            }
         }
     }
 
@@ -1278,165 +1312,176 @@ public partial class PersonBrowserWindow : Window {
         };
     }
 
-    private void RenderAddresses() {
+    private async void RenderAddresses() {
         if (_addressesPanel is null) {
             return;
         }
 
+        var renderVersion = BeginRelatedTabRender("addresses");
+        var pageItems = GetPageItems(_currentAddresses, "addresses").ToArray();
         _addressesPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentAddresses, "addresses")) {
-            _addressesPanel.Children.Add(BuildAddressCard(item));
-        }
         UpdateEmptyState(_txtAddressesEmpty, _currentAddresses.Count == 0, T("browser.addresses_none"));
         UpdateTabPager("addresses", _currentAddresses.Count);
+
+        if (pageItems.Length == 0) {
+            return;
+        }
+
+        var intercalaryLabel = T("browser.address_intercalary");
+        var cardModels = await Task.Run(() => pageItems
+            .Select(item => BuildAddressCardModel(item, intercalaryLabel))
+            .ToArray());
+
+        if (IsRelatedTabRenderStale("addresses", renderVersion)) {
+            return;
+        }
+
+        await AppendCardControlsAsync("addresses", renderVersion, _addressesPanel, cardModels, BuildAddressCard);
     }
 
-    private void RenderAltNames() {
+    private async void RenderAltNames() {
         if (_altNamesPanel is null) {
             return;
         }
 
-        _altNamesPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentAltNames, "alt_names")) {
-            _altNamesPanel.Children.Add(BuildAltNameCard(item));
-        }
-        UpdateEmptyState(_txtAltNamesEmpty, _currentAltNames.Count == 0, T("browser.alt_names_none"));
-        UpdateTabPager("alt_names", _currentAltNames.Count);
+        await RenderCardTabAsync("alt_names", _currentAltNames, _altNamesPanel, _txtAltNamesEmpty, T("browser.alt_names_none"), BuildAltNameCard);
     }
 
-    private void RenderWritings() {
+    private async void RenderWritings() {
         if (_writingsPanel is null) {
             return;
         }
 
-        _writingsPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentWritings, "writings")) {
-            _writingsPanel.Children.Add(BuildWritingCard(item));
-        }
-        UpdateEmptyState(_txtWritingsEmpty, _currentWritings.Count == 0, T("browser.writings_none"));
-        UpdateTabPager("writings", _currentWritings.Count);
+        await RenderCardTabAsync("writings", _currentWritings, _writingsPanel, _txtWritingsEmpty, T("browser.writings_none"), BuildWritingCard);
     }
 
-    private void RenderPostings() {
+    private async void RenderPostings() {
         if (_postingsPanel is null) {
             return;
         }
 
-        _postingsPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentPostings, "postings")) {
-            _postingsPanel.Children.Add(BuildPostingCard(item));
-        }
-        UpdateEmptyState(_txtPostingsEmpty, _currentPostings.Count == 0, T("browser.postings_none"));
-        UpdateTabPager("postings", _currentPostings.Count);
+        await RenderCardTabAsync("postings", _currentPostings, _postingsPanel, _txtPostingsEmpty, T("browser.postings_none"), BuildPostingCard);
     }
 
-    private void RenderEntries() {
+    private async void RenderEntries() {
         if (_entryPanel is null) {
             return;
         }
 
-        _entryPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentEntries, "entry")) {
-            _entryPanel.Children.Add(BuildEntryCard(item));
-        }
-        UpdateEmptyState(_txtEntryEmpty, _currentEntries.Count == 0, T("browser.entry_none"));
-        UpdateTabPager("entry", _currentEntries.Count);
+        await RenderCardTabAsync("entry", _currentEntries, _entryPanel, _txtEntryEmpty, T("browser.entry_none"), BuildEntryCard);
     }
 
-    private void RenderEvents() {
+    private async void RenderEvents() {
         if (_eventsPanel is null) {
             return;
         }
 
-        _eventsPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentEvents, "events")) {
-            _eventsPanel.Children.Add(BuildEventCard(item));
-        }
-        UpdateEmptyState(_txtEventsEmpty, _currentEvents.Count == 0, T("browser.events_none"));
-        UpdateTabPager("events", _currentEvents.Count);
+        await RenderCardTabAsync("events", _currentEvents, _eventsPanel, _txtEventsEmpty, T("browser.events_none"), BuildEventCard);
     }
 
-    private void RenderStatuses() {
+    private async void RenderStatuses() {
         if (_statusPanel is null) {
             return;
         }
 
-        _statusPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentStatuses, "status")) {
-            _statusPanel.Children.Add(BuildStatusCard(item));
-        }
-        UpdateEmptyState(_txtStatusEmpty, _currentStatuses.Count == 0, T("browser.status_none"));
-        UpdateTabPager("status", _currentStatuses.Count);
+        await RenderCardTabAsync("status", _currentStatuses, _statusPanel, _txtStatusEmpty, T("browser.status_none"), BuildStatusCard);
     }
 
-    private void RenderKinships() {
+    private async void RenderKinships() {
         if (_kinshipPanel is null) {
             return;
         }
 
-        _kinshipPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentKinships, "kinship")) {
-            _kinshipPanel.Children.Add(BuildKinshipCard(item));
-        }
-        UpdateEmptyState(_txtKinshipEmpty, _currentKinships.Count == 0, T("browser.kinship_none"));
-        UpdateTabPager("kinship", _currentKinships.Count);
+        await RenderCardTabAsync("kinship", _currentKinships, _kinshipPanel, _txtKinshipEmpty, T("browser.kinship_none"), BuildKinshipCard);
     }
 
-    private void RenderAssociations() {
+    private async void RenderAssociations() {
         if (_associationsPanel is null) {
             return;
         }
 
-        _associationsPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentAssociations, "associations")) {
-            _associationsPanel.Children.Add(BuildAssociationCard(item));
-        }
-        UpdateEmptyState(_txtAssociationsEmpty, _currentAssociations.Count == 0, T("browser.associations_none"));
-        UpdateTabPager("associations", _currentAssociations.Count);
+        await RenderCardTabAsync("associations", _currentAssociations, _associationsPanel, _txtAssociationsEmpty, T("browser.associations_none"), BuildAssociationCard);
     }
 
-    private void RenderPossessions() {
+    private async void RenderPossessions() {
         if (_possessionsPanel is null) {
             return;
         }
 
-        _possessionsPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentPossessions, "possessions")) {
-            _possessionsPanel.Children.Add(BuildPossessionCard(item));
-        }
-        UpdateEmptyState(_txtPossessionsEmpty, _currentPossessions.Count == 0, T("browser.possessions_none"));
-        UpdateTabPager("possessions", _currentPossessions.Count);
+        await RenderCardTabAsync("possessions", _currentPossessions, _possessionsPanel, _txtPossessionsEmpty, T("browser.possessions_none"), BuildPossessionCard);
     }
 
-    private void RenderSources() {
+    private async void RenderSources() {
         if (_sourcesPanel is null) {
             return;
         }
 
-        _sourcesPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentSources, "sources")) {
-            _sourcesPanel.Children.Add(BuildSourceCard(item));
-        }
-        UpdateEmptyState(_txtSourcesEmpty, _currentSources.Count == 0, T("browser.sources_none"));
-        UpdateTabPager("sources", _currentSources.Count);
+        await RenderCardTabAsync("sources", _currentSources, _sourcesPanel, _txtSourcesEmpty, T("browser.sources_none"), BuildSourceCard);
     }
 
-    private void RenderInstitutions() {
+    private async void RenderInstitutions() {
         if (_institutionsPanel is null) {
             return;
         }
 
-        _institutionsPanel.Children.Clear();
-        foreach (var item in GetPageItems(_currentInstitutions, "institutions")) {
-            _institutionsPanel.Children.Add(BuildInstitutionCard(item));
-        }
-        UpdateEmptyState(_txtInstitutionsEmpty, _currentInstitutions.Count == 0, T("browser.institutions_none"));
-        UpdateTabPager("institutions", _currentInstitutions.Count);
+        await RenderCardTabAsync("institutions", _currentInstitutions, _institutionsPanel, _txtInstitutionsEmpty, T("browser.institutions_none"), BuildInstitutionCard);
     }
 
     private static void UpdateEmptyState(TextBlock emptyText, bool isEmpty, string message) {
         emptyText.Text = isEmpty ? message : string.Empty;
         emptyText.IsVisible = isEmpty;
+    }
+
+    private async Task RenderCardTabAsync<T>(
+        string tabKey,
+        IReadOnlyList<T> items,
+        StackPanel panel,
+        TextBlock emptyText,
+        string emptyMessage,
+        Func<T, Control> buildControl
+    ) {
+        var renderVersion = BeginRelatedTabRender(tabKey);
+        var pageItems = GetPageItems(items, tabKey).ToArray();
+
+        panel.Children.Clear();
+        UpdateEmptyState(emptyText, items.Count == 0, emptyMessage);
+        UpdateTabPager(tabKey, items.Count);
+
+        if (pageItems.Length == 0) {
+            return;
+        }
+
+        await AppendCardControlsAsync(tabKey, renderVersion, panel, pageItems, buildControl);
+    }
+
+    private async Task AppendCardControlsAsync<T>(
+        string tabKey,
+        int renderVersion,
+        StackPanel panel,
+        IReadOnlyList<T> items,
+        Func<T, Control> buildControl
+    ) {
+        const int batchSize = 4;
+        for (var i = 0; i < items.Count; i++) {
+            if (IsRelatedTabRenderStale(tabKey, renderVersion)) {
+                return;
+            }
+
+            panel.Children.Add(buildControl(items[i]));
+            if ((i + 1) % batchSize == 0) {
+                await Task.Yield();
+            }
+        }
+    }
+
+    private int BeginRelatedTabRender(string tabKey) {
+        var nextVersion = _relatedTabRenderVersions.GetValueOrDefault(tabKey) + 1;
+        _relatedTabRenderVersions[tabKey] = nextVersion;
+        return nextVersion;
+    }
+
+    private bool IsRelatedTabRenderStale(string tabKey, int renderVersion) {
+        return _relatedTabRenderVersions.GetValueOrDefault(tabKey) != renderVersion;
     }
 
     private IReadOnlyList<T> GetPageItems<T>(IReadOnlyList<T> items, string tabKey) {
@@ -1570,7 +1615,7 @@ public partial class PersonBrowserWindow : Window {
         ReplaceCurrentHistoryState();
     }
 
-    private Control BuildAddressCard(PersonAddressItem item) {
+    private Control BuildAddressCard(AddressCardModel item) {
         var root = new StackPanel {
             Spacing = 8
         };
@@ -2077,15 +2122,15 @@ public partial class PersonBrowserWindow : Window {
         grid.Children.Add(check);
     }
 
-    private Control BuildAddressHeader(PersonAddressItem item) {
+    private Control BuildAddressHeader(AddressCardModel item) {
         var grid = new Grid {
             ColumnDefinitions = new ColumnDefinitions("Auto,90,Auto,220,Auto,*,Auto,Auto"),
             RowDefinitions = new RowDefinitions("Auto")
         };
 
-        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence.ToString());
+        AddReadOnlyField(grid, 0, 0, T("browser.address_sequence"), item.Sequence);
         AddReadOnlyField(grid, 0, 2, T("browser.address_type"), item.AddressType);
-        AddReadOnlyField(grid, 0, 4, T("browser.address_name"), JoinDisplay(item.AddressNameChn, item.AddressName));
+        AddReadOnlyField(grid, 0, 4, T("browser.address_name"), item.AddressName);
 
         var label = new TextBlock {
             Text = T("browser.address_maternal"),
@@ -2098,7 +2143,7 @@ public partial class PersonBrowserWindow : Window {
 
         var check = new CheckBox {
             IsEnabled = false,
-            IsChecked = item.Natal ?? false,
+            IsChecked = item.Natal,
             Margin = new Thickness(0, 2, 0, 0)
         };
         Grid.SetRow(check, 0);
@@ -2108,18 +2153,18 @@ public partial class PersonBrowserWindow : Window {
         return grid;
     }
 
-    private Control BuildAddressDateGrid(PersonAddressItem item) {
+    private Control BuildAddressDateGrid(AddressCardModel item) {
         var grid = new Grid {
             ColumnDefinitions = new ColumnDefinitions("Auto,*"),
             RowDefinitions = new RowDefinitions("Auto,Auto")
         };
 
-        AddReadOnlyField(grid, 0, 0, T("browser.address_first"), FormatAddressDate(item, true));
-        AddReadOnlyField(grid, 1, 0, T("browser.address_last"), FormatAddressDate(item, false));
+        AddReadOnlyField(grid, 0, 0, T("browser.address_first"), item.FirstDate);
+        AddReadOnlyField(grid, 1, 0, T("browser.address_last"), item.LastDate);
         return grid;
     }
 
-    private Control BuildAddressMetaGrid(PersonAddressItem item) {
+    private Control BuildAddressMetaGrid(AddressCardModel item) {
         var grid = new Grid {
             ColumnDefinitions = new ColumnDefinitions("Auto,220,Auto,*"),
             RowDefinitions = new RowDefinitions("Auto,Auto,Auto")
@@ -2250,6 +2295,10 @@ public partial class PersonBrowserWindow : Window {
     }
 
     private string FormatAddressDate(PersonAddressItem item, bool first) {
+        return FormatAddressDate(item, first, T("browser.address_intercalary"));
+    }
+
+    private static string FormatAddressDate(PersonAddressItem item, bool first, string intercalaryLabel) {
         var parts = new List<string>();
         var year = first ? item.FirstYear : item.LastYear;
         var nianhao = first ? item.FirstNianhao : item.LastNianhao;
@@ -2273,7 +2322,7 @@ public partial class PersonBrowserWindow : Window {
             parts.Add(month.Value.ToString());
         }
         if (intercalary == true) {
-            parts.Add(T("browser.address_intercalary"));
+            parts.Add(intercalaryLabel);
         }
         if (day.HasValue) {
             parts.Add(day.Value.ToString());
@@ -2286,6 +2335,20 @@ public partial class PersonBrowserWindow : Window {
         }
 
         return parts.Count == 0 ? string.Empty : string.Join(" / ", parts);
+    }
+
+    private static AddressCardModel BuildAddressCardModel(PersonAddressItem item, string intercalaryLabel) {
+        return new AddressCardModel(
+            Sequence: item.Sequence.ToString(),
+            AddressType: item.AddressType ?? string.Empty,
+            AddressName: JoinDisplay(item.AddressNameChn, item.AddressName),
+            Natal: item.Natal == true,
+            FirstDate: FormatAddressDate(item, true, intercalaryLabel),
+            LastDate: FormatAddressDate(item, false, intercalaryLabel),
+            Source: item.Source ?? string.Empty,
+            Pages: item.Pages ?? string.Empty,
+            Notes: item.Notes ?? string.Empty
+        );
     }
 
     private Control? BuildPostingAuditExpander(PersonPostingOfficeItem item) {
@@ -3121,6 +3184,18 @@ public partial class PersonBrowserWindow : Window {
     private void RegisterBasicValue(string key, string controlName) {
         _basicValues[key] = this.FindControl<TextBox>(controlName) ?? throw new InvalidOperationException($"{controlName} not found.");
     }
+
+    private sealed record AddressCardModel(
+        string Sequence,
+        string AddressType,
+        string AddressName,
+        bool Natal,
+        string FirstDate,
+        string LastDate,
+        string Source,
+        string Pages,
+        string Notes
+    );
 
     private sealed record PersonBrowserHistoryState(
         string? Keyword,

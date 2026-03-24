@@ -38,6 +38,8 @@ public partial class PlacePickerWindow : Window {
     private List<int>? _stickyVisibleAddressIds;
     private List<PlaceOptionRow> _orderedRows = new();
     private int _visibleRowLimit;
+    private bool _isAppendingVisibleRows;
+    private int _visibleRowsVersion;
 
     public PlacePickerWindow()
         : this(new AppLocalizationService(), Array.Empty<PlaceOption>()) {
@@ -269,11 +271,11 @@ public partial class PlacePickerWindow : Window {
             _visibleRowLimit = GetInitialVisibleLimit();
         }
 
-        var visibleRows = _orderedRows.Take(_visibleRowLimit).ToList();
-
+        _visibleRowsVersion++;
         _visibleRows.Clear();
-        foreach (var row in visibleRows) {
-            _visibleRows.Add(row);
+        var visibleRowCount = Math.Min(_orderedRows.Count, _visibleRowLimit);
+        for (var i = 0; i < visibleRowCount; i++) {
+            _visibleRows.Add(_orderedRows[i]);
         }
 
         UpdateSummary(_visibleRows.Count);
@@ -323,8 +325,8 @@ public partial class PlacePickerWindow : Window {
             : InitialVisibleOptionsWithSearch;
     }
 
-    private void OptionsScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e) {
-        if (sender is not ScrollViewer viewer || _visibleRows.Count >= _orderedRows.Count) {
+    private async void OptionsScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e) {
+        if (sender is not ScrollViewer viewer || _visibleRows.Count >= _orderedRows.Count || _isAppendingVisibleRows) {
             return;
         }
 
@@ -334,7 +336,39 @@ public partial class PlacePickerWindow : Window {
         }
 
         _visibleRowLimit = Math.Min(_orderedRows.Count, _visibleRowLimit + VisibleOptionsLoadStep);
-        RefreshVisibleRows(resetLimit: false);
+        await AppendVisibleRowsAsync(_visibleRowLimit);
+    }
+
+    private async Task AppendVisibleRowsAsync(int targetVisibleRowCount) {
+        if (_isAppendingVisibleRows) {
+            return;
+        }
+
+        _isAppendingVisibleRows = true;
+        var visibleRowsVersion = _visibleRowsVersion;
+
+        try {
+            const int batchSize = 40;
+            var startIndex = _visibleRows.Count;
+            var endIndex = Math.Min(targetVisibleRowCount, _orderedRows.Count);
+
+            for (var i = startIndex; i < endIndex; i++) {
+                if (visibleRowsVersion != _visibleRowsVersion) {
+                    return;
+                }
+
+                _visibleRows.Add(_orderedRows[i]);
+                if ((i - startIndex + 1) % batchSize == 0) {
+                    await Task.Yield();
+                }
+            }
+
+            if (visibleRowsVersion == _visibleRowsVersion) {
+                UpdateSummary(_visibleRows.Count);
+            }
+        } finally {
+            _isAppendingVisibleRows = false;
+        }
     }
 
     private static string? NormalizeKeyword(string? keyword) {
