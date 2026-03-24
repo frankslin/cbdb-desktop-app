@@ -209,7 +209,52 @@ ORDER BY CAST(c_office_tree_id AS TEXT), c_office_id;
         await using var connection = await OpenReadOnlyConnectionAsync(sqlitePath, cancellationToken);
         await using var command = connection.CreateCommand();
 
-        var sql = """
+        var personPlaceParameterList = string.Join(", ", request.PersonPlaceIds.Select((_, index) => $"$personPlaceId{index}"));
+        var officePlaceParameterList = string.Join(", ", request.OfficePlaceIds.Select((_, index) => $"$officePlaceId{index}"));
+        var personPlaceExactExpr = request.PersonPlaceIds.Count > 0
+            ? $"b.c_index_addr_id IN ({personPlaceParameterList})"
+            : "0";
+        var personPlaceSubordinateExpr = request.PersonPlaceIds.Count > 0
+            ? $"EXISTS (SELECT 1 FROM ZZZ_BELONGS_TO bt WHERE bt.c_addr_id = b.c_index_addr_id AND bt.c_belongs_to IN ({personPlaceParameterList}))"
+            : "0";
+        var officePlaceExactExpr = request.OfficePlaceIds.Count > 0
+            ? $"pta.c_addr_id IN ({officePlaceParameterList})"
+            : "0";
+        var officePlaceSubordinateExpr = request.OfficePlaceIds.Count > 0
+            ? $"EXISTS (SELECT 1 FROM ZZZ_BELONGS_TO bt WHERE bt.c_addr_id = pta.c_addr_id AND bt.c_belongs_to IN ({officePlaceParameterList}))"
+            : "0";
+        var personPlaceMatchExpr = request.PersonPlaceIds.Count == 0
+            ? "'Unfiltered'"
+            : $"""
+CASE
+    WHEN {personPlaceExactExpr} THEN 'Exact'
+    WHEN {personPlaceSubordinateExpr} THEN 'Subordinate'
+    ELSE 'No match'
+END
+""";
+        var officePlaceMatchExpr = request.OfficePlaceIds.Count == 0
+            ? """
+CASE
+    WHEN pta.c_addr_id IS NULL THEN 'No office place'
+    ELSE 'Unfiltered'
+END
+"""
+            : $"""
+CASE
+    WHEN {officePlaceExactExpr} THEN 'Exact'
+    WHEN {officePlaceSubordinateExpr} THEN 'Subordinate'
+    WHEN pta.c_addr_id IS NULL THEN 'No office place'
+    ELSE 'No match'
+END
+""";
+        var placeWorkflowExpr = BuildPlaceWorkflowExpression(
+            request.PersonPlaceIds.Count > 0,
+            request.OfficePlaceIds.Count > 0,
+            personPlaceMatchExpr,
+            officePlaceMatchExpr
+        );
+
+        var sql = $"""
 WITH matched_people AS (
     SELECT DISTINCT b.c_personid
     FROM BIOG_MAIN b
@@ -315,10 +360,14 @@ SELECT
     office_addr.x_coord,
     office_addr.y_coord,
     xy.xy_count,
+    posting_place_count.place_count,
     pto.c_source,
     COALESCE(src.c_title_chn, src.c_title) AS source_label,
     pto.c_pages,
-    pto.c_notes
+    pto.c_notes,
+    {personPlaceMatchExpr} AS person_place_match,
+    {officePlaceMatchExpr} AS office_place_match,
+    {placeWorkflowExpr} AS place_workflow
 FROM POSTED_TO_OFFICE_DATA pto
 JOIN matched_people mp ON mp.c_personid = pto.c_personid
 JOIN BIOG_MAIN b ON b.c_personid = pto.c_personid
@@ -351,6 +400,19 @@ LEFT JOIN (
     WHERE c_addr_id IS NOT NULL
     GROUP BY c_addr_id
 ) xy ON xy.c_addr_id = pta.c_addr_id
+LEFT JOIN (
+    SELECT
+        c_posting_id,
+        c_personid,
+        c_office_id,
+        COUNT(DISTINCT c_addr_id) AS place_count
+    FROM POSTED_TO_ADDR_DATA
+    WHERE c_addr_id IS NOT NULL
+    GROUP BY c_posting_id, c_personid, c_office_id
+) posting_place_count
+    ON posting_place_count.c_posting_id = pto.c_posting_id
+   AND posting_place_count.c_personid = pto.c_personid
+   AND posting_place_count.c_office_id = pto.c_office_id
 LEFT JOIN TEXT_CODES src ON src.c_textid = pto.c_source
 WHERE 1 = 1
   AND (
@@ -372,8 +434,8 @@ WHERE 1 = 1
 
         if (request.PersonPlaceIds.Count > 0) {
             sql += request.IncludeSubordinatePersonUnits
-                ? "\n  AND (b.c_index_addr_id IN (" + string.Join(", ", request.PersonPlaceIds.Select((_, index) => $"$personPlaceId{index}")) + ") OR EXISTS (SELECT 1 FROM ZZZ_BELONGS_TO bt WHERE bt.c_addr_id = b.c_index_addr_id AND bt.c_belongs_to IN (" + string.Join(", ", request.PersonPlaceIds.Select((_, index) => $"$personPlaceId{index}")) + ")))"
-                : "\n  AND b.c_index_addr_id IN (" + string.Join(", ", request.PersonPlaceIds.Select((_, index) => $"$personPlaceId{index}")) + ")";
+                ? "\n  AND (" + personPlaceExactExpr + " OR " + personPlaceSubordinateExpr + ")"
+                : "\n  AND " + personPlaceExactExpr;
 
             for (var i = 0; i < request.PersonPlaceIds.Count; i++) {
                 command.Parameters.AddWithValue($"$personPlaceId{i}", request.PersonPlaceIds[i]);
@@ -382,8 +444,8 @@ WHERE 1 = 1
 
         if (request.OfficePlaceIds.Count > 0) {
             sql += request.IncludeSubordinateOfficeUnits
-                ? "\n  AND (pta.c_addr_id IN (" + string.Join(", ", request.OfficePlaceIds.Select((_, index) => $"$officePlaceId{index}")) + ") OR EXISTS (SELECT 1 FROM ZZZ_BELONGS_TO bt WHERE bt.c_addr_id = pta.c_addr_id AND bt.c_belongs_to IN (" + string.Join(", ", request.OfficePlaceIds.Select((_, index) => $"$officePlaceId{index}")) + ")))"
-                : "\n  AND pta.c_addr_id IN (" + string.Join(", ", request.OfficePlaceIds.Select((_, index) => $"$officePlaceId{index}")) + ")";
+                ? "\n  AND (" + officePlaceExactExpr + " OR " + officePlaceSubordinateExpr + ")"
+                : "\n  AND " + officePlaceExactExpr;
 
             for (var i = 0; i < request.OfficePlaceIds.Count; i++) {
                 command.Parameters.AddWithValue($"$officePlaceId{i}", request.OfficePlaceIds[i]);
@@ -474,10 +536,14 @@ LIMIT $limit;
                 OfficeXCoord: reader.IsDBNull(54) ? null : reader.GetDouble(54),
                 OfficeYCoord: reader.IsDBNull(55) ? null : reader.GetDouble(55),
                 OfficeXyCount: reader.IsDBNull(56) ? 0 : reader.GetInt32(56),
-                SourceId: reader.IsDBNull(57) ? null : reader.GetInt32(57),
-                Source: reader.IsDBNull(58) ? null : reader.GetString(58),
-                Pages: reader.IsDBNull(59) ? null : reader.GetString(59),
-                Notes: reader.IsDBNull(60) ? null : reader.GetString(60)
+                SourceId: reader.IsDBNull(58) ? null : reader.GetInt32(58),
+                Source: reader.IsDBNull(59) ? null : reader.GetString(59),
+                Pages: reader.IsDBNull(60) ? null : reader.GetString(60),
+                Notes: reader.IsDBNull(61) ? null : reader.GetString(61),
+                PersonPlaceMatch: reader.IsDBNull(62) ? "Unfiltered" : reader.GetString(62),
+                OfficePlaceMatch: reader.IsDBNull(63) ? "Unfiltered" : reader.GetString(63),
+                PlaceWorkflow: reader.IsDBNull(64) ? "Unfiltered" : reader.GetString(64),
+                OfficePlaceCount: reader.IsDBNull(57) ? 0 : reader.GetInt32(57)
             ));
         }
 
@@ -495,7 +561,19 @@ LIMIT $limit;
                 record.IndexAddressType
             })
             .Select(group => {
-                var officeAddressId = group.Select(record => record.OfficeAddressId).FirstOrDefault(id => id.HasValue);
+                var distinctOfficePlaces = group
+                    .Where(record => record.OfficeAddressId.HasValue)
+                    .GroupBy(record => record.OfficeAddressId)
+                    .Select(placeGroup => placeGroup.First())
+                    .ToList();
+                var officeAddressId = distinctOfficePlaces.Count == 1 ? distinctOfficePlaces[0].OfficeAddressId : null;
+                var officeAddress = distinctOfficePlaces.Count switch {
+                    0 => group.Select(record => record.OfficeAddress).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)),
+                    1 => distinctOfficePlaces[0].OfficeAddress,
+                    _ => $"Multiple office places ({distinctOfficePlaces.Count})"
+                };
+                var officeXCoord = distinctOfficePlaces.Count == 1 ? distinctOfficePlaces[0].OfficeXCoord : null;
+                var officeYCoord = distinctOfficePlaces.Count == 1 ? distinctOfficePlaces[0].OfficeYCoord : null;
                 var xyCount = officeAddressId.HasValue
                     ? records
                         .Where(record => record.OfficeAddressId == officeAddressId)
@@ -516,11 +594,16 @@ LIMIT $limit;
                     IndexAddress: group.Key.IndexAddress,
                     IndexAddressType: group.Key.IndexAddressType,
                     OfficeAddressId: officeAddressId,
-                    OfficeAddress: group.Select(record => record.OfficeAddress).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)),
-                    OfficeXCoord: group.Select(record => record.OfficeXCoord).FirstOrDefault(value => value.HasValue),
-                    OfficeYCoord: group.Select(record => record.OfficeYCoord).FirstOrDefault(value => value.HasValue),
+                    OfficeAddress: officeAddress,
+                    OfficeXCoord: officeXCoord,
+                    OfficeYCoord: officeYCoord,
                     XyCount: xyCount,
-                    PostingCount: group.Select(record => (record.PostingId, record.OfficeCode)).Distinct().Count()
+                    PostingCount: group.Select(record => (record.PostingId, record.OfficeCode)).Distinct().Count(),
+                    PersonPlaceMatch: SummarizeMatch(group.Select(record => record.PersonPlaceMatch)),
+                    OfficePlaceMatch: SummarizeMatch(group.Select(record => record.OfficePlaceMatch)),
+                    PlaceWorkflow: SummarizeWorkflow(group.Select(record => record.PlaceWorkflow)),
+                    DistinctOfficeCount: group.Select(record => record.OfficeCode).Where(code => !string.IsNullOrWhiteSpace(code)).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                    OfficePlaceCount: distinctOfficePlaces.Count
                 );
             })
             .OrderBy(person => person.PersonId)
@@ -532,6 +615,65 @@ LIMIT $limit;
     private static string? NormalizeParent(string? parentId) {
         var normalized = parentId?.Trim();
         return string.IsNullOrWhiteSpace(normalized) || normalized == "0" ? null : normalized;
+    }
+
+    private static string BuildPlaceWorkflowExpression(
+        bool hasPersonPlaceFilter,
+        bool hasOfficePlaceFilter,
+        string personPlaceMatchExpr,
+        string officePlaceMatchExpr
+    ) {
+        if (hasPersonPlaceFilter && hasOfficePlaceFilter) {
+            return $"({personPlaceMatchExpr} || ' person / ' || {officePlaceMatchExpr} || ' office')";
+        }
+
+        if (hasPersonPlaceFilter) {
+            return $"({personPlaceMatchExpr} || ' person place')";
+        }
+
+        if (hasOfficePlaceFilter) {
+            return $"({officePlaceMatchExpr} || ' office place')";
+        }
+
+        return "'Unfiltered'";
+    }
+
+    private static string SummarizeMatch(IEnumerable<string> matches) {
+        var values = matches
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (values.Count == 0) {
+            return "Unfiltered";
+        }
+
+        if (values.Count == 1) {
+            return values[0];
+        }
+
+        if (values.Contains("Exact", StringComparer.OrdinalIgnoreCase)) {
+            return "Mixed (Exact)";
+        }
+
+        if (values.Contains("Subordinate", StringComparer.OrdinalIgnoreCase)) {
+            return "Mixed (Subordinate)";
+        }
+
+        return "Mixed";
+    }
+
+    private static string SummarizeWorkflow(IEnumerable<string> workflows) {
+        var values = workflows
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return values.Count switch {
+            0 => "Unfiltered",
+            1 => values[0],
+            _ => "Mixed place workflow"
+        };
     }
 
     private static async Task<SqliteConnection> OpenReadOnlyConnectionAsync(

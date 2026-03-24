@@ -61,5 +61,9 @@ public sealed record OfficeQueryRecord(
     int? SourceId,
     string? Source,
     string? Pages,
-    string? Notes
+    string? Notes,
+    string PersonPlaceMatch = "Unfiltered",
+    string OfficePlaceMatch = "Unfiltered",
+    string PlaceWorkflow = "Unfiltered",
+    int OfficePlaceCount = 0
 );

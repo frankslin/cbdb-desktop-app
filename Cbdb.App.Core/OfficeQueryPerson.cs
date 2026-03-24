@@ -16,5 +16,10 @@ public sealed record OfficeQueryPerson(
     double? OfficeXCoord,
     double? OfficeYCoord,
     int XyCount,
-    int PostingCount
+    int PostingCount,
+    string PersonPlaceMatch = "Unfiltered",
+    string OfficePlaceMatch = "Unfiltered",
+    string PlaceWorkflow = "Unfiltered",
+    int DistinctOfficeCount = 0,
+    int OfficePlaceCount = 0
 );

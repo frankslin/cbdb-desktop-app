@@ -175,6 +175,10 @@
               <d:DataGridTextColumn Binding="{Binding OfficeXCoord}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding OfficeYCoord}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding OfficeXyCount}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding OfficePlaceCount}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding PersonPlaceMatch}" Width="120" />
+              <d:DataGridTextColumn Binding="{Binding OfficePlaceMatch}" Width="120" />
+              <d:DataGridTextColumn Binding="{Binding PlaceWorkflow}" Width="220" />
               <d:DataGridTextColumn Binding="{Binding SourceId}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding Source}" Width="160" />
               <d:DataGridTextColumn Binding="{Binding Pages}" Width="90" />
@@ -201,6 +205,11 @@
               <d:DataGridTextColumn Binding="{Binding OfficeXCoord}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding OfficeYCoord}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding XyCount}" Width="80" />
+              <d:DataGridTextColumn Binding="{Binding OfficePlaceCount}" Width="90" />
+              <d:DataGridTextColumn Binding="{Binding PersonPlaceMatch}" Width="120" />
+              <d:DataGridTextColumn Binding="{Binding OfficePlaceMatch}" Width="120" />
+              <d:DataGridTextColumn Binding="{Binding PlaceWorkflow}" Width="220" />
+              <d:DataGridTextColumn Binding="{Binding DistinctOfficeCount}" Width="90" />
               <d:DataGridTextColumn Binding="{Binding PostingCount}" Width="90" />
             </d:DataGrid.Columns>
           </d:DataGrid>

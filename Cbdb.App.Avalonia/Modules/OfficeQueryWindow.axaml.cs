@@ -257,10 +257,14 @@ public partial class OfficeQueryWindow : Window {
         ((DataGridTextColumn)rc[52]).Header = "X";
         ((DataGridTextColumn)rc[53]).Header = "Y";
         ((DataGridTextColumn)rc[54]).Header = T("query.people_at_place");
-        ((DataGridTextColumn)rc[55]).Header = T("office_query.source_id");
-        ((DataGridTextColumn)rc[56]).Header = T("browser.source_title");
-        ((DataGridTextColumn)rc[57]).Header = T("browser.address_pages");
-        ((DataGridTextColumn)rc[58]).Header = T("browser.notes");
+        ((DataGridTextColumn)rc[55]).Header = T("office_query.office_place_count");
+        ((DataGridTextColumn)rc[56]).Header = T("office_query.person_place_match");
+        ((DataGridTextColumn)rc[57]).Header = T("office_query.office_place_match");
+        ((DataGridTextColumn)rc[58]).Header = T("office_query.place_workflow");
+        ((DataGridTextColumn)rc[59]).Header = T("office_query.source_id");
+        ((DataGridTextColumn)rc[60]).Header = T("browser.source_title");
+        ((DataGridTextColumn)rc[61]).Header = T("browser.address_pages");
+        ((DataGridTextColumn)rc[62]).Header = T("browser.notes");
 
         var pc = _gridPeople.Columns;
         ((DataGridTextColumn)pc[0]).Header = T("browser.grid_person_id");
@@ -278,7 +282,12 @@ public partial class OfficeQueryWindow : Window {
         ((DataGridTextColumn)pc[12]).Header = "X";
         ((DataGridTextColumn)pc[13]).Header = "Y";
         ((DataGridTextColumn)pc[14]).Header = T("query.people_at_place");
-        ((DataGridTextColumn)pc[15]).Header = T("office_query.posting_count");
+        ((DataGridTextColumn)pc[15]).Header = T("office_query.office_place_count");
+        ((DataGridTextColumn)pc[16]).Header = T("office_query.person_place_match");
+        ((DataGridTextColumn)pc[17]).Header = T("office_query.office_place_match");
+        ((DataGridTextColumn)pc[18]).Header = T("office_query.place_workflow");
+        ((DataGridTextColumn)pc[19]).Header = T("office_query.distinct_office_count");
+        ((DataGridTextColumn)pc[20]).Header = T("office_query.posting_count");
 
         UpdateSelectedOfficesText();
         UpdateSelectedPersonPlacesText();
