@@ -1,0 +1,61 @@
+<Window
+    x:Class="Cbdb.App.Avalonia.Modules.DynastyPickerWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Select Dynasties"
+    Width="620"
+    Height="560"
+    MinWidth="520"
+    MinHeight="420"
+    Background="#E5E5E5">
+  <Window.Styles>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="Padding" Value="12,4" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+  </Window.Styles>
+
+  <Grid Margin="10" RowDefinitions="Auto,*,Auto">
+    <Border BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <TextBlock x:Name="TxtSummary" Foreground="#444" />
+    </Border>
+
+    <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="#B9B9B9" BorderThickness="1" Background="#FAFAFA" Padding="10">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ItemsControl x:Name="DynastyOptionHost">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border
+                  Background="Transparent"
+                  BorderBrush="LightGray"
+                  BorderThickness="0,0,0,1"
+                  Padding="4,4"
+                  Cursor="Hand"
+                  PointerReleased="DynastyOptionRow_PointerReleased">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <CheckBox
+                      IsChecked="{Binding IsSelected}"
+                      VerticalAlignment="Top"
+                      IsHitTestVisible="False"
+                      Focusable="False" />
+                  <TextBlock Text="{Binding DisplayLabel}" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+
+    <Border Grid.Row="2" BorderBrush="#B9B9B9" BorderThickness="1" Background="#F4F4F4" Padding="10">
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+        <Button x:Name="BtnSelectAll" Click="BtnSelectAll_Click" />
+        <Button x:Name="BtnClearAll" Grid.Column="1" Margin="8,0,0,0" Click="BtnClearAll_Click" />
+        <Button x:Name="BtnCancel" Grid.Column="3" Margin="8,0,0,0" Click="BtnCancel_Click" />
+        <Button x:Name="BtnApply" Grid.Column="4" Margin="8,0,0,0" Click="BtnApply_Click" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

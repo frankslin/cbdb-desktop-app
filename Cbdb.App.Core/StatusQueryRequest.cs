@@ -8,8 +8,6 @@ public sealed record StatusQueryRequest(
     bool UseIndexYearRange,
     int IndexYearFrom,
     int IndexYearTo,
-    bool UseDynastyRange,
-    DynastyOption? DynastyFrom,
-    DynastyOption? DynastyTo,
+    IReadOnlyList<int> DynastyIds,
     int Limit = 5000
 );

@@ -11,8 +11,6 @@ public sealed record EntryQueryRequest(
     bool UseEntryYearRange,
     int EntryYearFrom,
     int EntryYearTo,
-    bool UseDynastyRange,
-    DynastyOption? DynastyFrom,
-    DynastyOption? DynastyTo,
+    IReadOnlyList<int> DynastyIds,
     int Limit = 5000
 );

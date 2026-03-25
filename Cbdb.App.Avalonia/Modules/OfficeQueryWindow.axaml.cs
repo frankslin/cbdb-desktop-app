@@ -456,8 +456,6 @@ public partial class OfficeQueryWindow : Window {
     private void BtnClose_Click(object? sender, RoutedEventArgs e) => Close();
 
     private OfficeQueryRequest BuildRequest() {
-        var (selectedFrom, selectedTo) = _dynastyPicker.GetNormalizedRange();
-
         return new OfficeQueryRequest(
             PersonKeyword: NormalizeText(_txtPersonKeyword.Text),
             OfficeCodes: _selectedOfficeCodes,
@@ -471,9 +469,7 @@ public partial class OfficeQueryWindow : Window {
             UseOfficeYearRange: _chkUseOfficeYear.IsChecked == true,
             OfficeYearFrom: ParseInt(_txtOfficeYearFrom.Text, -200),
             OfficeYearTo: ParseInt(_txtOfficeYearTo.Text, 1911),
-            UseDynastyRange: _dynastyPicker.UseDynastyRange,
-            DynastyFrom: selectedFrom,
-            DynastyTo: selectedTo
+            DynastyIds: _dynastyPicker.SelectedDynastyIds
         );
     }
 

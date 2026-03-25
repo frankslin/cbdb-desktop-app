@@ -26,9 +26,7 @@ public sealed class StatusQueryServiceTests {
             UseIndexYearRange: false,
             IndexYearFrom: -200,
             IndexYearTo: 1911,
-            UseDynastyRange: false,
-            DynastyFrom: null,
-            DynastyTo: null,
+            DynastyIds: Array.Empty<int>(),
             Limit: 50
         ));
 
@@ -251,9 +249,7 @@ INSERT INTO STATUS_DATA (c_personid, c_status_code, c_sequence, c_firstyear, c_l
                 UseIndexYearRange: false,
                 IndexYearFrom: -200,
                 IndexYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             Assert.Empty(directPlaceResult.People);
@@ -266,9 +262,7 @@ INSERT INTO STATUS_DATA (c_personid, c_status_code, c_sequence, c_firstyear, c_l
                 UseIndexYearRange: false,
                 IndexYearFrom: -200,
                 IndexYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var person = Assert.Single(subordinatePlaceResult.People);
@@ -359,9 +353,7 @@ INSERT INTO STATUS_DATA VALUES (1, 100, 3, 1070, 1, 4, 1, 1085, 2, 2, 2, '補注
                 UseIndexYearRange: false,
                 IndexYearFrom: -200,
                 IndexYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var record = Assert.Single(result.Records);

@@ -254,6 +254,10 @@ END
             officePlaceMatchExpr
         );
 
+        var dynastyFilter = request.DynastyIds.Count == 0
+            ? string.Empty
+            : "\n       AND b.c_dy IN (" + string.Join(", ", request.DynastyIds.Select((_, index) => $"$dynastyId{index}")) + ")";
+
         var sql = $"""
 WITH matched_people AS (
     SELECT DISTINCT b.c_personid
@@ -270,16 +274,7 @@ WITH matched_people AS (
             OR b.c_mingzi_chn LIKE $personKeyword
          )
        AND ($useIndexYear = 0 OR b.c_index_year BETWEEN $indexYearFrom AND $indexYearTo)
-       AND (
-            $useDynasty = 0
-            OR EXISTS (
-                SELECT 1
-                FROM DYNASTIES d
-                WHERE d.c_dy = b.c_dy
-                  AND ($dynastyFromStart IS NULL OR COALESCE(d.c_end, d.c_start) > $dynastyFromStart)
-                  AND ($dynastyToEnd IS NULL OR COALESCE(d.c_start, d.c_end) < $dynastyToEnd)
-            )
-       )
+{dynastyFilter}
     UNION
     SELECT DISTINCT b.c_personid
     FROM BIOG_MAIN b
@@ -287,16 +282,7 @@ WITH matched_people AS (
     WHERE $personKeyword IS NOT NULL
       AND (an.c_alt_name LIKE $personKeyword OR an.c_alt_name_chn LIKE $personKeyword)
       AND ($useIndexYear = 0 OR b.c_index_year BETWEEN $indexYearFrom AND $indexYearTo)
-      AND (
-            $useDynasty = 0
-            OR EXISTS (
-                SELECT 1
-                FROM DYNASTIES d
-                WHERE d.c_dy = b.c_dy
-                  AND ($dynastyFromStart IS NULL OR COALESCE(d.c_end, d.c_start) > $dynastyFromStart)
-                  AND ($dynastyToEnd IS NULL OR COALESCE(d.c_start, d.c_end) < $dynastyToEnd)
-            )
-      )
+{dynastyFilter}
 )
 SELECT
     b.c_personid,
@@ -432,6 +418,10 @@ WHERE 1 = 1
             command.Parameters.AddWithValue($"$officeCode{i}", request.OfficeCodes[i]);
         }
 
+        for (var i = 0; i < request.DynastyIds.Count; i++) {
+            command.Parameters.AddWithValue($"$dynastyId{i}", request.DynastyIds[i]);
+        }
+
         if (request.PersonPlaceIds.Count > 0) {
             sql += request.IncludeSubordinatePersonUnits
                 ? "\n  AND (" + personPlaceExactExpr + " OR " + personPlaceSubordinateExpr + ")"
@@ -471,9 +461,6 @@ LIMIT $limit;
         command.Parameters.AddWithValue("$useOfficeYear", request.UseOfficeYearRange ? 1 : 0);
         command.Parameters.AddWithValue("$officeYearFrom", request.UseOfficeYearRange ? Math.Min(request.OfficeYearFrom, request.OfficeYearTo) : DBNull.Value);
         command.Parameters.AddWithValue("$officeYearTo", request.UseOfficeYearRange ? Math.Max(request.OfficeYearFrom, request.OfficeYearTo) : DBNull.Value);
-        command.Parameters.AddWithValue("$useDynasty", request.UseDynastyRange ? 1 : 0);
-        command.Parameters.AddWithValue("$dynastyFromStart", request.DynastyFrom?.StartYear is int fromStart ? fromStart : DBNull.Value);
-        command.Parameters.AddWithValue("$dynastyToEnd", request.DynastyTo?.EndYear is int toEnd ? toEnd : DBNull.Value);
         command.Parameters.AddWithValue("$limit", Math.Clamp(request.Limit, 1, 10000));
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);

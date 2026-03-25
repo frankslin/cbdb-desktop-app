@@ -36,9 +36,9 @@ ORDER BY
         WHEN TRIM(COALESCE(c_dynasty_chn, '')) IN ('未詳', '未详')
           OR LOWER(TRIM(COALESCE(c_dynasty, ''))) IN ('unknown', '[unknown]')
         THEN 0
-        WHEN TRIM(COALESCE(c_dynasty_chn, '')) IN ('朝鮮', '朝鲜', '韓國', '韩国')
+        WHEN TRIM(COALESCE(c_dynasty_chn, '')) IN ('朝鮮', '朝鲜', '韓國', '韩国', '高麗', '高丽')
           OR TRIM(COALESCE(c_dynasty_chn, '')) IN ('新羅', '新罗')
-          OR LOWER(TRIM(COALESCE(c_dynasty, ''))) IN ('choson', 'joseon', 'korea', 'south korea', 'silla')
+          OR LOWER(TRIM(COALESCE(c_dynasty, ''))) IN ('choson', 'joseon', 'korea', 'south korea', 'silla', 'koryo', 'goryeo')
         THEN 2
         ELSE 1
     END,

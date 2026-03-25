@@ -30,9 +30,7 @@ public sealed class EntryQueryServiceTests {
             UseEntryYearRange: false,
             EntryYearFrom: -200,
             EntryYearTo: 1911,
-            UseDynastyRange: false,
-            DynastyFrom: null,
-            DynastyTo: null,
+            DynastyIds: Array.Empty<int>(),
             Limit: 50
         ));
 
@@ -129,9 +127,7 @@ INSERT INTO ENTRY_DATA VALUES
                 UseEntryYearRange: false,
                 EntryYearFrom: -200,
                 EntryYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var first = Assert.Single(result.Records.Where(record => record.PersonId == 1));
@@ -233,9 +229,7 @@ INSERT INTO ENTRY_DATA VALUES
                 UseEntryYearRange: true,
                 EntryYearFrom: 1060,
                 EntryYearTo: 1100,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var record = Assert.Single(result.Records);

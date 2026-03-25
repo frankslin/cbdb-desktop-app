@@ -13,8 +13,6 @@ public sealed record OfficeQueryRequest(
     bool UseOfficeYearRange,
     int OfficeYearFrom,
     int OfficeYearTo,
-    bool UseDynastyRange,
-    DynastyOption? DynastyFrom,
-    DynastyOption? DynastyTo,
+    IReadOnlyList<int> DynastyIds,
     int Limit = 5000
 );

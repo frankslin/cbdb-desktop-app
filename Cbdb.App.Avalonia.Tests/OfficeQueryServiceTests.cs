@@ -33,9 +33,7 @@ public sealed class OfficeQueryServiceTests {
             UseOfficeYearRange: false,
             OfficeYearFrom: -200,
             OfficeYearTo: 1911,
-            UseDynastyRange: false,
-            DynastyFrom: null,
-            DynastyTo: null,
+            DynastyIds: Array.Empty<int>(),
             Limit: 50
         ));
 
@@ -177,9 +175,7 @@ INSERT INTO POSTED_TO_ADDR_DATA VALUES
                 UseOfficeYearRange: false,
                 OfficeYearFrom: -200,
                 OfficeYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var first = Assert.Single(result.Records.Where(record => record.PersonId == 1));
@@ -353,9 +349,7 @@ INSERT INTO POSTED_TO_ADDR_DATA VALUES
                 UseOfficeYearRange: false,
                 OfficeYearFrom: -200,
                 OfficeYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             Assert.Equal(2, result.Records.Count);
@@ -484,9 +478,7 @@ INSERT INTO POSTED_TO_OFFICE_DATA VALUES
                 UseOfficeYearRange: true,
                 OfficeYearFrom: 1070,
                 OfficeYearTo: 1100,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var record = Assert.Single(result.Records);
@@ -624,9 +616,7 @@ INSERT INTO POSTED_TO_ADDR_DATA VALUES
                 UseOfficeYearRange: false,
                 OfficeYearFrom: -200,
                 OfficeYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var officePlaceOnly = await service.QueryAsync(sqlitePath, new OfficeQueryRequest(
@@ -642,9 +632,7 @@ INSERT INTO POSTED_TO_ADDR_DATA VALUES
                 UseOfficeYearRange: false,
                 OfficeYearFrom: -200,
                 OfficeYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var both = await service.QueryAsync(sqlitePath, new OfficeQueryRequest(
@@ -660,9 +648,7 @@ INSERT INTO POSTED_TO_ADDR_DATA VALUES
                 UseOfficeYearRange: false,
                 OfficeYearFrom: -200,
                 OfficeYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             Assert.Single(personPlaceOnly.Records);
@@ -816,9 +802,7 @@ INSERT INTO POSTED_TO_ADDR_DATA VALUES
                 UseOfficeYearRange: false,
                 OfficeYearFrom: -200,
                 OfficeYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             var officePlaceSubordinate = await service.QueryAsync(sqlitePath, new OfficeQueryRequest(
@@ -834,9 +818,7 @@ INSERT INTO POSTED_TO_ADDR_DATA VALUES
                 UseOfficeYearRange: false,
                 OfficeYearFrom: -200,
                 OfficeYearTo: 1911,
-                UseDynastyRange: false,
-                DynastyFrom: null,
-                DynastyTo: null
+                DynastyIds: Array.Empty<int>()
             ));
 
             Assert.Single(personPlaceSubordinate.Records);

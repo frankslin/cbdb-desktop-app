@@ -398,8 +398,6 @@ public partial class StatusQueryWindow : Window {
     }
 
     private StatusQueryRequest BuildRequest() {
-        var (selectedFrom, selectedTo) = _dynastyPicker.GetNormalizedRange();
-
         return new StatusQueryRequest(
             PersonKeyword: NormalizeText(_txtPersonKeyword.Text),
             StatusCodes: _selectedStatusCodes,
@@ -408,9 +406,7 @@ public partial class StatusQueryWindow : Window {
             UseIndexYearRange: _chkUseIndexYear.IsChecked == true,
             IndexYearFrom: ParseInt(_txtIndexYearFrom.Text, -200),
             IndexYearTo: ParseInt(_txtIndexYearTo.Text, 1911),
-            UseDynastyRange: _dynastyPicker.UseDynastyRange,
-            DynastyFrom: selectedFrom,
-            DynastyTo: selectedTo
+            DynastyIds: _dynastyPicker.SelectedDynastyIds
         );
     }
 

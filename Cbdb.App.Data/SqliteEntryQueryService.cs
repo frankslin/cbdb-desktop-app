@@ -175,7 +175,11 @@ ORDER BY CAST(c_entry_type AS TEXT), c_entry_code;
         await using var connection = await OpenReadOnlyConnectionAsync(sqlitePath, cancellationToken);
         await using var command = connection.CreateCommand();
 
-        var sql = """
+        var dynastyFilter = request.DynastyIds.Count == 0
+            ? string.Empty
+            : "\n       AND b.c_dy IN (" + string.Join(", ", request.DynastyIds.Select((_, index) => $"$dynastyId{index}")) + ")";
+
+        var sql = $"""
 WITH matched_people AS (
     SELECT DISTINCT b.c_personid
     FROM BIOG_MAIN b
@@ -191,16 +195,7 @@ WITH matched_people AS (
             OR b.c_mingzi_chn LIKE $personKeyword
          )
        AND ($useIndexYear = 0 OR b.c_index_year BETWEEN $indexYearFrom AND $indexYearTo)
-       AND (
-            $useDynasty = 0
-            OR EXISTS (
-                SELECT 1
-                FROM DYNASTIES d
-                WHERE d.c_dy = b.c_dy
-                  AND ($dynastyFromStart IS NULL OR COALESCE(d.c_end, d.c_start) > $dynastyFromStart)
-                  AND ($dynastyToEnd IS NULL OR COALESCE(d.c_start, d.c_end) < $dynastyToEnd)
-            )
-       )
+{dynastyFilter}
     UNION
     SELECT DISTINCT b.c_personid
     FROM BIOG_MAIN b
@@ -208,16 +203,7 @@ WITH matched_people AS (
     WHERE $personKeyword IS NOT NULL
       AND (an.c_alt_name LIKE $personKeyword OR an.c_alt_name_chn LIKE $personKeyword)
       AND ($useIndexYear = 0 OR b.c_index_year BETWEEN $indexYearFrom AND $indexYearTo)
-      AND (
-            $useDynasty = 0
-            OR EXISTS (
-                SELECT 1
-                FROM DYNASTIES d
-                WHERE d.c_dy = b.c_dy
-                  AND ($dynastyFromStart IS NULL OR COALESCE(d.c_end, d.c_start) > $dynastyFromStart)
-                  AND ($dynastyToEnd IS NULL OR COALESCE(d.c_start, d.c_end) < $dynastyToEnd)
-            )
-      )
+{dynastyFilter}
 )
 SELECT
     b.c_personid,
@@ -307,6 +293,10 @@ WHERE 1 = 1
             command.Parameters.AddWithValue($"$entryCode{i}", request.EntryCodes[i]);
         }
 
+        for (var i = 0; i < request.DynastyIds.Count; i++) {
+            command.Parameters.AddWithValue($"$dynastyId{i}", request.DynastyIds[i]);
+        }
+
         if (request.PlaceIds.Count > 0) {
             sql += request.IncludeSubordinateUnits
                 ? "\n  AND (ed.c_entry_addr_id IN (" + string.Join(", ", request.PlaceIds.Select((_, index) => $"$placeId{index}")) + ") OR EXISTS (SELECT 1 FROM ZZZ_BELONGS_TO bt WHERE bt.c_addr_id = ed.c_entry_addr_id AND bt.c_belongs_to IN (" + string.Join(", ", request.PlaceIds.Select((_, index) => $"$placeId{index}")) + ")))"
@@ -336,9 +326,6 @@ LIMIT $limit;
         command.Parameters.AddWithValue("$useEntryYear", request.UseEntryYearRange ? 1 : 0);
         command.Parameters.AddWithValue("$entryYearFrom", Math.Min(request.EntryYearFrom, request.EntryYearTo));
         command.Parameters.AddWithValue("$entryYearTo", Math.Max(request.EntryYearFrom, request.EntryYearTo));
-        command.Parameters.AddWithValue("$useDynasty", request.UseDynastyRange ? 1 : 0);
-        command.Parameters.AddWithValue("$dynastyFromStart", request.DynastyFrom?.StartYear is int fromStart ? fromStart : DBNull.Value);
-        command.Parameters.AddWithValue("$dynastyToEnd", request.DynastyTo?.EndYear is int toEnd ? toEnd : DBNull.Value);
         command.Parameters.AddWithValue("$limit", Math.Clamp(request.Limit, 1, 10000));
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);

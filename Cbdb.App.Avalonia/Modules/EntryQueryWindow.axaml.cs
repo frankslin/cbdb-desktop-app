@@ -386,8 +386,6 @@ public partial class EntryQueryWindow : Window {
     private void BtnClose_Click(object? sender, RoutedEventArgs e) => Close();
 
     private EntryQueryRequest BuildRequest() {
-        var (selectedFrom, selectedTo) = _dynastyPicker.GetNormalizedRange();
-
         return new EntryQueryRequest(
             PersonKeyword: NormalizeText(_txtPersonKeyword.Text),
             EntryCodes: _selectedEntryCodes,
@@ -399,9 +397,7 @@ public partial class EntryQueryWindow : Window {
             UseEntryYearRange: _chkUseEntryYear.IsChecked == true,
             EntryYearFrom: ParseInt(_txtEntryYearFrom.Text, -200),
             EntryYearTo: ParseInt(_txtEntryYearTo.Text, 1911),
-            UseDynastyRange: _dynastyPicker.UseDynastyRange,
-            DynastyFrom: selectedFrom,
-            DynastyTo: selectedTo
+            DynastyIds: _dynastyPicker.SelectedDynastyIds
         );
     }
 
