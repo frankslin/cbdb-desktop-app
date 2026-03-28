@@ -109,6 +109,9 @@ public sealed class OfficeQueryWindowTests {
             txtOfficeYearFrom.Text = "1070";
             txtOfficeYearTo.Text = "1080";
 
+            var dynastyPicker = AvaloniaUiTestHelper.FindRequiredControl<Control>(window, "DynastyPicker");
+            SetPrivateField(dynastyPicker, "_selectedDynastyIds", new HashSet<int> { 1, 2 });
+
             var buildRequestMethod = typeof(OfficeQueryWindow).GetMethod("BuildRequest", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.NotNull(buildRequestMethod);
 
@@ -123,6 +126,65 @@ public sealed class OfficeQueryWindowTests {
             Assert.True(request.UseOfficeYearRange);
             Assert.Equal(1070, request.OfficeYearFrom);
             Assert.Equal(1080, request.OfficeYearTo);
+            Assert.Equal(new[] { 1, 2 }, request.DynastyIds);
+        } finally {
+            window.Close();
+            TestSqliteFileHelper.Delete(sqlitePath);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task OfficeQueryWindow_RunQuery_PassesDynastyAndSplitPlaceFiltersToService() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var sqlitePath = Path.Combine(Path.GetTempPath(), "office-query-window-run-filters.sqlite3");
+        CreateDynastyFixture(sqlitePath);
+
+        var officeService = new FakeOfficeQueryService();
+        var placeService = new FakePlaceLookupService();
+        var window = new OfficeQueryWindow(sqlitePath, localization, officeService, placeService);
+
+        try {
+            window.Show();
+
+            await AvaloniaUiTestHelper.WaitUntilAsync(
+                () => AvaloniaUiTestHelper.FindRequiredControl<TextBlock>(window, "TxtStatusBar").Text?.Contains("Loaded 2 office codes and 2 dynasties.", StringComparison.Ordinal) == true,
+                TimeSpan.FromSeconds(5),
+                "Office query window did not finish loading filters."
+            );
+
+            SetPrivateField(window, "_selectedPersonPlaceIds", new List<int> { 10 });
+            SetPrivateField(window, "_selectedOfficePlaceIds", new List<int> { 20 });
+
+            var txtSelectedPersonPlaces = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedPersonPlaces");
+            var txtSelectedOfficePlaces = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedOfficePlaces");
+            txtSelectedPersonPlaces.Text = "福州 / Fu Zhou (10)";
+            txtSelectedOfficePlaces.Text = "臨安 / Lin An (20)";
+
+            var chkIncludePersonSubUnits = AvaloniaUiTestHelper.FindRequiredControl<CheckBox>(window, "ChkIncludePersonSubUnits");
+            var chkIncludeOfficeSubUnits = AvaloniaUiTestHelper.FindRequiredControl<CheckBox>(window, "ChkIncludeOfficeSubUnits");
+            chkIncludePersonSubUnits.IsChecked = true;
+            chkIncludeOfficeSubUnits.IsChecked = false;
+
+            var dynastyPicker = AvaloniaUiTestHelper.FindRequiredControl<Control>(window, "DynastyPicker");
+            SetPrivateField(dynastyPicker, "_selectedDynastyIds", new HashSet<int> { 2 });
+
+            var btnRunQuery = AvaloniaUiTestHelper.FindRequiredControl<Button>(window, "BtnRunQuery");
+            btnRunQuery.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+            await AvaloniaUiTestHelper.WaitUntilAsync(
+                () => officeService.QueryCallCount == 1,
+                TimeSpan.FromSeconds(5),
+                "Office query was not invoked."
+            );
+
+            var request = Assert.IsType<OfficeQueryRequest>(officeService.LastRequest);
+            Assert.Equal(new[] { 10 }, request.PersonPlaceIds);
+            Assert.Equal(new[] { 20 }, request.OfficePlaceIds);
+            Assert.True(request.IncludeSubordinatePersonUnits);
+            Assert.False(request.IncludeSubordinateOfficeUnits);
+            Assert.Equal(new[] { 2 }, request.DynastyIds);
         } finally {
             window.Close();
             TestSqliteFileHelper.Delete(sqlitePath);
@@ -157,6 +219,7 @@ INSERT INTO DYNASTIES VALUES (2, 'Yuan', '元', 1271, 1368);
     private sealed class FakeOfficeQueryService : IOfficeQueryService {
         public int QueryCallCount { get; private set; }
         public string? LastSqlitePath { get; private set; }
+        public OfficeQueryRequest? LastRequest { get; private set; }
 
         public Task<OfficePickerData> GetOfficePickerDataAsync(string sqlitePath, CancellationToken cancellationToken = default) {
             var root = new OfficeTypeNode(
@@ -188,6 +251,7 @@ INSERT INTO DYNASTIES VALUES (2, 'Yuan', '元', 1271, 1368);
         public Task<OfficeQueryResult> QueryAsync(string sqlitePath, OfficeQueryRequest request, CancellationToken cancellationToken = default) {
             QueryCallCount++;
             LastSqlitePath = sqlitePath;
+            LastRequest = request;
 
             var records = new[] {
                 new OfficeQueryRecord(
