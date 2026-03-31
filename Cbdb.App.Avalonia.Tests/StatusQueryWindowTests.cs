@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
+using System.Reflection;
 using Cbdb.App.Avalonia.Localization;
 using Cbdb.App.Avalonia.Modules;
 using Cbdb.App.Avalonia.Tests.TestInfrastructure;
@@ -60,9 +61,120 @@ public sealed class StatusQueryWindowTests {
         }
     }
 
+    [AvaloniaFact]
+    public async Task StatusQueryWindow_BuildRequest_IncludesSelectedDynasties() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var sqlitePath = Path.Combine(Path.GetTempPath(), "status-query-window-build-request.sqlite3");
+        CreateDynastyFixture(sqlitePath);
+
+        var statusService = new FakeStatusQueryService();
+        var placeService = new FakePlaceLookupService();
+        var window = new StatusQueryWindow(sqlitePath, localization, statusService, placeService);
+
+        try {
+            window.Show();
+
+            await AvaloniaUiTestHelper.WaitUntilAsync(
+                () => AvaloniaUiTestHelper.FindRequiredControl<TextBlock>(window, "TxtStatusBar").Text?.Contains("Loaded 2 status codes and 2 dynasties.", StringComparison.Ordinal) == true,
+                TimeSpan.FromSeconds(5),
+                "Status query window did not finish loading filters."
+            );
+
+            SetPrivateField(window, "_selectedPlaceIds", new List<int> { 10 });
+            var txtSelectedPlaces = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedPlaces");
+            txtSelectedPlaces.Text = "福州 / Fu Zhou (10)";
+
+            var chkIncludeSubUnits = AvaloniaUiTestHelper.FindRequiredControl<CheckBox>(window, "ChkIncludeSubUnits");
+            chkIncludeSubUnits.IsChecked = true;
+
+            var chkUseIndexYear = AvaloniaUiTestHelper.FindRequiredControl<CheckBox>(window, "ChkUseIndexYear");
+            var txtIndexYearFrom = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtIndexYearFrom");
+            var txtIndexYearTo = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtIndexYearTo");
+            chkUseIndexYear.IsChecked = true;
+            txtIndexYearFrom.Text = "1000";
+            txtIndexYearTo.Text = "1100";
+
+            var dynastyPicker = AvaloniaUiTestHelper.FindRequiredControl<Control>(window, "DynastyPicker");
+            SetPrivateField(dynastyPicker, "_selectedDynastyIds", new HashSet<int> { 1, 2 });
+
+            var buildRequestMethod = typeof(StatusQueryWindow).GetMethod("BuildRequest", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(buildRequestMethod);
+
+            var request = Assert.IsType<StatusQueryRequest>(buildRequestMethod!.Invoke(window, null));
+            Assert.Equal(new[] { 10 }, request.PlaceIds);
+            Assert.True(request.IncludeSubordinateUnits);
+            Assert.True(request.UseIndexYearRange);
+            Assert.Equal(1000, request.IndexYearFrom);
+            Assert.Equal(1100, request.IndexYearTo);
+            Assert.Equal(new[] { 1, 2 }, request.DynastyIds);
+        } finally {
+            window.Close();
+            TestSqliteFileHelper.Delete(sqlitePath);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task StatusQueryWindow_RunQuery_PassesPlaceAndDynastyFiltersToService() {
+        var localization = new AppLocalizationService();
+        localization.SetLanguage(UiLanguage.English);
+
+        var sqlitePath = Path.Combine(Path.GetTempPath(), "status-query-window-run-filters.sqlite3");
+        CreateDynastyFixture(sqlitePath);
+
+        var statusService = new FakeStatusQueryService();
+        var placeService = new FakePlaceLookupService();
+        var window = new StatusQueryWindow(sqlitePath, localization, statusService, placeService);
+
+        try {
+            window.Show();
+
+            await AvaloniaUiTestHelper.WaitUntilAsync(
+                () => AvaloniaUiTestHelper.FindRequiredControl<TextBlock>(window, "TxtStatusBar").Text?.Contains("Loaded 2 status codes and 2 dynasties.", StringComparison.Ordinal) == true,
+                TimeSpan.FromSeconds(5),
+                "Status query window did not finish loading filters."
+            );
+
+            SetPrivateField(window, "_selectedPlaceIds", new List<int> { 20 });
+            var txtSelectedPlaces = AvaloniaUiTestHelper.FindRequiredControl<TextBox>(window, "TxtSelectedPlaces");
+            txtSelectedPlaces.Text = "臨安 / Lin An (20)";
+
+            var chkIncludeSubUnits = AvaloniaUiTestHelper.FindRequiredControl<CheckBox>(window, "ChkIncludeSubUnits");
+            chkIncludeSubUnits.IsChecked = false;
+
+            var dynastyPicker = AvaloniaUiTestHelper.FindRequiredControl<Control>(window, "DynastyPicker");
+            SetPrivateField(dynastyPicker, "_selectedDynastyIds", new HashSet<int> { 2 });
+
+            var btnRunQuery = AvaloniaUiTestHelper.FindRequiredControl<Button>(window, "BtnRunQuery");
+            btnRunQuery.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+            await AvaloniaUiTestHelper.WaitUntilAsync(
+                () => statusService.QueryCallCount == 1,
+                TimeSpan.FromSeconds(5),
+                "Status query was not invoked."
+            );
+
+            var request = Assert.IsType<StatusQueryRequest>(statusService.LastRequest);
+            Assert.Equal(new[] { 20 }, request.PlaceIds);
+            Assert.False(request.IncludeSubordinateUnits);
+            Assert.Equal(new[] { 2 }, request.DynastyIds);
+        } finally {
+            window.Close();
+            TestSqliteFileHelper.Delete(sqlitePath);
+        }
+    }
+
+    private static void SetPrivateField(object instance, string fieldName, object value) {
+        var field = instance.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        field!.SetValue(instance, value);
+    }
+
     private sealed class FakeStatusQueryService : IStatusQueryService {
         public int QueryCallCount { get; private set; }
         public string? LastSqlitePath { get; private set; }
+        public StatusQueryRequest? LastRequest { get; private set; }
 
         public Task<IReadOnlyList<StatusCodeOption>> GetStatusCodesAsync(string sqlitePath, CancellationToken cancellationToken = default) {
             IReadOnlyList<StatusCodeOption> codes = new[] {
@@ -102,6 +214,7 @@ public sealed class StatusQueryWindowTests {
         public Task<StatusQueryResult> QueryAsync(string sqlitePath, StatusQueryRequest request, CancellationToken cancellationToken = default) {
             QueryCallCount++;
             LastSqlitePath = sqlitePath;
+            LastRequest = request;
 
             var records = new[] {
                 new StatusQueryRecord(
