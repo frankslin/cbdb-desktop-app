@@ -70,6 +70,7 @@ public partial class MainWindow : Window {
     private EntryQueryWindow? _entryQueryWindow;
     private OfficeQueryWindow? _officeQueryWindow;
     private StatusQueryWindow? _statusQueryWindow;
+    private GroupPeopleWindow? _groupPeopleWindow;
 
     internal AppLocalizationService LocalizationService => _localizationService;
 
@@ -320,6 +321,37 @@ public partial class MainWindow : Window {
             window.Show(this);
             _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
             _txtOutput.Text = T("msg.status_query_opened");
+            return;
+        }
+
+        if (key == "module.group_people") {
+            if (string.IsNullOrWhiteSpace(_sqlitePath) || !File.Exists(_sqlitePath)) {
+                _txtStatus.Text = T("status.failed");
+                _txtOutput.Text = T("msg.sqlite_missing");
+                return;
+            }
+
+            if (_groupPeopleWindow is { } existingWindow) {
+                if (existingWindow.WindowState == WindowState.Minimized) {
+                    existingWindow.WindowState = WindowState.Normal;
+                }
+
+                existingWindow.Activate();
+                _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+                _txtOutput.Text = T("msg.group_people_opened");
+                return;
+            }
+
+            var window = new GroupPeopleWindow(_sqlitePath, _localizationService);
+            _groupPeopleWindow = window;
+            window.Closed += (_, _) => {
+                if (ReferenceEquals(_groupPeopleWindow, window)) {
+                    _groupPeopleWindow = null;
+                }
+            };
+            window.Show(this);
+            _txtStatus.Text = string.Format(T("status.module_selected"), moduleLabel);
+            _txtOutput.Text = T("msg.group_people_opened");
             return;
         }
 
