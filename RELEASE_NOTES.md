@@ -1,4 +1,4 @@
-# CBDB Desktop Version 0.3.1-beta1
+# CBDB Desktop Version 0.3.2-beta1
 
 This release expands the query workflow beyond the 0.2.1-rc1 baseline, with a new module, clearer multilingual UI behavior, and more usable place/address selection.
 
