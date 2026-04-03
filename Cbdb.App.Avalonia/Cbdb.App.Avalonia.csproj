@@ -29,6 +29,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RuntimeIdentifiers>osx-arm64;osx-x64</RuntimeIdentifiers>
     <AssemblyName>CBDB</AssemblyName>
     <Product>CBDB</Product>
     <Title>CBDB</Title>

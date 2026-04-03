@@ -22,7 +22,7 @@ The app now supports three user-facing modules: **Person Browser**, **Status Que
 ### macOS Note
 - On macOS, Gatekeeper may block the app when opening a downloaded build for the first time
 - If needed, remove the quarantine attribute manually before launching:
-  `xattr -dr com.apple.quarantine /path/to/Cbdb.app`
+  `xattr -dr com.apple.quarantine /path/to/CBDB\ Desktop.app`
 
 # CBDB Desktop Version 0.2.1-rc1
 
@@ -49,4 +49,4 @@ The app currently supports two modules: **Person Browser** and **Status Query**.
 ### macOS Note
 - On macOS, Gatekeeper may block the app when opening a downloaded build for the first time
 - If needed, remove the quarantine attribute manually before launching:
-  `xattr -dr com.apple.quarantine /path/to/Cbdb.app`
+  `xattr -dr com.apple.quarantine /path/to/CBDB\ Desktop.app`

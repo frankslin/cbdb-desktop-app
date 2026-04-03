@@ -22,7 +22,7 @@ public partial class App : Application {
     }
 
     private void ConfigureNativeMenu() {
-        var aboutItem = new NativeMenuItem("About CBDB");
+        var aboutItem = new NativeMenuItem("About CBDB Desktop");
         aboutItem.Click += AboutMenuItem_Click;
 
         var menu = new NativeMenu();

@@ -33,7 +33,7 @@ public partial class AboutWindow : Window {
 
     private void ApplyLocalization() {
         Title = _localizationService.Get("about.title");
-        _txtTitle.Text = "CBDB";
+        _txtTitle.Text = "CBDB Desktop";
         var assembly = Assembly.GetExecutingAssembly();
         var version = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(attribute => string.Equals(attribute.Key, "DisplayVersion", StringComparison.Ordinal))?.Value

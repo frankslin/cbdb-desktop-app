@@ -42,7 +42,7 @@ dotnet run --project ./Cbdb.App.Avalonia/Cbdb.App.Avalonia.csproj
 On macOS, if Gatekeeper blocks the downloaded app bundle, remove the quarantine attribute before launching:
 
 ```bash
-xattr -dr com.apple.quarantine /path/to/Cbdb.app
+xattr -dr com.apple.quarantine /path/to/CBDB\ Desktop.app
 ```
 
 ### Run Headless UI Tests

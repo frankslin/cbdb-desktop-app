@@ -14,7 +14,7 @@
                  FontSize="28"
                  FontWeight="Bold"
                  Foreground="#133FB5"
-                 Text="CBDB" />
+                 Text="CBDB Desktop" />
 
       <ScrollViewer Grid.Row="1"
                     Margin="0,16,0,16"
