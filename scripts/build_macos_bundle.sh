@@ -12,7 +12,8 @@ What it does:
   1. Publishes CBDB Desktop for a single macOS runtime
   2. Builds a standard .app bundle from the publish output
   3. Optionally signs and notarizes the app bundle
-  4. Optionally zips the app bundle with ditto
+  4. Builds a DMG containing the app bundle and an Applications shortcut
+  5. Optionally zips the app bundle with ditto
 
 Notes:
   - Uses single-file self-contained publish for the app bundle experiment path.
@@ -136,10 +137,12 @@ CONTENTS_DIR="${BUNDLE_ROOT}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
 ZIP_PATH="${OUTPUT_DIR}/cbdb-${VERSION}-${RUNTIME}.zip"
+DMG_PATH="${OUTPUT_DIR}/cbdb-${VERSION}-${RUNTIME}.dmg"
 NOTARY_ZIP_PATH="${OUTPUT_DIR}/cbdb-${VERSION}-${RUNTIME}.notary.zip"
 ENTITLEMENTS_PATH="${OUTPUT_DIR}/entitlements.plist"
+DMG_STAGING_DIR="${OUTPUT_DIR}/dmg-staging"
 
-rm -rf "${PUBLISH_DIR}" "${BUNDLE_ROOT}"
+rm -rf "${PUBLISH_DIR}" "${BUNDLE_ROOT}" "${DMG_STAGING_DIR}"
 mkdir -p "${PUBLISH_DIR}" "${MACOS_DIR}" "${RESOURCES_DIR}"
 
 echo "==> Restoring project"
@@ -270,6 +273,20 @@ if [[ ${NOTARIZE} -eq 1 ]]; then
   xcrun stapler staple "${BUNDLE_ROOT}"
   xcrun stapler validate "${BUNDLE_ROOT}"
 fi
+
+echo "==> Creating DMG"
+mkdir -p "${DMG_STAGING_DIR}"
+cp -R "${BUNDLE_ROOT}" "${DMG_STAGING_DIR}/${APP_NAME}.app"
+ln -s /Applications "${DMG_STAGING_DIR}/Applications"
+rm -f "${DMG_PATH}"
+hdiutil create \
+  -volname "${APP_NAME}" \
+  -srcfolder "${DMG_STAGING_DIR}" \
+  -ov \
+  -format UDZO \
+  "${DMG_PATH}" >/dev/null
+rm -rf "${DMG_STAGING_DIR}"
+echo "DMG: ${DMG_PATH}"
 
 if [[ ${SKIP_ZIP} -eq 0 ]]; then
   echo "==> Creating zip archive"

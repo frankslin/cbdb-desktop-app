@@ -105,5 +105,5 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: cbdb-${{ env.APP_VERSION }}-${{ matrix.runtime }}
-          path: artifacts/publish/${{ matrix.runtime }}/cbdb-${{ env.APP_VERSION }}-${{ matrix.runtime }}.zip
+          path: artifacts/publish/${{ matrix.runtime }}/cbdb-${{ env.APP_VERSION }}-${{ matrix.runtime }}.dmg
           if-no-files-found: error

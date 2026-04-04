@@ -216,7 +216,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: cbdb-${{ env.RELEASE_VERSION }}-${{ matrix.runtime }}
-          path: artifacts/publish/${{ matrix.runtime }}/cbdb-${{ env.RELEASE_VERSION }}-${{ matrix.runtime }}.zip
+          path: artifacts/publish/${{ matrix.runtime }}/cbdb-${{ env.RELEASE_VERSION }}-${{ matrix.runtime }}.dmg
           if-no-files-found: error
 
   create-release:
@@ -269,8 +269,8 @@ jobs:
           fi
           gh release create "v${RELEASE_VERSION}" \
             artifacts/release/cbdb-${RELEASE_VERSION}-win-x64.zip \
-            artifacts/release/cbdb-${RELEASE_VERSION}-osx-arm64.zip \
-            artifacts/release/cbdb-${RELEASE_VERSION}-osx-x64.zip \
+            artifacts/release/cbdb-${RELEASE_VERSION}-osx-arm64.dmg \
+            artifacts/release/cbdb-${RELEASE_VERSION}-osx-x64.dmg \
             --target "${GITHUB_SHA}" \
             --title "CBDB Desktop ${RELEASE_VERSION}" \
             --notes-file "RELEASE_NOTES.md"

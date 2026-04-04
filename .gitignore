@@ -1,6 +1,7 @@
 ﻿# Ignore build outputs
 **/bin/
 **/obj/
+artifacts/
 
 # NuGet local package cache
 .nuget/
@@ -17,6 +18,3 @@
 data/*.sqlite
 data/*.sqlite3
 data/*.db
-
-# Generated headless UI test artifacts
-artifacts/ui-tests/
