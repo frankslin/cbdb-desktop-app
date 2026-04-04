@@ -1,6 +1,9 @@
 name: Release App
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
@@ -12,6 +15,31 @@ permissions:
   contents: write
 
 jobs:
+  resolve-version:
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.resolve.outputs.release_version }}
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+    steps:
+      - name: Resolve release version
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            tag="${GITHUB_REF_NAME}"
+            version="${tag#v}"
+          else
+            version="${{ inputs.version }}"
+            tag="v${version}"
+          fi
+          if [[ -z "${version}" ]]; then
+            echo "Could not resolve release version" >&2
+            exit 1
+          fi
+          echo "release_version=${version}" >> "$GITHUB_OUTPUT"
+          echo "release_tag=${tag}" >> "$GITHUB_OUTPUT"
+
   test-windows:
     runs-on: windows-latest
 
@@ -62,9 +90,11 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    needs: test-windows
+    needs:
+      - resolve-version
+      - test-windows
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_VERSION: ${{ needs.resolve-version.outputs.release_version }}
 
     steps:
       - name: Checkout
@@ -127,7 +157,9 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    needs: test-macos
+    needs:
+      - resolve-version
+      - test-macos
     strategy:
       fail-fast: false
       matrix:
@@ -135,7 +167,7 @@ jobs:
           - osx-arm64
           - osx-x64
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_VERSION: ${{ needs.resolve-version.outputs.release_version }}
       MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
       MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
       MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
@@ -222,10 +254,12 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     needs:
+      - resolve-version
       - build-windows
       - build-macos
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_VERSION: ${{ needs.resolve-version.outputs.release_version }}
+      RELEASE_TAG: ${{ needs.resolve-version.outputs.release_tag }}
       GH_TOKEN: ${{ github.token }}
 
     steps:
@@ -250,16 +284,7 @@ jobs:
           name: cbdb-${{ env.RELEASE_VERSION }}-osx-x64
           path: artifacts/release
 
-      - name: Ensure release tag does not already exist
-        shell: bash
-        run: |
-          set -euo pipefail
-          if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
-            echo "Release v${RELEASE_VERSION} already exists." >&2
-            exit 1
-          fi
-
-      - name: Create GitHub release
+      - name: Create or update GitHub release
         shell: bash
         run: |
           set -euo pipefail
@@ -267,13 +292,21 @@ jobs:
             echo "RELEASE_NOTES.md not found" >&2
             exit 1
           fi
-          gh release create "v${RELEASE_VERSION}" \
+          if ! gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release create "${RELEASE_TAG}" \
+              --target "${GITHUB_SHA}" \
+              --title "CBDB Desktop ${RELEASE_VERSION}" \
+              --notes-file "RELEASE_NOTES.md"
+          else
+            gh release edit "${RELEASE_TAG}" \
+              --title "CBDB Desktop ${RELEASE_VERSION}" \
+              --notes-file "RELEASE_NOTES.md"
+          fi
+          gh release upload "${RELEASE_TAG}" \
             artifacts/release/cbdb-${RELEASE_VERSION}-win-x64.zip \
             artifacts/release/cbdb-${RELEASE_VERSION}-osx-arm64.dmg \
             artifacts/release/cbdb-${RELEASE_VERSION}-osx-x64.dmg \
-            --target "${GITHUB_SHA}" \
-            --title "CBDB Desktop ${RELEASE_VERSION}" \
-            --notes-file "RELEASE_NOTES.md"
+            --clobber
 
       - name: Write release summary
         shell: bash
@@ -283,6 +316,6 @@ jobs:
           {
             echo "## Release created"
             echo
-            echo "- Tag: v${RELEASE_VERSION}"
+            echo "- Tag: ${RELEASE_TAG}"
             echo "- Release: ${release_url}"
           } >> "$GITHUB_STEP_SUMMARY"
