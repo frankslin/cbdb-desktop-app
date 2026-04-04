@@ -1,52 +1,71 @@
 # CBDB Desktop Version 0.3.2-beta1
 
-This release expands the query workflow beyond the 0.2.1-rc1 baseline, with a new module, clearer multilingual UI behavior, and more usable place/address selection.
+This release expands the desktop app from the earlier query baseline into a broader, more stable research toolset. It adds a new group-based query module, deepens office-query behavior, improves picker and scrolling performance, and introduces signed and notarized macOS packaging.
 
-The app now supports three user-facing modules: **Person Browser**, **Status Query**, and **Entry Query**.
+The app now supports five user-facing modules:
+- **Person Browser**
+- **Status Query**
+- **Entry Query**
+- **Office Query**
+- **Look Up Data on a Group of People**
 
 ## Highlights
-- Added a new **Entry Query** module, extending the app beyond the earlier Person Browser and Status Query toolset
-- Improved interface readability and consistency, including locale-specific font handling and clearer language-selection behavior
-- Refined place/address selection and related query interactions to make address-based filtering easier to use
+- Added a new **Look Up Data on a Group of People** module for loading a person-ID set and expanding related status, office, entry, text, and address results
+- Deepened **Office Query** with richer place-workflow behavior and clearer derived result fields for people-place and office-place matching
+- Switched dynasty filtering in query modules from a simple range to a **multi-select picker**, so users can choose non-contiguous dynasties directly
+- Improved scrolling and incremental loading in large browser and picker views, especially for the person browser and place-selection dialogs
+- macOS packaging now produces **signed, notarized DMG packages** for both Apple Silicon and Intel builds
 
 ## Improvements
-- Query-side picker windows have been refined for clearer selection flow and better large-list usability
-- Traditional Chinese display is improved through bundled Noto Sans TC support on Windows
-- About-window notices and release metadata have been updated for the current beta version
-- Ongoing interface polish improves consistency across module windows and selection dialogs
+- Office Query result tables now expose clearer place-match and place-workflow fields, and person-level aggregation preserves multi-place semantics more accurately
+- Status, Entry, and Office query windows now have stronger whole-window filter coverage in the headless Avalonia test suite
+- Query-side pickers continue to converge toward a shared interaction model, with better search, selection, and large-list behavior
+- Dynasty ordering rules were refined further, including placing `高麗 / 高丽` with the end-grouped external dynasties
+- Place picker and related browser lists now use more incremental loading paths to reduce UI stalls during scrolling
+- The new group-people module received layout and workflow cleanup so imported person sets are easier to understand and browse
+
+## Packaging and Distribution
+- macOS releases are now distributed as notarized `.dmg` files instead of `.zip` archives
+- macOS build automation now signs with hardened runtime, applies the required .NET `allow-jit` entitlement, notarizes, and staples the shipped app bundles
+- Windows release packaging remains self-contained and continues to include bundled license materials
 
 ## System Requirement
 - Windows 10 22H2 or later
 - macOS 12.0 or later
 
-### macOS Note
-- On macOS, Gatekeeper may block the app when opening a downloaded build for the first time
-- If needed, remove the quarantine attribute manually before launching:
-  `xattr -dr com.apple.quarantine /path/to/CBDB\ Desktop.app`
+---
 
-# CBDB Desktop Version 0.2.1-rc1
+# CBDB Desktop 0.3.2 版更新說明
 
-This release improves the Person Viewer, Kinship browsing, Status query tools, and overall display stability.
+這個版本把桌面應用程式從先前的查詢基線，進一步擴展成更完整、也更穩定的研究工具。除了新增按人群查詢模組之外，也進一步深化了官職查詢的工作流程、改善了大型清單的捲動與選擇體驗，並完成了 macOS 的簽章、公證與 DMG 封裝流程。
 
-The app currently supports two modules: **Person Browser** and **Status Query**.
+目前應用程式已提供五個可用模組：
+- **人物瀏覽**
+- **社會區分查詢**
+- **入仕查詢**
+- **官職查詢**
+- **按人群查詢**
 
-## Highlights
-- Kinship browsing is now more powerful, with clearer relationship grouping and support for expanded kinship networks
-- Person Browser now supports importing and exporting person lists by file
-- Status Query is easier to use, with improved category selection, place filtering, and clearer result tabs
-- The app can now automatically add recommended SQLite indexes to help speed up postings queries
-- Display behavior has been improved in dark-mode environments; at this stage the app uses light mode only for better readability
+## 主要更新
+- 新增 **按人群查詢** 模組，可先載入一組人物 ID，再展開相關的社會區分、官職、入仕、文本與地址結果
+- 深化 **官職查詢** 的地點工作流程，補強人物地點與官職地點的對應語意與派生欄位
+- 查詢模組中的朝代篩選由區間改為 **多選式選擇器**，可直接跳著選取不連續的朝代
+- 改善人物瀏覽與地點選擇等大型清單的捲動與增量載入行為，降低卡頓感
+- macOS 封裝現在會產出 **已簽章、已公證的 DMG 安裝映像檔**，並分別提供 Apple Silicon 與 Intel 版本
 
-## Improvements
-- Place and dynasty selection have been refined to make filtering more accurate and easier to understand
-- General interface polish improves readability and consistency across windows
-- Official release packaging is now more consistent and better tested
+## 改進項目
+- 官職查詢結果表現在提供更清楚的地點比對與地點工作流程欄位，人物層級聚合也能更完整保留多地點語意
+- 社會區分、入仕與官職三個查詢視窗都補強了整體篩選行為的 headless Avalonia 測試覆蓋
+- 查詢側各種選擇器的互動方式進一步收斂，搜尋、選取與大型清單操作更一致
+- 朝代排序規則再調整，`高麗 / 高丽` 現在也會併入尾端的外部朝代分組
+- 地點選擇器與人物瀏覽相關清單改採更多增量載入路徑，減少捲動時的 UI 停頓
+- 新的按人群查詢模組也進一步整理了版面與操作流程，讓匯入的人物集合更容易理解與檢視
 
-## System Requirement
-- Windows 10 22H2 or later
-- macOS 12.0 or later
+## 封裝與發佈
+- macOS 版本現在改以已公證的 `.dmg` 發佈，不再使用 `.zip`
+- macOS 自動化建置流程現在會套用 hardened runtime、加入 .NET 所需的 `allow-jit` entitlement，並完成公證與附票
+- Windows 版本仍維持 self-contained 封裝，並持續附帶授權相關文件
 
-### macOS Note
-- On macOS, Gatekeeper may block the app when opening a downloaded build for the first time
-- If needed, remove the quarantine attribute manually before launching:
-  `xattr -dr com.apple.quarantine /path/to/CBDB\ Desktop.app`
+## 系統需求
+- Windows 10 22H2 或更新版本
+- macOS 12.0 或更新版本
