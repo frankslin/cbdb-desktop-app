@@ -46,7 +46,13 @@ public partial class App : Application {
             ? mainWindow.LocalizationService
             : new Localization.AppLocalizationService();
 
-        var aboutWindow = new AboutWindow(localizationService);
+        var aboutWindow = owner is MainWindow sourceWindow
+            ? new AboutWindow(
+                localizationService,
+                sourceWindow.UpdateCheckState,
+                () => sourceWindow.FormatUpdateStatusText(sourceWindow.UpdateCheckState.LastResult, sourceWindow.UpdateCheckState.IsChecking),
+                sourceWindow.UpdateCheckState.LastResult?.ReleaseUrl)
+            : new AboutWindow(localizationService);
         _aboutWindow = aboutWindow;
         aboutWindow.Closed += (_, _) => {
             if (ReferenceEquals(_aboutWindow, aboutWindow)) {

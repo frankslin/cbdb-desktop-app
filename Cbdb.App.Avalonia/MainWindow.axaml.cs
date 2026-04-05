@@ -38,6 +38,7 @@ public partial class MainWindow : Window {
     private readonly IDatabaseHealthService _databaseHealthService = new SqliteDatabaseHealthService();
     private readonly IDatabaseIndexService _databaseIndexService = new SqliteDatabaseIndexService();
     private readonly AppLocalizationService _localizationService = new();
+    private readonly UpdateCheckState _updateCheckState = new();
 
     private ToggleButton _btnLangEn = null!;
     private ToggleButton _btnLangZhHant = null!;
@@ -71,8 +72,10 @@ public partial class MainWindow : Window {
     private OfficeQueryWindow? _officeQueryWindow;
     private StatusQueryWindow? _statusQueryWindow;
     private GroupPeopleWindow? _groupPeopleWindow;
+    private bool _startupUpdateCheckStarted;
 
     internal AppLocalizationService LocalizationService => _localizationService;
+    internal UpdateCheckState UpdateCheckState => _updateCheckState;
 
     public MainWindow() {
         InitializeComponent();
@@ -88,7 +91,10 @@ public partial class MainWindow : Window {
 
         ApplyLocalization();
 
-        Opened += async (_, _) => await InitializeSqlitePathAsync();
+        Opened += async (_, _) => {
+            await InitializeSqlitePathAsync();
+            StartSilentUpdateCheck();
+        };
     }
 
     private void ApplyLocalization() {
@@ -529,6 +535,76 @@ public partial class MainWindow : Window {
             FileName = target,
             UseShellExecute = true
         });
+    }
+
+    private void StartSilentUpdateCheck() {
+        if (_startupUpdateCheckStarted) {
+            return;
+        }
+
+        _startupUpdateCheckStarted = true;
+        _ = CheckForUpdatesSilentlyAsync();
+    }
+
+    private async Task CheckForUpdatesSilentlyAsync() {
+        var result = await _updateCheckState.CheckAsync();
+        AppendOutputMessage(FormatUpdateOutputMessage(result));
+    }
+
+    private void AppendOutputMessage(string message) {
+        if (string.IsNullOrWhiteSpace(message)) {
+            return;
+        }
+
+        _txtOutput.Text = string.IsNullOrWhiteSpace(_txtOutput.Text)
+            ? message
+            : $"{_txtOutput.Text}{Environment.NewLine}{Environment.NewLine}{message}";
+    }
+
+    internal string FormatUpdateStatusText(UpdateCheckResult? result, bool isChecking) {
+        if (isChecking) {
+            return T("about.update_checking");
+        }
+
+        if (result is null) {
+            return T("about.update_not_checked");
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.ErrorMessage)) {
+            return string.Format(T("about.update_error"), result.ErrorMessage);
+        }
+
+        if (result.IsUpdateAvailable) {
+            var text = string.Format(T("about.update_available"), result.LatestVersion ?? string.Empty);
+            if (result.PublishedAt is { } publishedAt) {
+                text = $"{text}{Environment.NewLine}{string.Format(T("about.update_published"), publishedAt.LocalDateTime.ToString("yyyy-MM-dd"))}";
+            }
+
+            return text;
+        }
+
+        return T("about.update_up_to_date");
+    }
+
+    private string FormatUpdateOutputMessage(UpdateCheckResult result) {
+        if (!string.IsNullOrWhiteSpace(result.ErrorMessage)) {
+            return string.Format(T("update.check_failed"), result.ErrorMessage);
+        }
+
+        if (result.IsUpdateAvailable && !string.IsNullOrWhiteSpace(result.ReleaseUrl)) {
+            var message = string.Format(
+                T("update.available"),
+                result.CurrentVersion,
+                result.LatestVersion ?? string.Empty);
+
+            if (result.PublishedAt is { } publishedAt) {
+                message = $"{message}{Environment.NewLine}{string.Format(T("update.published"), publishedAt.LocalDateTime.ToString("yyyy-MM-dd"))}";
+            }
+
+            return $"{message}{Environment.NewLine}{result.ReleaseUrl}";
+        }
+
+        return string.Format(T("update.up_to_date"), result.CurrentVersion);
     }
 
     private static string NormalizeSqlitePath(string? path) {

@@ -3,10 +3,27 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Width="560"
-    Height="360"
+    Height="380"
     CanResize="False"
     WindowStartupLocation="CenterOwner"
     Background="#F6F6F6">
+  <Window.Styles>
+    <Style Selector="Button.link-button">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Foreground" Value="#133FB5" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.link-button:pointerover /template/ ContentPresenter">
+      <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+    </Style>
+    <Style Selector="Button.link-button:disabled">
+      <Setter Property="Foreground" Value="#808080" />
+    </Style>
+  </Window.Styles>
   <Border Padding="20" Background="#F6F6F6">
     <Grid RowDefinitions="Auto,*,Auto">
       <TextBlock x:Name="TxtTitle"
@@ -31,19 +48,22 @@
                   BorderThickness="1"
                   CornerRadius="8"
                   Padding="14">
-            <StackPanel Spacing="8">
-              <TextBlock Text="Temporary Font Test"
+            <StackPanel Spacing="10">
+              <TextBlock x:Name="TxtUpdateStatus"
                          FontSize="13"
-                         FontWeight="SemiBold"
-                         Foreground="#133FB5" />
-              <TextBlock x:Name="TxtFontDebug"
-                         FontSize="12"
-                         Foreground="#555555"
+                         Foreground="#333333"
                          TextWrapping="Wrap" />
-              <TextBlock x:Name="TxtFontSample"
-                         FontSize="18"
-                         LineHeight="28"
-                         TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal"
+                          Spacing="14">
+                <Button x:Name="BtnCheckUpdates"
+                        Classes="link-button"
+                        HorizontalAlignment="Left"
+                        Click="BtnCheckUpdates_Click" />
+                <Button x:Name="BtnOpenLatestRelease"
+                        Classes="link-button"
+                        HorizontalAlignment="Left"
+                        Click="BtnOpenLatestRelease_Click" />
+              </StackPanel>
             </StackPanel>
           </Border>
         </StackPanel>
