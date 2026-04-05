@@ -1,4 +1,4 @@
-# CBDB Desktop Version 0.3.2-beta1
+# CBDB Desktop Version 0.3.3-beta1
 
 This release expands the desktop app from the earlier query baseline into a broader, more stable research toolset. It adds a new group-based query module, deepens office-query behavior, improves picker and scrolling performance, and introduces signed and notarized macOS packaging.
 
@@ -14,6 +14,7 @@ The app now supports five user-facing modules:
 - Deepened **Office Query** with richer place-workflow behavior and clearer derived result fields for people-place and office-place matching
 - Switched dynasty filtering in query modules from a simple range to a **multi-select picker**, so users can choose non-contiguous dynasties directly
 - Improved scrolling and incremental loading in large browser and picker views, especially for the person browser and place-selection dialogs
+- The app now attempts to check GitHub releases for updates at startup, and the **About** window lets users run the check again manually
 - macOS packaging now produces **signed, notarized DMG packages** for both Apple Silicon and Intel builds
 
 ## Improvements
@@ -35,7 +36,7 @@ The app now supports five user-facing modules:
 
 ---
 
-# CBDB Desktop 0.3.2 版更新說明
+# CBDB Desktop 0.3.3-beta1 版更新說明
 
 這個版本把桌面應用程式從先前的查詢基線，進一步擴展成更完整、也更穩定的研究工具。除了新增按人群查詢模組之外，也進一步深化了官職查詢的工作流程、改善了大型清單的捲動與選擇體驗，並完成了 macOS 的簽章、公證與 DMG 封裝流程。
 
@@ -51,6 +52,7 @@ The app now supports five user-facing modules:
 - 深化 **官職查詢** 的地點工作流程，補強人物地點與官職地點的對應語意與派生欄位
 - 查詢模組中的朝代篩選由區間改為 **多選式選擇器**，可直接跳著選取不連續的朝代
 - 改善人物瀏覽與地點選擇等大型清單的捲動與增量載入行為，降低卡頓感
+- 程式現在會在啟動時嘗試檢查 GitHub releases 是否有新版本，而 **關於** 視窗也提供手動再次檢查的入口
 - macOS 封裝現在會產出 **已簽章、已公證的 DMG 安裝映像檔**，並分別提供 Apple Silicon 與 Intel 版本
 
 ## 改進項目
