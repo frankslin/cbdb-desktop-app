@@ -404,8 +404,8 @@ WHERE 1 = 1
   AND (
         $useOfficeYear = 0
         OR (
-            ($officeYearFrom IS NULL OR pto.c_firstyear >= $officeYearFrom)
-            AND ($officeYearTo IS NULL OR pto.c_lastyear <= $officeYearTo)
+            COALESCE(pto.c_lastyear, pto.c_firstyear) >= $officeYearFrom
+            AND COALESCE(pto.c_firstyear, pto.c_lastyear) <= $officeYearTo
         )
       )
 """;
@@ -557,7 +557,7 @@ LIMIT $limit;
                 var officeAddress = distinctOfficePlaces.Count switch {
                     0 => group.Select(record => record.OfficeAddress).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)),
                     1 => distinctOfficePlaces[0].OfficeAddress,
-                    _ => $"Multiple office places ({distinctOfficePlaces.Count})"
+                    _ => BuildOfficeAddressSummary(distinctOfficePlaces)
                 };
                 var officeXCoord = distinctOfficePlaces.Count == 1 ? distinctOfficePlaces[0].OfficeXCoord : null;
                 var officeYCoord = distinctOfficePlaces.Count == 1 ? distinctOfficePlaces[0].OfficeYCoord : null;
@@ -623,6 +623,26 @@ LIMIT $limit;
         }
 
         return "'Unfiltered'";
+    }
+
+    private static string BuildOfficeAddressSummary(IReadOnlyList<OfficeQueryRecord> distinctOfficePlaces) {
+        var labels = distinctOfficePlaces
+            .Select(record => record.OfficeAddress)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(2)
+            .ToList();
+
+        if (labels.Count == 0) {
+            return $"{distinctOfficePlaces.Count} office places";
+        }
+
+        var summary = string.Join("; ", labels);
+        if (distinctOfficePlaces.Count > labels.Count) {
+            summary += $" (+{distinctOfficePlaces.Count - labels.Count} more)";
+        }
+
+        return summary;
     }
 
     private static string SummarizeMatch(IEnumerable<string> matches) {
