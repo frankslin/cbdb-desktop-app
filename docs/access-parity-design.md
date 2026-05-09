@@ -1,60 +1,108 @@
 # Access Parity Design
 
-> Status: **draft skeleton, locally anchored**. Not yet circulated for review.
-> Owner: TBD. Last touched: 2026-05-09.
+> Status: **planning draft.** Subject to collaborator review before adoption.
+> Last touched: 2026-05-09.
 
 ## Purpose
 
-Why this document exists, and what "Access parity" means for this repo.
+This document defines what "Access parity" means in `cbdb-desktop-app`
+during the Avalonia migration, and just as importantly what it does not
+mean. It scopes how the Access app is used as a behavioral reference and
+sets the boundaries that keep that use bounded in time and surface area.
 
-- The Avalonia app's query modules (`Status`, `Entry`, `Office`, …) are
-  re-implementations of long-established Access `.mdb` query forms.
-- "Parity" here means: for the same user-visible inputs, the Avalonia app
-  produces the same record set and person set as the canonical Access form,
-  with documented and intentional exceptions.
+## Role of Access During Migration
 
-## Scope and Non-Goals
+Access is a **migration-stage reference implementation**, not a permanent
+authority.
 
-- **In scope:** query semantics, result row shape, person-id set,
-  edge-case behavior (empty inputs, subordinate places, dynasty range,
-  index-year range), and how known Access bugs should be handled.
-- **Out of scope:** UI layout, font choices, localization, packaging,
-  release pipeline, performance tuning that does not change result sets.
+- **Why we use it now.** Several Access query workflows are mature, in
+  active scholarly use, and have predictable result shapes. Comparing
+  Avalonia against them lets us catch regressions and recover missing
+  semantics while the Avalonia code is still catching up.
+- **Why we will not call it ground truth forever.** The Access app has
+  known bugs, under-specified behaviors, and scope gaps. It is also
+  effectively frozen in form factor; the Avalonia app is expected to
+  grow beyond it.
+- **What this framing leaves room for.**
+  - Intentional divergence from Access where Avalonia behavior is
+    deliberately better-defined.
+  - Non-adoption of known Access bugs.
+  - Future re-baselining once the Avalonia side is mature enough to
+    define behavior on its own terms.
 
-## Ground Truth Source
+Matching Access behavior requires a concrete migration rationale, not
+precedent alone. The reasoning must be visible in the design doc, the
+workflow triage, or a pinned divergence.
 
-- The canonical reference is the Access app driven by `CBDB_BJ_User.mdb`.
-- Probes against that ground truth live in a sibling repo:
-  `cbdb-user-mdb-tests` (differential testing harness, real VBA via
-  pywinauto vs Python replay).
-- This repo MUST NOT redefine ground truth locally; it consumes it.
+## Repo Boundary
 
-## Parity Dimensions
+- `cbdb-desktop-app` (this repo) is the **primary home** for parity
+  planning, implementation, and review. Design, workflow, session
+  handoff, and the parity assertions themselves live here.
+- `cbdb-user-mdb-tests` is the **oracle / probe source repo**. It owns
+  the Access-side probes and the canonical capture format for
+  ground-truth artifacts.
+- Planning workflow stays here. We will not move parity strategy back
+  into the Access-testing repo.
 
-To be fleshed out. Likely sections:
+## Eligible Reference Surface
 
-- Input shape parity (filters that exist on both sides)
-- Result row parity (columns and types)
-- Result set parity (which rows appear, ordering tolerance)
-- Person-set parity (the unique-people rollup)
-- Edge-case parity (empty filter, subordinate place toggle, dynasty range
-  semantics, NULL handling)
-- Intentional divergences from Access (e.g. known Access bugs we will
-  not reproduce)
+"Reference-worthy" is a curated subset of the Access app, not the whole
+app.
 
-## Architecture and Cross-Repo Layout
+A workflow is eligible as a migration reference only if:
 
-To be fleshed out. Likely:
+- it is stable on the Access side,
+- its expected behavior can be captured by a reproducible probe in
+  `cbdb-user-mdb-tests`, and
+- it is not currently flagged as a known Access bug surface.
 
-- What lives here: the Avalonia-side query service, parity-oriented
-  fixtures, parity assertions that compare against captured ground-truth
-  artifacts.
-- What lives in `cbdb-user-mdb-tests`: the Access ground-truth probes and
-  the canonical artifact format.
-- Artifact handoff format (file shape, columns, encoding, where it is
-  checked in or fetched from).
+Surfaces explicitly excluded from parity gating, at least for now:
+
+- known Access bug surfaces (catalogued in `cbdb-user-mdb-tests`),
+- workflows whose Access implementation is itself in flux,
+- export families that depend on third-party tools (Pajek, Gephi,
+  UCINet, KML, Neo4j) — see Phased Roadmap, deferred scope.
+
+## Phased Roadmap
+
+Parity work is phased. We do not open a new phase until the previous
+one is operational: probes captured in `cbdb-user-mdb-tests`,
+service-layer parity assertions running here, and triage policy applied
+to all observed diffs.
+
+| Phase | Module | Notes |
+| --- | --- | --- |
+| 1 | Entry Query | First module to land. Validates the workflow itself. |
+| 2 | Status Query | **Query semantics only.** Pajek / Gephi / UCINet export parity is deferred. |
+| 3 | Office Query | Includes the existing office picker and the people-place / office-place split. |
+| 4 | Person Browser stable sub-surfaces | Curated sub-surfaces only; not the whole Person Browser. |
+
+Explicitly deferred scope:
+
+- export families (Pajek, Gephi, UCINet, KML, Neo4j) for any module,
+- Person Browser sub-surfaces with unstable or non-reference Access
+  behavior,
+- known Access bug surfaces.
+
+## Stop Rules
+
+The following are out of scope on purpose:
+
+- No full combinatorial parity ambition. We are not enumerating every
+  Access input.
+- No permanent "Access says so" framing. Access is a migration-stage
+  reference, not a permanent authority.
+- No re-creating the Access issue tracker inside this repo. Bug
+  inventory stays in `cbdb-user-mdb-tests`.
+- No expanding parity scope until the previous phase is operational.
 
 ## Open Design Questions
 
-- TBD. Use this section to park unresolved choices instead of letting them
-  drift into code.
+- Probe artifact format and where captured artifacts are stored
+  (committed in `cbdb-user-mdb-tests`, fetched on demand, or referenced
+  by ID).
+- Concrete bar for "operational" when closing one phase and opening the
+  next.
+- Threshold for promoting an "open question" diff into either a fix or
+  a pinned divergence.

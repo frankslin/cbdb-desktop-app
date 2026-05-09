@@ -1,45 +1,54 @@
 # Access Parity Session Handoff
 
-> Status: **draft skeleton, locally anchored**. Not yet circulated for review.
-> Purpose: a short, regularly-updated note that lets the next session pick
-> up Access-parity work without re-discovering context.
+> Status: **planning draft.** Subject to collaborator review before adoption.
+> Purpose: a short, regularly-updated note that lets the next session
+> resume Access-parity work without re-discovering context.
 
 ## How to Use This Document
 
-- One section per active parity workstream (usually one per query module).
-- Update this file at the **end** of any parity session, not the start.
-- Keep entries terse. Detail belongs in commits, PRs, and the design doc.
+- One section per active parity workstream (usually one per module).
+- Update at the **end** of any parity session, not the start.
+- Keep entries terse. Detail belongs in commits, PRs, and the design
+  doc.
 
-## Current Parity State (per module)
+## Active Phase
 
-### Status Query
-- Avalonia coverage: TBD
-- Access ground-truth probe: TBD
-- Last compared on: TBD
-- Known diffs: TBD
+See Phased Roadmap in `docs/access-parity-design.md`.
 
-### Entry Query
-- Avalonia coverage: TBD
-- Access ground-truth probe: TBD
-- Last compared on: TBD
-- Known diffs: TBD
+- Current planned phase: **Phase 1 (Entry Query)**.
+- Implementation not yet in flight; this entry tracks the planning
+  target only.
+- Phase exit criteria: probes captured in `cbdb-user-mdb-tests`,
+  Avalonia-side service-layer parity assertions running, triage policy
+  applied to all observed diffs.
 
-### Office Query
-- Avalonia coverage: TBD
-- Access ground-truth probe: TBD
-- Last compared on: TBD
-- Known diffs: TBD
+## Per-Module Parity State
+
+### Phase 1: Entry Query
+- Avalonia coverage: not started under the parity workflow yet.
+- Access oracle probe: TBD in `cbdb-user-mdb-tests`.
+- Last compared on: —
+- Known diffs: —
+
+### Phase 2: Status Query
+- Status: not started; query semantics only, export families deferred.
+
+### Phase 3: Office Query
+- Status: not started.
+
+### Phase 4: Person Browser stable sub-surfaces
+- Status: not started; sub-surface curation pending.
 
 ## Pinned Divergences
 
-Intentional differences from Access that should NOT be "fixed". Each entry
-should answer: what is different, why, and what would change that decision.
+Intentional differences from Access we will not "fix". Each entry must
+answer: what is different, why, and what would change the decision.
 
 - (none yet)
 
 ## Open Questions
 
-Things blocked on a decision from the project owner or on more evidence
+Items blocked on a decision from the project owner or on more evidence
 from the Access side.
 
 - (none yet)
@@ -54,10 +63,12 @@ from the Access side.
 
 ## How to Resume
 
-A short checklist for the next session:
-
 1. Read this file.
-2. Read `docs/access-parity-design.md` if scope or definitions feel unclear.
-3. Read `docs/access-parity-workflow.md` before changing parity tests.
-4. Pick the module with the oldest "Last compared on" date and run the
-   workflow there.
+2. If scope or framing feels unclear, read
+   `docs/access-parity-design.md` (especially "Role of Access During
+   Migration" and "Phased Roadmap").
+3. Before changing any parity assertion, read
+   `docs/access-parity-workflow.md`.
+4. Pick the in-phase module with the oldest "Last compared on" date
+   and run the workflow there.
+5. Update this file before ending the session.
