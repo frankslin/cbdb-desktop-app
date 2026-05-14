@@ -40,8 +40,31 @@ public sealed class GroupPeopleServiceTests {
         }
     }
 
-    private static async Task<string> CreateGroupPeopleDatabaseAsync() {
+    [Fact]
+    public async Task QueryAsync_LoadsOfficeRecordsWhenPostingDataUsesCurrentAppointmentColumn() {
+        var sqlitePath = await CreateGroupPeopleDatabaseAsync(useCurrentAppointmentSchema: true);
+
+        try {
+            var service = new SqliteGroupPeopleService();
+
+            var result = await service.QueryAsync(
+                sqlitePath,
+                new[] { 1 },
+                new GroupPeopleQueryOptions(false, true, false, false, false, GroupPeopleAddressMode.IndexAddresses)
+            );
+
+            var officeRecord = Assert.Single(result.OfficeRecords);
+            Assert.Equal(1, officeRecord.PersonId);
+            Assert.Equal("任命", officeRecord.AppointmentType);
+            Assert.Equal("知州", officeRecord.Office);
+        } finally {
+            TestSqliteFileHelper.Delete(sqlitePath);
+        }
+    }
+
+    private static async Task<string> CreateGroupPeopleDatabaseAsync(bool useCurrentAppointmentSchema = false) {
         var path = Path.Combine(Path.GetTempPath(), $"cbdb-group-people-{Guid.NewGuid():N}.sqlite3");
+        var appointmentColumnName = useCurrentAppointmentSchema ? "c_appt_code" : "c_appt_type_code";
 
         await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder {
             DataSource = path,
@@ -50,7 +73,7 @@ public sealed class GroupPeopleServiceTests {
         await connection.OpenAsync();
 
         await using var command = connection.CreateCommand();
-        command.CommandText = """
+        command.CommandText = $"""
 CREATE TABLE BIOG_MAIN (
     c_personid INTEGER PRIMARY KEY,
     c_name_chn TEXT,
@@ -82,7 +105,7 @@ CREATE TABLE POSTED_TO_OFFICE_DATA (
     c_posting_id INTEGER,
     c_office_id INTEGER,
     c_sequence INTEGER,
-    c_appt_type_code INTEGER,
+    {appointmentColumnName} INTEGER,
     c_assume_office_code INTEGER,
     c_firstyear INTEGER,
     c_lastyear INTEGER,
@@ -202,7 +225,7 @@ INSERT INTO APPOINTMENT_CODES (c_appt_code, c_appt_desc_chn, c_appt_desc) VALUES
 INSERT INTO ASSUME_OFFICE_CODES (c_assume_office_code, c_assume_office_desc_chn, c_assume_office_desc) VALUES
 (2, '到任', 'Assume Office');
 
-INSERT INTO POSTED_TO_OFFICE_DATA (c_personid, c_posting_id, c_office_id, c_sequence, c_appt_type_code, c_assume_office_code, c_firstyear, c_lastyear, c_source, c_pages, c_notes) VALUES
+INSERT INTO POSTED_TO_OFFICE_DATA (c_personid, c_posting_id, c_office_id, c_sequence, {appointmentColumnName}, c_assume_office_code, c_firstyear, c_lastyear, c_source, c_pages, c_notes) VALUES
 (1, 5001, 101, 1, 1, 2, 1000, 1004, 900, '10', 'office one'),
 (2, 5002, 202, 1, 1, 2, 1011, 1015, 900, '11', 'office two'),
 (3, 5003, 202, 1, 1, 2, 1021, 1025, 900, '12', 'office three');

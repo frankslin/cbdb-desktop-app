@@ -102,6 +102,11 @@ ORDER BY sd.c_personid, sd.c_sequence, sd.c_status_code;";
         CancellationToken cancellationToken
     ) {
         var records = new List<GroupOfficeRecord>();
+        var appointmentCodeExpr = await SqliteSchemaCompatibility.GetPostingAppointmentCodeExpressionAsync(
+            connection,
+            "pto",
+            cancellationToken
+        );
         foreach (var chunk in Chunk(personIds, 900)) {
             await using var command = connection.CreateCommand();
             var inClause = AddIdParameters(command, chunk);
@@ -124,7 +129,7 @@ SELECT
 FROM POSTED_TO_OFFICE_DATA pto
 JOIN BIOG_MAIN b ON b.c_personid = pto.c_personid
 LEFT JOIN OFFICE_CODES oc ON oc.c_office_id = pto.c_office_id
-LEFT JOIN APPOINTMENT_CODES appt ON appt.c_appt_code = pto.c_appt_type_code
+LEFT JOIN APPOINTMENT_CODES appt ON appt.c_appt_code = {appointmentCodeExpr}
 LEFT JOIN ASSUME_OFFICE_CODES assume_office ON assume_office.c_assume_office_code = pto.c_assume_office_code
 LEFT JOIN POSTED_TO_ADDR_DATA pta
     ON pta.c_personid = pto.c_personid

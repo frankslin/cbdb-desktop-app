@@ -679,9 +679,14 @@ ORDER BY btd.c_year, btd.c_textid, btd.c_role_id;";
 
         await using var connection = new SqliteConnection(builder.ConnectionString);
         await connection.OpenAsync(cancellationToken);
+        var appointmentCodeExpr = await SqliteSchemaCompatibility.GetPostingAppointmentCodeExpressionAsync(
+            connection,
+            "pto",
+            cancellationToken
+        );
 
         await using var command = connection.CreateCommand();
-        command.CommandText = @"
+        command.CommandText = $@"
 SELECT
     pd.c_posting_id,
     pto.c_office_id,
@@ -742,7 +747,7 @@ LEFT JOIN POSTED_TO_ADDR_DATA pta
    AND pta.c_office_id = pto.c_office_id
    AND pta.c_personid = pto.c_personid
 LEFT JOIN OFFICE_CODES oc ON oc.c_office_id = pto.c_office_id
-LEFT JOIN APPOINTMENT_CODES appt ON appt.c_appt_code = pto.c_appt_type_code
+LEFT JOIN APPOINTMENT_CODES appt ON appt.c_appt_code = {appointmentCodeExpr}
 LEFT JOIN ASSUME_OFFICE_CODES assume_office ON assume_office.c_assume_office_code = pto.c_assume_office_code
 LEFT JOIN OFFICE_CATEGORIES cat ON cat.c_office_category_id = pto.c_office_category_id
 LEFT JOIN NIAN_HAO fy_nh ON fy_nh.c_nianhao_id = pto.c_fy_nh_code

@@ -207,6 +207,11 @@ ORDER BY CAST(c_office_tree_id AS TEXT), c_office_id;
 
         var records = new List<OfficeQueryRecord>();
         await using var connection = await OpenReadOnlyConnectionAsync(sqlitePath, cancellationToken);
+        var appointmentCodeExpr = await SqliteSchemaCompatibility.GetPostingAppointmentCodeExpressionAsync(
+            connection,
+            "pto",
+            cancellationToken
+        );
         await using var command = connection.CreateCommand();
 
         var personPlaceParameterList = string.Join(", ", request.PersonPlaceIds.Select((_, index) => $"$personPlaceId{index}"));
@@ -304,7 +309,7 @@ SELECT
     COALESCE(pto.c_sequence, 0),
     CAST(pto.c_office_id AS TEXT) AS office_code,
     COALESCE(oc.c_office_chn, oc.c_office_trans, oc.c_office_pinyin) AS office_label,
-    pto.c_appt_type_code,
+    {appointmentCodeExpr},
     COALESCE(appt.c_appt_desc_chn, appt.c_appt_desc) AS appointment_type,
     pto.c_assume_office_code,
     COALESCE(assume_office.c_assume_office_desc_chn, assume_office.c_assume_office_desc) AS assume_office,
@@ -362,7 +367,7 @@ LEFT JOIN POSTED_TO_ADDR_DATA pta
    AND pta.c_office_id = pto.c_office_id
    AND pta.c_personid = pto.c_personid
 LEFT JOIN OFFICE_CODES oc ON oc.c_office_id = pto.c_office_id
-LEFT JOIN APPOINTMENT_CODES appt ON appt.c_appt_code = pto.c_appt_type_code
+LEFT JOIN APPOINTMENT_CODES appt ON appt.c_appt_code = {appointmentCodeExpr}
 LEFT JOIN ASSUME_OFFICE_CODES assume_office ON assume_office.c_assume_office_code = pto.c_assume_office_code
 LEFT JOIN OFFICE_CATEGORIES cat ON cat.c_office_category_id = pto.c_office_category_id
 LEFT JOIN INDEXYEAR_TYPE_CODES iy ON iy.c_index_year_type_code = b.c_index_year_type_code
