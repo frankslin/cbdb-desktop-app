@@ -1,4 +1,4 @@
-# CBDB Desktop Version 0.3.3-beta1
+# CBDB Desktop Version 0.4.0-beta1
 
 This release expands the desktop app from the earlier query baseline into a broader, more stable research toolset. It adds a new group-based query module, deepens office-query behavior, improves picker and scrolling performance, and introduces signed and notarized macOS packaging.
 
@@ -36,7 +36,7 @@ The app now supports five user-facing modules:
 
 ---
 
-# CBDB Desktop 0.3.3-beta1 版更新說明
+# CBDB Desktop 0.4.0-beta1 版更新說明
 
 這個版本把桌面應用程式從先前的查詢基線，進一步擴展成更完整、也更穩定的研究工具。除了新增按人群查詢模組之外，也進一步深化了官職查詢的工作流程、改善了大型清單的捲動與選擇體驗，並完成了 macOS 的簽章、公證與 DMG 封裝流程。
 

@@ -154,9 +154,7 @@ DOTNET_CLI_HOME=/tmp dotnet publish "${PROJECT_PATH}" \
   -r "${RUNTIME}" \
   --self-contained true \
   --no-restore \
-  /p:PublishSingleFile=true \
-  /p:IncludeNativeLibrariesForSelfExtract=true \
-  /p:EnableCompressionInSingleFile=true \
+  /p:PublishSingleFile=false \
   /p:UseAppHost=true \
   /p:DebugType=None \
   /p:DebugSymbols=false \
@@ -230,8 +228,13 @@ EOF
   codesign --remove-signature "${BUNDLE_ROOT}" 2>/dev/null || true
   find "${BUNDLE_ROOT}" -type f -exec codesign --remove-signature {} \; 2>/dev/null || true
 
-  echo "==> Signing nested native libraries"
-  find "${MACOS_DIR}" -maxdepth 1 -type f -name "*.dylib" -print0 | while IFS= read -r -d '' file_path; do
+  echo "==> Signing nested bundle files"
+  find "${MACOS_DIR}" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' file_path; do
+    file_name="$(basename "${file_path}")"
+    if [[ "${file_name}" == "${EXECUTABLE_NAME}" ]]; then
+      continue
+    fi
+
     codesign --force --timestamp --options runtime --sign "${SIGN_IDENTITY}" "${file_path}"
   done
 

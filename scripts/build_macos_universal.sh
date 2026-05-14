@@ -263,11 +263,14 @@ if [[ -n "${SIGN_IDENTITY}" ]]; then
     done
   fi
 
-  echo "==> Signing MacOS native code"
+  echo "==> Signing MacOS nested bundle files"
   find "${MACOS_DIR}" -type f -print0 | while IFS= read -r -d '' file_path; do
-    if [[ "${file_path}" != *.dll && "$(file -b "${file_path}")" == *"Mach-O"* ]]; then
-      codesign --force --timestamp --options runtime --sign "${SIGN_IDENTITY}" "${file_path}"
+    file_name="$(basename "${file_path}")"
+    if [[ "${file_name}" == "${EXECUTABLE_NAME}" ]]; then
+      continue
     fi
+
+    codesign --force --timestamp --options runtime --sign "${SIGN_IDENTITY}" "${file_path}"
   done
 
   codesign --force \
