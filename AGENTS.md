@@ -208,13 +208,6 @@
   - database-index prompt service behavior
 - Query-result-to-Person-Browser history behavior now has automated coverage.
 
-## Access Parity Testing (Cross-Repo)
-
-- The query modules in this repo re-implement Access `.mdb` query forms.
-- "Access parity" is its own work track with a sibling repo (`cbdb-user-mdb-tests`) as the canonical ground truth.
-- Before adding or changing parity assertions, read `docs/access-parity-design.md`, `docs/access-parity-workflow.md`, and the running state in `docs/access-parity-session-handoff.md`.
-- Do not redefine ground truth in this repo and do not duplicate the design here; keep this section as a pointer only.
-
 ## Release and Packaging
 - Release packaging includes:
   - `THIRD-PARTY-LICENSES.md`
